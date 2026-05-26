@@ -1,0 +1,6 @@
+{
+  "name": "Product World Interface Kit",
+  "description": "A 3D spatial interface kit for products and AI agents with a curved world effect and character control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
