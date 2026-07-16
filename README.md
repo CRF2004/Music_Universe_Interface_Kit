@@ -1,81 +1,92 @@
-# Product World Interface Kit
+# Music Universe Interface Kit
 
-A high-tension, 3D spatial interface kit built with React Three Fiber, Rapier physics, and a custom curved-world shader. Designed for building spatial dashboards, AI agent environments, and product discovery worlds.
+An AI-native spatial application runtime for turning music into interactive worlds.
 
-## Features
+Built with React Three Fiber, Three.js, Rapier physics, and a declarative spatial schema layer.
 
-- **Curved World Engine**: Stylized "Route A" visual curvature shader that keeps the physical interaction layer stable
-- **Tension Camera Rig**: 5 dynamic camera presets (Explore, Interaction, Inspection, Cinematic, UI-Safe) with orientation slerping and shoulder offsets
-- **Interaction Dispatcher**: Unified system for proximity, click, and hotkey-based interactions with condition support and cooldown logic
-- **Extensible Registry**: Decoupled visual components and UI panels via a registration system
-- **Comic-Panel UI**: Clean, high-contrast aesthetic with custom Tailwind v4 theme tokens
-- **Adaptive Architecture**: Easily swap core world adapters to connect different product data sources
-- **Post-Processing**: Vignette, noise, bloom, and halftone dot-screen effects
-- **Dev Tools**: Integrated Leva debug panel for real-time parameter tuning
+The project explores a new interface paradigm:
 
-## Tech Stack
+> Turn music into worlds people can enter.
 
-- **React 19 + Vite 6**
-- **Three.js / @react-three/fiber 9**
-- **Rapier Physics / @react-three/rapier**
-- **Ecctrl**: Robust character controller
-- **Zustand**: Lightweight state management
-- **Tailwind CSS v4**: Theme-driven styling
-- **@react-three/postprocessing**: Post-processing pipeline
-- **motion**: Interaction animations
-- **lucide-react**: Icon library
+## Concept
 
-## Getting Started
+A user uploads a track. AI analyzes the music, creates a world bible and interactive narrative, then compiles the experience into an explorable small planet.
 
-```bash
-npm install
-npm run dev     # http://localhost:3000
-npm run build   # Production build
 ```
-
-### Controls
-
-1. **Move**: WASD
-2. **Jump**: Space
-3. **Interact**: Approach objects and press **E** or **Click**
-4. **Inspect**: Click on product towers to enter inspection mode
-5. **Sprint**: Hold Shift
+Music
+  -> AI understanding
+  -> World Bible
+  -> Interactive Narrative
+  -> Spatial Application Schema
+  -> 3D World Runtime
+  -> Interactive Experience
+```
 
 ## Architecture
 
 ```
-src/
-├── world/           # World scene, terrain, and curved shader
-├── interaction/     # Interaction registry, dispatcher, and visual components
-├── player/          # Character controller (Ecctrl)
-├── camera/          # Camera rig with 5 presets
-├── adapters/        # Bridge between app logic and spatial interactions
-├── content/         # Demo world and interaction definitions
-├── ui/              # HTML overlay system (panels, prompts, dock)
-└── state/           # Zustand state management stores
+World Models
+(Marble / HY-World / other generators)
+          |
+          v
+Music World Schema
+          |
+          v
+Spatial Scene Schema
+          |
+          v
+Runtime
+ - World
+ - Interaction
+ - Camera
+ - State
+ - UI
+          |
+          v
+Web Experience
 ```
 
-## Camera Presets
+## Core Capabilities
 
-| Mode          | FOV  | Distance | Height | Use Case            |
-|---------------|------|----------|--------|---------------------|
-| Explore       | 82°  | 5.5      | 2.3    | General movement    |
-| Interaction   | 68°  | 3.6      | 1.8    | Object/NPC focus    |
-| Inspection    | 45°  | 3.0      | 1.5    | Close examination   |
-| Cinematic     | 35°  | 10       | 4.0    | Scripted moments    |
-| UI-Safe       | 56°  | 6.2      | 2.6    | Text reading        |
+- AI-friendly spatial scene definitions
+- Music timeline driven world changes
+- Interactive narrative runtime
+- Camera and cinematic controls
+- Physics-based exploration
+- Spatial UI and command registry
+- Adapter architecture for different world providers
 
-## Extension
+## Repository Structure
 
-- **New interactions**: Add entries to an `InteractionPointDefinition[]` array
-- **New UI panels**: Use `registerPanel(id, component)` from `src/ui/panelRegistry.tsx`
-- **Custom adapters**: Implement the `AppAdapter` interface from `src/adapters/appAdapterTypes.ts`
-- **New visuals**: Use `registerVisual(type, component)` from `src/interaction/visualRegistry.tsx`
+```
+src/
+├── music/          # Music world experience schema and timeline system
+├── schema/         # AI-friendly spatial schema
+├── world/          # 3D runtime and curved world engine
+├── interaction/    # Interaction dispatcher and registry
+├── camera/         # Camera system
+├── player/         # Character controller
+├── adapters/       # External application integrations
+├── ui/             # Spatial UI system
+└── state/          # Runtime state
+```
 
-## Env Variables
+## Roadmap
 
-```env
-APP_URL="https://your-app-url.com"
+1. Music experience runtime
+2. World model adapters
+3. Creator workflow
+4. Public music world database
+5. Remixable interactive music universe
+
+See `docs/music-universe-roadmap.md`.
+
+## Development
+
+```bash
+npm install
+npm run dev
+npm run build
 ```
 
 ## License
