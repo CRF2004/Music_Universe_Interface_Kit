@@ -1,36 +1,73 @@
 import type { LocalAudioTrack } from './audioUploadTypes';
 
 export class LocalAudioPlayer {
-  private audio = new Audio();
+  readonly element: HTMLAudioElement;
+  private objectUrl: string | null = null;
+
+  constructor() {
+    this.element = new Audio();
+    this.element.preload = 'metadata';
+  }
 
   load(file: File): LocalAudioTrack {
+    this.clear();
+
     const url = URL.createObjectURL(file);
-    this.audio.src = url;
+    this.objectUrl = url;
+    this.element.src = url;
+    this.element.load();
+
     return {
       id: crypto.randomUUID(),
       name: file.name,
       url,
       duration: 0,
+      sizeBytes: file.size,
+      mimeType: file.type || 'audio/mpeg',
     };
   }
 
-  play() {
-    return this.audio.play();
+  play(): Promise<void> {
+    return this.element.play();
   }
 
-  pause() {
-    this.audio.pause();
+  pause(): void {
+    this.element.pause();
   }
 
-  seek(seconds: number) {
-    this.audio.currentTime = seconds;
+  seek(seconds: number): void {
+    const maximum = Number.isFinite(this.element.duration) ? this.element.duration : Number.POSITIVE_INFINITY;
+    this.element.currentTime = Math.min(maximum, Math.max(0, seconds));
   }
 
-  get currentTime() {
-    return this.audio.currentTime;
+  clear(): void {
+    this.element.pause();
+    this.element.currentTime = 0;
+    this.element.removeAttribute('src');
+
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
   }
 
-  get duration() {
-    return this.audio.duration || 0;
+  destroy(): void {
+    this.clear();
+  }
+
+  get currentTime(): number {
+    return this.element.currentTime || 0;
+  }
+
+  get duration(): number {
+    return Number.isFinite(this.element.duration) ? this.element.duration : 0;
+  }
+
+  get paused(): boolean {
+    return this.element.paused;
+  }
+
+  get ended(): boolean {
+    return this.element.ended;
   }
 }
