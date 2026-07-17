@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useMusicRuntimeStore } from './music/runtime/useMusicRuntimeStore';
+import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 
 export default function MusicEnvironmentController() {
   const environment = useMusicRuntimeStore((state) => state.environment);
