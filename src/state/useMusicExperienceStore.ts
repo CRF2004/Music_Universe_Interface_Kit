@@ -18,6 +18,7 @@ export interface MusicEnergyState {
 }
 
 export interface MusicExperienceSnapshot {
+  active: boolean;
   environment: NarrativeEnvironmentState;
   cameraMode: CameraMode;
   narration: MusicNarrationState | null;
@@ -46,6 +47,7 @@ export const EMPTY_MUSIC_ENERGY: MusicEnergyState = {
 
 export function createInitialMusicExperienceSnapshot(): MusicExperienceSnapshot {
   return {
+    active: false,
     environment: { ...DEFAULT_MUSIC_ENVIRONMENT },
     cameraMode: 'explore',
     narration: null,
