@@ -1,3 +1,5 @@
+import type { CameraMode } from '../../camera/cameraTypes';
+
 export type NarrativeTone = 'neutral' | 'wonder' | 'memory' | 'tension' | 'release';
 
 export interface NarrativeEnvironmentState {
@@ -12,7 +14,7 @@ export interface NarrativeEnvironmentState {
 
 export type SpatialNarrativeAction =
   | { type: 'set-environment'; payload: Partial<NarrativeEnvironmentState> }
-  | { type: 'set-camera'; payload: { mode: string } }
+  | { type: 'set-camera'; payload: { mode: CameraMode } }
   | { type: 'show-narration'; payload: { body: string; tone?: NarrativeTone } }
   | { type: 'set-portal'; payload: { id: string; open: boolean } }
   | { type: 'set-landmark'; payload: { id: string; visible: boolean } };
