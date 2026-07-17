@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { LocalAudioPlayer } from './LocalAudioPlayer';
-import type { LocalAudioTrack } from './audioUploadTypes';
+import type { AudioLoadStatus, LocalAudioTrack } from './audioUploadTypes';
 
 const player = new LocalAudioPlayer();
 
@@ -9,27 +9,69 @@ interface AudioStore {
   currentTime: number;
   duration: number;
   playing: boolean;
+  ended: boolean;
+  status: AudioLoadStatus;
+  error: string | null;
   load: (file: File) => void;
   play: () => Promise<void>;
   pause: () => void;
   seek: (seconds: number) => void;
+  clear: () => void;
   sync: () => void;
 }
 
-export const useAudioPlayerStore = create<AudioStore>((set) => ({
+const initialState = {
   track: null,
   currentTime: 0,
   duration: 0,
   playing: false,
+  ended: false,
+  status: 'idle' as AudioLoadStatus,
+  error: null,
+};
+
+export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
+  ...initialState,
 
   load(file) {
-    const track = player.load(file);
-    set({ track, currentTime: 0, duration: 0 });
+    if (!file.type.startsWith('audio/') && !file.name.toLowerCase().endsWith('.mp3')) {
+      set({ error: 'Please choose an audio file.', status: 'error' });
+      return;
+    }
+
+    try {
+      const track = player.load(file);
+      set({
+        track,
+        currentTime: 0,
+        duration: 0,
+        playing: false,
+        ended: false,
+        status: 'loading',
+        error: null,
+      });
+    } catch (error) {
+      set({
+        ...initialState,
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Unable to load this audio file.',
+      });
+    }
   },
 
   async play() {
-    await player.play();
-    set({ playing: true });
+    if (!get().track) return;
+
+    try {
+      if (get().ended) player.seek(0);
+      await player.play();
+      set({ playing: true, ended: false, error: null });
+    } catch (error) {
+      set({
+        playing: false,
+        error: error instanceof Error ? error.message : 'Playback could not start.',
+      });
+    }
   },
 
   pause() {
@@ -39,18 +81,44 @@ export const useAudioPlayerStore = create<AudioStore>((set) => ({
 
   seek(seconds) {
     player.seek(seconds);
-    set({ currentTime: player.currentTime });
+    set({ currentTime: player.currentTime, ended: false });
+  },
+
+  clear() {
+    player.clear();
+    set(initialState);
   },
 
   sync() {
-    set({
+    const duration = player.duration;
+    set((state) => ({
       currentTime: player.currentTime,
-      duration: player.duration,
+      duration,
       playing: !player.paused,
-    });
+      ended: player.ended,
+      status: state.track && duration > 0 ? 'ready' : state.status,
+      track: state.track ? { ...state.track, duration } : null,
+    }));
   },
 }));
 
-player.element.addEventListener('timeupdate', () => useAudioPlayerStore.getState().sync());
+export function getAuthoritativeAudioTime(): number {
+  return player.currentTime;
+}
+
 player.element.addEventListener('loadedmetadata', () => useAudioPlayerStore.getState().sync());
-player.element.addEventListener('ended', () => useAudioPlayerStore.setState({ playing: false }));
+player.element.addEventListener('durationchange', () => useAudioPlayerStore.getState().sync());
+player.element.addEventListener('timeupdate', () => useAudioPlayerStore.getState().sync());
+player.element.addEventListener('play', () => useAudioPlayerStore.setState({ playing: true, ended: false }));
+player.element.addEventListener('pause', () => useAudioPlayerStore.setState({ playing: false }));
+player.element.addEventListener('ended', () => {
+  useAudioPlayerStore.getState().sync();
+  useAudioPlayerStore.setState({ playing: false, ended: true });
+});
+player.element.addEventListener('error', () => {
+  useAudioPlayerStore.setState({
+    playing: false,
+    status: 'error',
+    error: 'The browser could not decode this audio file.',
+  });
+});
