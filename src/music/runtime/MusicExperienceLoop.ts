@@ -11,4 +11,25 @@ export class MusicExperienceLoop {
   }
 
   async resume(): Promise<void> {
-    await this
+    await this.analyzer.resume();
+  }
+
+  start(getTime: () => number): void {
+    if (this.running) return;
+    this.running = true;
+
+    const tick = () => {
+      if (!this.running) return;
+      const energy = this.analyzer.getFrame();
+      updateMusicExperience(getTime(), energy);
+      this.frame = requestAnimationFrame(tick);
+    };
+
+    this.frame = requestAnimationFrame(tick);
+  }
+
+  stop(): void {
+    this.running = false;
+    cancelAnimationFrame(this.frame);
+  }
+}
