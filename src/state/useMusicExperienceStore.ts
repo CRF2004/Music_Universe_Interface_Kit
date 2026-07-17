@@ -11,5 +11,27 @@ export interface MusicNarrationState {
 }
 
 export interface MusicExperienceSnapshot {
-  environment: NarrativeEnvironmentState;
-  cameraMode: CameraMode
+  environment: Partial<NarrativeEnvironmentState>;
+  cameraMode?: CameraMode;
+  narration?: MusicNarrationState;
+  portals: Record<string, boolean>;
+  landmarks: Record<string, boolean>;
+  energy: number;
+}
+
+const emptySnapshot: MusicExperienceSnapshot = {
+  environment: {},
+  portals: {},
+  landmarks: {},
+  energy: 0,
+};
+
+interface MusicExperienceStore {
+  snapshot: MusicExperienceSnapshot;
+  setSnapshot: (snapshot: MusicExperienceSnapshot) => void;
+}
+
+export const useMusicExperienceStore = create<MusicExperienceStore>((set) => ({
+  snapshot: emptySnapshot,
+  setSnapshot: (snapshot) => set({ snapshot }),
+}));
