@@ -1,14 +1,39 @@
-import { useMemo } from 'react';
-import { useAudioPlayerStore } from '../player/useAudioPlayerStore';
-import { replayMusicTimeline } from './musicExperienceRuntime';
-import { defaultMusicTimeline } from './defaultMusicTimeline';
+import { useEffect, useRef } from 'react';
+import { useAudioPlayerStore, getAuthoritativeAudioElement } from '../player/useAudioPlayerStore';
+import { MusicExperienceLoop } from './MusicExperienceLoop';
+import { useMusicExperienceStore } from '../../state/useMusicExperienceStore';
 
 export default function MusicWorldController() {
-  const currentTime = useAudioPlayerStore((state) => state.currentTime);
+  const loop = useRef<MusicExperienceLoop | null>(null);
+  const playing = useAudioPlayerStore((state) => state.playing);
+  const track = useAudioPlayerStore((state) => state.track);
+  const resetMusic = useMusicExperienceStore((state) => state.reset);
 
-  useMemo(() => {
-    return replayMusicTimeline(defaultMusicTimeline, currentTime);
-  }, [currentTime]);
+  useEffect(() => {
+    if (!loop.current) {
+      loop.current = new MusicExperienceLoop();
+      loop.current.connect(getAuthoritativeAudioElement());
+    }
+
+    return () => {
+      loop.current?.stop();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!loop.current || !track) return;
+
+    if (playing) {
+      void loop.current.resume();
+      loop.current.start(
+        () => useAudioPlayerStore.getState().currentTime,
+        () => useAudioPlayerStore.getState().duration,
+      );
+    } else {
+      loop.current.stop();
+      if (!track) resetMusic();
+    }
+  }, [playing, track, resetMusic]);
 
   return null;
 }
