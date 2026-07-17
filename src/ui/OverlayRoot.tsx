@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Prompt from './Prompt';
 import ActionDock from './ActionDock';
 import PanelRenderer from './PanelRenderer';
+import MusicPlayerHUD from '../music/player/MusicPlayerHUD';
 
 export default function OverlayRoot() {
   const activePanelId = useInteractionStore((state) => state.activePanelId);
@@ -17,34 +18,16 @@ export default function OverlayRoot() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
-      {/* HUD Layer */}
       <Prompt />
       <ActionDock />
-
-      {/* Panel Layer */}
+      <MusicPlayerHUD />
       <AnimatePresence>
         {activePanelId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-ink/40 backdrop-blur-sm pointer-events-auto flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="comic-panel max-w-2xl w-full max-h-[80vh] overflow-y-auto relative"
-            >
-              <button
-                onClick={handleClose}
-                className="absolute top-4 right-4 text-ink hover:scale-110 transition-transform"
-              >
-                <div className="w-8 h-8 rounded-full border-2 border-ink flex items-center justify-center font-bold">X</div>
-              </button>
-              
+          <motion.div className="absolute inset-0 bg-ink/40 backdrop-blur-sm pointer-events-auto flex items-center justify-center p-4">
+            <div className="comic-panel max-w-2xl w-full">
+              <button onClick={handleClose}>X</button>
               <PanelRenderer panelId={activePanelId} onClose={handleClose} />
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

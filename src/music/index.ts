@@ -3,5 +3,7 @@ export * from './musicTimeline';
 export * from './validateMusicExperience';
 export * from './narrative/narrativeTypes';
 export * from './runtime';
+export * from './runtime/musicExperienceRuntime';
 export * from './player/audioUploadTypes';
 export * from './player/LocalAudioPlayer';
+export * from './player/useAudioPlayerStore';
