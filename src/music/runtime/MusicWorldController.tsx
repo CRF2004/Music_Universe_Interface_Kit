@@ -1,14 +1,17 @@
-import { useMemo } from 'react';
+import { useEffect } from 'react';
 import { useAudioPlayerStore } from '../player/useAudioPlayerStore';
-import { replayMusicTimeline } from './musicExperienceRuntime';
-import { defaultMusicTimeline } from './defaultMusicTimeline';
+import { updateMusicTimeline } from './musicExperienceRuntime';
+import { useWorldStore } from '../../state/useWorldStore';
+import type { CameraMode } from '../../camera/cameraTypes';
 
 export default function MusicWorldController() {
   const currentTime = useAudioPlayerStore((state) => state.currentTime);
+  const setCameraMode = useWorldStore((state) => state.setCameraMode);
 
-  useMemo(() => {
-    return replayMusicTimeline(defaultMusicTimeline, currentTime);
-  }, [currentTime]);
+  useEffect(() => {
+    const timeline = updateMusicTimeline(currentTime, 300);
+    setCameraMode(timeline.cameraMode as CameraMode);
+  }, [currentTime, setCameraMode]);
 
   return null;
 }
