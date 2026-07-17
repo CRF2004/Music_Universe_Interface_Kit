@@ -3,6 +3,7 @@ import MusicReactiveWorld from './MusicReactiveWorld';
 import PlayerController from '../player/PlayerController';
 import InteractionSystem from '../interaction/InteractionSystem';
 import InteractionPoint from '../interaction/InteractionPoint';
+import MusicWorldController from '../music/runtime/MusicWorldController';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { useWorldStore } from '../state/useWorldStore';
 import { useEffect } from 'react';
@@ -24,6 +25,7 @@ export default function WorldScene() {
 
   return (
     <>
+      <MusicWorldController />
       <CurvedWorld />
       <MusicReactiveWorld />
       <PlayerController />
