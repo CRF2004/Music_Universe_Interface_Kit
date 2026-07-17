@@ -1,5 +1,5 @@
 import { MusicEnergyAnalyzer } from './musicEnergyAnalyzer';
-import { updateMusicExperience } from './musicExperienceRuntime';
+import { updateMusicEnergy, updateMusicTimeline } from './musicCinematicRuntime';
 
 export class MusicExperienceLoop {
   private readonly analyzer = new MusicEnergyAnalyzer();
@@ -14,14 +14,20 @@ export class MusicExperienceLoop {
     await this.analyzer.resume();
   }
 
-  start(getTime: () => number): void {
+  start(getTime: () => number, getDuration: () => number): void {
     if (this.running) return;
     this.running = true;
 
     const tick = () => {
       if (!this.running) return;
+
+      const seconds = getTime();
+      const duration = getDuration();
       const energy = this.analyzer.getFrame();
-      updateMusicExperience(getTime(), energy);
+
+      updateMusicTimeline(seconds, duration);
+      updateMusicEnergy(energy);
+
       this.frame = requestAnimationFrame(tick);
     };
 
@@ -31,5 +37,9 @@ export class MusicExperienceLoop {
   stop(): void {
     this.running = false;
     cancelAnimationFrame(this.frame);
+  }
+
+  reset(): void {
+    this.stop();
   }
 }
