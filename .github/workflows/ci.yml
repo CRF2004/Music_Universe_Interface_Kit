@@ -23,21 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Capture type-check
-        run: |
-          npm run lint > typecheck.log 2>&1 || echo failed > typecheck.failed
-
-      - name: Upload type-check log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: typecheck-log
-          path: typecheck.log
-
       - name: Type-check
-        run: |
-          cat typecheck.log
-          test ! -f typecheck.failed
+        run: npm run lint
 
       - name: Build
         run: npm run build
