@@ -4,34 +4,36 @@ import { compileNormalizedMusicTimeline } from '../musicTimeline';
 import { defaultNormalizedMusicTimeline } from './defaultNormalizedMusicTimeline';
 import { replayMusicTimeline } from './musicExperienceRuntime';
 import { useMusicRuntimeStore } from './useMusicRuntimeStore';
+import { useWorldStore } from '../../state/useWorldStore';
 import type { CameraMode } from '../../camera/cameraTypes';
 
-const CAMERA_MODES = new Set<CameraMode>([
-  'explore',
-  'interaction',
-  'cinematic',
-  'inspection',
-  'ui-safe',
-]);
-
 function isCameraMode(value: unknown): value is CameraMode {
-  return typeof value === 'string' && CAMERA_MODES.has(value as CameraMode);
+  return (
+    value === 'explore' ||
+    value === 'interaction' ||
+    value === 'cinematic' ||
+    value === 'inspection' ||
+    value === 'ui-safe'
+  );
 }
 
-export default function MusicWorldController() {
+export function MusicWorldController() {
   const currentTime = useAudioPlayerStore((state) => state.currentTime);
   const setRuntime = useMusicRuntimeStore((state) => state.setRuntime);
+  const setCameraMode = useWorldStore((state) => state.setCameraMode);
 
   useEffect(() => {
     const cues = compileNormalizedMusicTimeline(defaultNormalizedMusicTimeline, 300);
     const runtime = replayMusicTimeline(cues, currentTime);
 
+    setRuntime(runtime);
+
     if (isCameraMode(runtime.cameraMode)) {
-      setRuntime({ ...runtime, cameraMode: runtime.cameraMode });
-    } else {
-      setRuntime(runtime);
+      setCameraMode(runtime.cameraMode);
     }
-  }, [currentTime, setRuntime]);
+  }, [currentTime, setCameraMode, setRuntime]);
 
   return null;
 }
+
+export default MusicWorldController;
