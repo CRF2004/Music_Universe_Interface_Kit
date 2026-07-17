@@ -1,5 +1,6 @@
 import CurvedWorld from './CurvedWorld';
 import MusicReactiveWorld from './MusicReactiveWorld';
+import MusicEnvironmentController from './MusicEnvironmentController';
 import PlayerController from '../player/PlayerController';
 import InteractionSystem from '../interaction/InteractionSystem';
 import InteractionPoint from '../interaction/InteractionPoint';
@@ -8,6 +9,7 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useEffect } from 'react';
 import { demoWorld } from '../content/demoWorld';
 import { demoAdapter } from '../adapters/demoAdapter';
+import MusicWorldController from '../music/runtime/MusicWorldController';
 
 export default function WorldScene() {
   const registerInteractions = useInteractionStore((state) => state.registerInteractions);
@@ -25,6 +27,8 @@ export default function WorldScene() {
   return (
     <>
       <CurvedWorld />
+      <MusicWorldController />
+      <MusicEnvironmentController />
       <MusicReactiveWorld />
       <PlayerController />
       <InteractionSystem />
