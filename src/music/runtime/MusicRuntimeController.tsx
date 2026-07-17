@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAudioPlayerStore } from '../player/useAudioPlayerStore';
 import { compileNormalizedMusicTimeline } from '../musicTimeline';
-import { defaultNormalizedMusicTimeline } from './defaultNormalizedMusicTimeline';
+import { defaultNormalizedMusicTimeline } from './defaultMusicTimeline';
 import { replayMusicTimeline } from './musicExperienceRuntime';
 import { useMusicRuntimeStore } from './useMusicRuntimeStore';
 import { useWorldStore } from '../../state/useWorldStore';
