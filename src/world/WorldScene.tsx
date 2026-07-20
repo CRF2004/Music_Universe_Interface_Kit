@@ -9,7 +9,6 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useEffect } from 'react';
 import { demoWorld } from '../content/demoWorld';
 import { demoAdapter } from '../adapters/demoAdapter';
-import MusicRuntimeController from '../music/runtime/MusicRuntimeController';
 
 export default function WorldScene() {
   const registerInteractions = useInteractionStore((state) => state.registerInteractions);
@@ -27,7 +26,6 @@ export default function WorldScene() {
   return (
     <>
       <CurvedWorld />
-      <MusicRuntimeController />
       <MusicEnvironmentController />
       <MusicReactiveWorld />
       <PlayerController />

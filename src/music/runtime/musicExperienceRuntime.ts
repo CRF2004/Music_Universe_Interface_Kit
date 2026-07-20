@@ -6,11 +6,13 @@ export interface MusicRuntimeState {
   cameraMode?: string;
   narration?: string;
   portals: Record<string, boolean>;
+  landmarks: Record<string, boolean>;
 }
 
 const initialState: MusicRuntimeState = {
   environment: {},
   portals: {},
+  landmarks: {},
 };
 
 function applyAction(state: MusicRuntimeState, action: SpatialNarrativeAction) {
@@ -25,6 +27,9 @@ function applyAction(state: MusicRuntimeState, action: SpatialNarrativeAction) {
   }
   if (action.type === 'set-portal') {
     state.portals[action.payload.id] = action.payload.open;
+  }
+  if (action.type === 'set-landmark') {
+    state.landmarks[action.payload.id] = action.payload.visible;
   }
 }
 

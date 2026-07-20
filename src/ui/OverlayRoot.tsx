@@ -5,6 +5,8 @@ import Prompt from './Prompt';
 import ActionDock from './ActionDock';
 import PanelRenderer from './PanelRenderer';
 import MusicPlayerHUD from '../music/player/MusicPlayerHUD';
+import MusicNarrationHUD from '../music/runtime/MusicNarrationHUD';
+import MusicRuntimeController from '../music/runtime/MusicRuntimeController';
 
 export default function OverlayRoot() {
   const activePanelId = useInteractionStore((state) => state.activePanelId);
@@ -20,7 +22,9 @@ export default function OverlayRoot() {
     <div className="fixed inset-0 pointer-events-none z-50">
       <Prompt />
       <ActionDock />
+      <MusicRuntimeController />
       <MusicPlayerHUD />
+      <MusicNarrationHUD />
       <AnimatePresence>
         {activePanelId && (
           <motion.div className="absolute inset-0 bg-ink/40 backdrop-blur-sm pointer-events-auto flex items-center justify-center p-4">

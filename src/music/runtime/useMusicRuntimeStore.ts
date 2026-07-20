@@ -8,6 +8,7 @@ interface MusicRuntimeStore extends MusicRuntimeState {
 const initialState: MusicRuntimeState = {
   environment: {},
   portals: {},
+  landmarks: {},
 };
 
 export const useMusicRuntimeStore = create<MusicRuntimeStore>((set) => ({

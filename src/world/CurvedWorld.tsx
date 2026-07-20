@@ -2,10 +2,12 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useWorldStore } from '../state/useWorldStore';
+import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 
 export default function CurvedWorld() {
   const activeWorld = useWorldStore((state) => state.activeWorld);
   const curvature = activeWorld?.terrain.curvature ?? 0.002;
+  const groundColor = useMusicRuntimeStore((state) => state.environment.groundColor);
 
   // Custom shader to bend the world
   const material = useMemo(() => {
@@ -49,6 +51,10 @@ export default function CurvedWorld() {
   useEffect(() => {
     material.uniforms.uCurvature.value = curvature;
   }, [curvature, material]);
+
+  useEffect(() => {
+    if (groundColor) material.uniforms.uColor.value.set(groundColor);
+  }, [groundColor, material]);
 
   return (
     <group>
