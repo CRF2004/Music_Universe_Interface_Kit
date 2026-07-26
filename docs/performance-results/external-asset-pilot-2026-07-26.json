@@ -1,0 +1,39 @@
+{
+  "capturedAt": "2026-07-26T16:07:22.815Z",
+  "purpose": "External asset and spatial-audio pilot representative departure-gate pass",
+  "browser": "Chrome/150.0.7871.186",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+  "scenario": "departure",
+  "viewportCssPixels": [
+    1920,
+    1080
+  ],
+  "devicePixelRatio": 1,
+  "logicalCpuCores": 16,
+  "sampleCount": 600,
+  "medianFps": 119.04761896314535,
+  "onePercentLowFps": 54.945054891071756,
+  "drawCalls": 36,
+  "visibleTriangles": 31808,
+  "geometries": 38,
+  "textures": 7,
+  "estimatedGeometryBytes": 630704,
+  "estimatedTextureBytes": 6641664,
+  "estimatedFramebufferBytes": 17637376,
+  "estimatedGpuBytesLowerBound": 24909744,
+  "resources": {
+    "count": 23,
+    "transferBytes": 234780,
+    "encodedBytes": 1528039
+  },
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4050 Laptop GPU (0x000028E1) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "vendor": "Google Inc. (NVIDIA)",
+  "hardwareAccelerated": true,
+  "measurementNotes": [
+    "Chrome ran in native Windows headless mode with hardware acceleration.",
+    "The deterministic scenario loaded the generated ambience as a short music track, sought to 90%, and framed the late-journey landmarks and Departure Portal.",
+    "The CDP reload requested cache bypass, but transferBytes can still be lower than encodedBytes for browser-internal or memory-cached resources.",
+    "Estimated GPU memory is a lower bound and excludes browser, compositor, driver, multisample, and opaque post-processing allocations.",
+    "Power state and exact Windows edition were not recorded."
+  ]
+}

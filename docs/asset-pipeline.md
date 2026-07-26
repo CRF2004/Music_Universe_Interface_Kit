@@ -9,6 +9,7 @@ runtime manifest with content hashes.
 ```bash
 npm run assets:validate
 npm run assets:build
+npm run assets:report
 ```
 
 `npm run build` runs the asset build before Vite so production output always
@@ -91,3 +92,20 @@ of that hash. Configure the production host to:
 
 Runtime code should resolve generated assets through `asset-manifest.json`
 instead of constructing filenames.
+
+## Automated inspection
+
+`npm run assets:report` writes:
+
+- `output/assets/asset-report.json`
+- `output/assets/asset-report.md`
+- one four-angle PNG for every GLB
+- `output/assets/external-pilot-contact-sheet.png`
+
+Model reports include triangle, mesh, material, texture, and animation counts.
+Texture reports include dimensions and channels. Audio reports include duration,
+sample rate, channels, integrated loudness where the clip is long enough for
+EBU R128 measurement, and decoded first/last-sample loop seam delta.
+
+For pull requests that introduce a visual asset set, copy the relevant generated
+contact sheet into `docs/asset-previews/` and embed it in the PR description.

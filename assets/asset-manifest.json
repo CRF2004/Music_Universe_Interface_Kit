@@ -18,6 +18,200 @@
   },
   "assets": [
     {
+      "id": "guide-astronaut",
+      "type": "model",
+      "source": "models/guide-astronaut.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney Space Kit 2.0: Models/GLTF format/astronautA.glb.",
+        "sourceUrl": "https://kenney.nl/assets/space-kit",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-space-kit-2.0.snapshot.md"
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 1024,
+        "simplify": false
+      }
+    },
+    {
+      "id": "support-terminal",
+      "type": "model",
+      "source": "models/support-terminal.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney Space Kit 2.0: Models/GLTF format/desk_computer.glb.",
+        "sourceUrl": "https://kenney.nl/assets/space-kit",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-space-kit-2.0.snapshot.md"
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 1024,
+        "simplify": false
+      }
+    },
+    {
+      "id": "product-tower-hangar",
+      "type": "model",
+      "source": "models/product-tower-hangar.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney Space Kit 2.0: Models/GLTF format/hangar_largeB.glb.",
+        "sourceUrl": "https://kenney.nl/assets/space-kit",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-space-kit-2.0.snapshot.md"
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 1024,
+        "simplify": false
+      }
+    },
+    {
+      "id": "docs-portal-gate",
+      "type": "model",
+      "source": "models/docs-portal-gate.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney Space Kit 2.0: Models/GLTF format/gate_complex.glb.",
+        "sourceUrl": "https://kenney.nl/assets/space-kit",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-space-kit-2.0.snapshot.md"
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 1024,
+        "simplify": false
+      }
+    },
+    {
+      "id": "portal-hum",
+      "type": "audio",
+      "source": "audio/portal-hum.ogg",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney Sci-fi Sounds 1.0: Audio/forceField_000.ogg.",
+        "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-audio-pilot.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -20,
+        "format": "ogg",
+        "quality": 5
+      }
+    },
+    {
+      "id": "wind-ambience",
+      "type": "audio",
+      "source": "audio/wind-ambience.wav",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Derived from Kenney Sci-fi Sounds 1.0 Audio/spaceEngineLow_000.ogg; rotated at 0.5s, crossfaded across the original boundary, and given 30ms edge fades for seamless looping.",
+        "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-audio-pilot.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -26,
+        "format": "ogg",
+        "quality": 4
+      }
+    },
+    {
+      "id": "ui-hover",
+      "type": "audio",
+      "source": "audio/ui-hover.ogg",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney UI Audio 1.0: Audio/rollover1.ogg.",
+        "sourceUrl": "https://kenney.nl/assets/ui-audio",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-audio-pilot.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -18,
+        "format": "ogg",
+        "quality": 5
+      }
+    },
+    {
+      "id": "ui-confirm",
+      "type": "audio",
+      "source": "audio/ui-confirm.ogg",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney UI Audio 1.0: Audio/click1.ogg.",
+        "sourceUrl": "https://kenney.nl/assets/ui-audio",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-audio-pilot.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -16,
+        "format": "ogg",
+        "quality": 5
+      }
+    },
+    {
+      "id": "footstep-a",
+      "type": "audio",
+      "source": "audio/footstep-a.ogg",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney RPG Audio 1.0: Audio/footstep00.ogg.",
+        "sourceUrl": "https://kenney.nl/assets/rpg-audio",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-audio-pilot.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -18,
+        "format": "ogg",
+        "quality": 4
+      }
+    },
+    {
+      "id": "footstep-b",
+      "type": "audio",
+      "source": "audio/footstep-b.ogg",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Kenney",
+        "provenance": "Selected from Kenney RPG Audio 1.0: Audio/footstep01.ogg.",
+        "sourceUrl": "https://kenney.nl/assets/rpg-audio",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "Creative Commons Zero 1.0 Universal",
+        "licenseFile": "assets/licenses/kenney-audio-pilot.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -18,
+        "format": "ogg",
+        "quality": 4
+      }
+    },
+    {
       "id": "memory-tree",
       "type": "model",
       "source": "models/memory-tree.glb",
