@@ -7,6 +7,7 @@ export class LocalAudioPlayer {
   constructor() {
     this.element = new Audio();
     this.element.preload = 'metadata';
+    this.element.loop = true;
   }
 
   load(file: File): LocalAudioTrack {

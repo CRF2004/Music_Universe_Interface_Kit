@@ -1,5 +1,6 @@
 import CurvedWorld from './CurvedWorld';
 import MusicReactiveWorld from './MusicReactiveWorld';
+import MusicEnvironmentController from './MusicEnvironmentController';
 import PlayerController from '../player/PlayerController';
 import InteractionSystem from '../interaction/InteractionSystem';
 import InteractionPoint from '../interaction/InteractionPoint';
@@ -25,6 +26,7 @@ export default function WorldScene() {
   return (
     <>
       <CurvedWorld />
+      <MusicEnvironmentController />
       <MusicReactiveWorld />
       <PlayerController />
       <InteractionSystem />

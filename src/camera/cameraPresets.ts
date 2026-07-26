@@ -12,8 +12,7 @@ export const cameraPresets: Record<CameraMode, CameraPreset> = {
     shoulderOffset: 0.4,
     barrelDistortion: 0.12,
     cameraShake: 0.0,
-    followRotation: false,
-    fixedHeading: -0.2
+    followRotation: true
   },
   interaction: {
     id: 'interaction',
@@ -49,7 +48,7 @@ export const cameraPresets: Record<CameraMode, CameraPreset> = {
     followSharpness: 0.05,
     rotationSharpness: 0.05,
     barrelDistortion: 0,
-    followRotation: false
+    followRotation: true
   },
   'ui-safe': {
     id: 'ui-safe',
@@ -60,7 +59,6 @@ export const cameraPresets: Record<CameraMode, CameraPreset> = {
     followSharpness: 0.08,
     rotationSharpness: 0.08,
     barrelDistortion: 0,
-    followRotation: false,
-    fixedHeading: 0
+    followRotation: true
   }
 };

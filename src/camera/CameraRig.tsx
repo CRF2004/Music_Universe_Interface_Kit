@@ -5,33 +5,81 @@ import { easing } from 'maath';
 import { useWorldStore } from '../state/useWorldStore';
 import { cameraPresets } from './cameraPresets';
 
+interface MaterialSnapshot {
+  transparent: boolean;
+  opacity: number;
+  depthWrite: boolean;
+}
+
+function canOccludeCamera(object: THREE.Object3D): object is THREE.Mesh {
+  if (!(object instanceof THREE.Mesh)) return false;
+  let current: THREE.Object3D | null = object;
+  while (current) {
+    if (current.userData.cameraOccluder === false) return false;
+    if (current.name === 'player' || current.name === 'player-model' || current.name === 'world-ground') {
+      return false;
+    }
+    current = current.parent;
+  }
+  return true;
+}
+
 export default function CameraRig() {
   const { camera, scene } = useThree();
   const currentMode = useWorldStore((state) => state.currentCameraMode);
   const preset = cameraPresets[currentMode] || cameraPresets.explore;
 
   const playerRef = useRef<THREE.Object3D | null>(null);
+  const playerModelRef = useRef<THREE.Object3D | null>(null);
   const lookAtTarget = useRef(new THREE.Vector3());
   const smoothedPlayerQuat = useRef(new THREE.Quaternion());
+  const playerWorldPosition = useRef(new THREE.Vector3());
+  const playerWorldQuaternion = useRef(new THREE.Quaternion());
+  const raycaster = useRef(new THREE.Raycaster());
+  const rayDirection = useRef(new THREE.Vector3());
+  const occludedMaterials = useRef(new Map<THREE.Material, MaterialSnapshot>());
 
-  useFrame((state, delta) => {
+  const restoreOccludedMaterials = () => {
+    occludedMaterials.current.forEach((snapshot, material) => {
+      material.transparent = snapshot.transparent;
+      material.opacity = snapshot.opacity;
+      material.depthWrite = snapshot.depthWrite;
+      material.needsUpdate = true;
+    });
+    occludedMaterials.current.clear();
+  };
+
+  useEffect(() => restoreOccludedMaterials, []);
+
+  useFrame((_, delta) => {
     // Cap delta to prevent massive jumps after tab focus or initial load
     const dt = Math.min(delta, 0.1);
 
     if (!playerRef.current) {
       playerRef.current = scene.getObjectByName('player');
-      if (playerRef.current) {
+      playerModelRef.current = scene.getObjectByName('player-model');
+      if (playerRef.current && playerModelRef.current) {
         // Immediate sync on first find to avoid starting from [0,0,0]
-        lookAtTarget.current.copy(playerRef.current.position).add(new THREE.Vector3(0, preset.lookAtHeight, 0));
-        smoothedPlayerQuat.current.copy(playerRef.current.quaternion);
-        camera.position.copy(playerRef.current.position).add(new THREE.Vector3(0, preset.height, -preset.distance));
+        playerRef.current.getWorldPosition(playerWorldPosition.current);
+        playerModelRef.current.getWorldQuaternion(playerWorldQuaternion.current);
+        lookAtTarget.current.copy(playerWorldPosition.current).add(new THREE.Vector3(0, preset.lookAtHeight, 0));
+        smoothedPlayerQuat.current.copy(playerWorldQuaternion.current);
+        const initialOffset = new THREE.Vector3(0, preset.height, -preset.distance)
+          .applyQuaternion(smoothedPlayerQuat.current);
+        camera.position.copy(playerWorldPosition.current).add(initialOffset);
       }
       return;
     }
 
-    // Smoothly damp player position and rotation tracking
-    const playerPos = playerRef.current.position;
-    const playerQuat = playerRef.current.quaternion;
+    if (!playerModelRef.current) {
+      playerModelRef.current = scene.getObjectByName('player-model');
+      return;
+    }
+
+    // The visible model owns the facing direction while the rigid body stays rotation-locked.
+    // Read the model's world quaternion so the camera stays behind the character.
+    const playerPos = playerRef.current.getWorldPosition(playerWorldPosition.current);
+    const playerQuat = playerModelRef.current.getWorldQuaternion(playerWorldQuaternion.current);
     
     if (isNaN(playerPos.x) || isNaN(playerPos.y) || isNaN(playerPos.z)) return;
     
@@ -65,6 +113,35 @@ export default function CameraRig() {
     // Safeguard lookAt target
     if (!isNaN(lookAtTarget.current.x)) {
       camera.lookAt(lookAtTarget.current);
+    }
+
+    restoreOccludedMaterials();
+    rayDirection.current.subVectors(camera.position, lookAtTarget.current);
+    const cameraDistance = rayDirection.current.length();
+    if (cameraDistance > 0.5) {
+      rayDirection.current.normalize();
+      raycaster.current.set(lookAtTarget.current, rayDirection.current);
+      raycaster.current.near = 0.35;
+      raycaster.current.far = cameraDistance;
+
+      const intersections = raycaster.current.intersectObjects(scene.children, true);
+      intersections.forEach(({ object }) => {
+        if (!canOccludeCamera(object)) return;
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.forEach((material) => {
+          if (!occludedMaterials.current.has(material)) {
+            occludedMaterials.current.set(material, {
+              transparent: material.transparent,
+              opacity: material.opacity,
+              depthWrite: material.depthWrite,
+            });
+          }
+          material.transparent = true;
+          material.opacity = 0.16;
+          material.depthWrite = false;
+          material.needsUpdate = true;
+        });
+      });
     }
     
     // Update FOV
