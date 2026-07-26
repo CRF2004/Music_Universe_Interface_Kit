@@ -20,7 +20,7 @@ export default function MusicPlayerHUD() {
           </p>
         </div>
         <span className="rounded-full bg-ink px-2 py-1 font-mono text-[10px] uppercase text-white">
-          {playing ? 'looping' : status}
+          {playing ? 'playing' : status}
         </span>
       </div>
 

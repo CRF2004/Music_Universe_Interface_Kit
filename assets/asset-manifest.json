@@ -18,6 +18,54 @@
   },
   "assets": [
     {
+      "id": "memory-tree",
+      "type": "model",
+      "source": "models/memory-tree.glb",
+      "license": {
+        "spdx": "MIT",
+        "author": "Music Universe",
+        "provenance": "Procedurally authored in scripts/generate-memory-tree.mjs."
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 2048,
+        "simplify": false
+      }
+    },
+    {
+      "id": "memory-tree-lod",
+      "type": "model",
+      "source": "models/memory-tree-lod.glb",
+      "license": {
+        "spdx": "MIT",
+        "author": "Music Universe",
+        "provenance": "Procedurally authored low-detail model in scripts/generate-memory-tree.mjs."
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 1024,
+        "simplify": false
+      }
+    },
+    {
+      "id": "memory-tree-canopy",
+      "type": "texture",
+      "source": "textures/memory-tree-canopy.svg",
+      "license": {
+        "spdx": "MIT",
+        "author": "Music Universe",
+        "provenance": "Procedurally authored in-repository for the Memory Tree canopy."
+      },
+      "build": {
+        "format": "webp",
+        "quality": 84,
+        "maxWidth": 1024,
+        "maxHeight": 1024
+      }
+    },
+    {
       "id": "departure-portal",
       "type": "model",
       "source": "models/departure-portal.glb",
