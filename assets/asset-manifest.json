@@ -24,7 +24,11 @@
       "license": {
         "spdx": "MIT",
         "author": "Music Universe",
-        "provenance": "Procedurally authored in scripts/generate-memory-tree.mjs."
+        "provenance": "Procedurally authored in scripts/generate-memory-tree.mjs.",
+        "sourceUrl": "repo:assets/source/models/memory-tree.glb",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "MIT",
+        "licenseFile": "assets/licenses/MIT.snapshot.md"
       },
       "build": {
         "compress": "meshopt",
@@ -40,7 +44,11 @@
       "license": {
         "spdx": "MIT",
         "author": "Music Universe",
-        "provenance": "Procedurally authored low-detail model in scripts/generate-memory-tree.mjs."
+        "provenance": "Procedurally authored low-detail model in scripts/generate-memory-tree.mjs.",
+        "sourceUrl": "repo:assets/source/models/memory-tree-lod.glb",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "MIT",
+        "licenseFile": "assets/licenses/MIT.snapshot.md"
       },
       "build": {
         "compress": "meshopt",
@@ -56,7 +64,11 @@
       "license": {
         "spdx": "MIT",
         "author": "Music Universe",
-        "provenance": "Procedurally authored in-repository for the Memory Tree canopy."
+        "provenance": "Procedurally authored in-repository for the Memory Tree canopy.",
+        "sourceUrl": "repo:assets/source/textures/memory-tree-canopy.svg",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "MIT",
+        "licenseFile": "assets/licenses/MIT.snapshot.md"
       },
       "build": {
         "format": "webp",
@@ -72,7 +84,11 @@
       "license": {
         "spdx": "MIT",
         "author": "Music Universe",
-        "provenance": "Procedurally authored in scripts/generate-departure-portal.mjs."
+        "provenance": "Procedurally authored in scripts/generate-departure-portal.mjs.",
+        "sourceUrl": "repo:assets/source/models/departure-portal.glb",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "MIT",
+        "licenseFile": "assets/licenses/MIT.snapshot.md"
       },
       "build": {
         "compress": "meshopt",
@@ -88,7 +104,11 @@
       "license": {
         "spdx": "CC0-1.0",
         "author": "Music Universe",
-        "provenance": "Created in-repository as an asset-pipeline fixture."
+        "provenance": "Created in-repository as an asset-pipeline fixture.",
+        "sourceUrl": "repo:assets/source/textures/pipeline-example-grid.svg",
+        "accessedAt": "2026-07-26",
+        "licenseVersion": "CC0 1.0 Universal",
+        "licenseFile": "assets/licenses/CC0-1.0.snapshot.md"
       },
       "build": {
         "format": "webp",

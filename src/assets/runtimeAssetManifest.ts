@@ -13,6 +13,10 @@ export interface RuntimeAssetEntry {
     spdx: string;
     author: string;
     provenance: string;
+    sourceUrl: string;
+    accessedAt: string;
+    licenseVersion: string;
+    licenseFile: string;
   };
 }
 

@@ -28,7 +28,8 @@ The preview is written to `output/playwright/departure-portal-preview.png`.
 
 1. Put the source in `assets/source/models`, `textures`, or `audio`.
 2. Add an entry to `assets/asset-manifest.json`.
-3. Record SPDX license, author, and provenance.
+3. Record SPDX license, author, provenance, original source URL, access date,
+   license version, and the repository path to a license snapshot.
 4. Run `npm run assets:build`.
 5. Reference the generated URL from
    `public/assets/generated/asset-manifest.json`.
@@ -43,7 +44,11 @@ Example:
   "license": {
     "spdx": "CC-BY-4.0",
     "author": "Artist Name",
-    "provenance": "https://example.com/original-asset"
+    "provenance": "Downloaded from the original asset page.",
+    "sourceUrl": "https://example.com/original-asset",
+    "accessedAt": "2026-07-26",
+    "licenseVersion": "Creative Commons Attribution 4.0 International",
+    "licenseFile": "assets/licenses/example-asset.snapshot.md"
   },
   "build": {
     "compress": "meshopt",
