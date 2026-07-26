@@ -1,11 +1,15 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
-import { Physics } from '@react-three/rapier';
+import { lazy, Suspense } from 'react';
 import { ContactShadows } from '@react-three/drei';
-import { Leva } from 'leva';
-import Scene from './WorldScene';
 import CameraRig from '../camera/CameraRig';
 import { useWorldStore } from '../state/useWorldStore';
+
+const PhysicsWorld = lazy(() => import('./PhysicsWorld'));
+
+const DebugControls = lazy(async () => {
+  const { Leva } = await import('leva');
+  return { default: Leva };
+});
 
 function LoadingWorld() {
   return (
@@ -31,12 +35,14 @@ export default function WorldCanvas() {
 
   return (
     <div className="fixed inset-0 h-full w-full bg-[#26375d]">
-      <Leva hidden={!isDevMode} />
+      {isDevMode && (
+        <Suspense fallback={null}>
+          <DebugControls />
+        </Suspense>
+      )}
       <Canvas shadows camera={{ position: [0, 5, 10], fov: 75 }}>
         <Suspense fallback={<LoadingWorld />}>
-          <Physics gravity={[0, -9.81, 0]} paused={isPaused}>
-            <Scene />
-          </Physics>
+          <PhysicsWorld paused={isPaused} />
         </Suspense>
         <ambientLight intensity={0.85} />
         <directionalLight position={[10, 10, 5]} intensity={1.15} castShadow />

@@ -1,67 +1,31 @@
-import WorldCanvas from './world/WorldCanvas';
-import OverlayRoot from './ui/OverlayRoot';
-import { KeyboardControls } from '@react-three/drei';
-import { useEffect, useMemo } from 'react';
+import { lazy, Suspense } from 'react';
 
-const movementKeys = [
-  ['ArrowUp', 'ArrowUp'],
-  ['KeyW', 'w'],
-  ['ArrowDown', 'ArrowDown'],
-  ['KeyS', 's'],
-  ['ArrowLeft', 'ArrowLeft'],
-  ['KeyA', 'a'],
-  ['ArrowRight', 'ArrowRight'],
-  ['KeyD', 'd'],
-  ['Space', ' '],
-  ['ShiftLeft', 'Shift'],
-  ['ShiftRight', 'Shift'],
-] as const;
+const ExperienceRoot = lazy(() => import('./ExperienceRoot'));
 
-function KeyboardFocusGuard() {
-  useEffect(() => {
-    const releaseMovementKeys = () => {
-      movementKeys.forEach(([code, key]) => {
-        window.dispatchEvent(new KeyboardEvent('keyup', { code, key }));
-      });
-    };
-
-    window.addEventListener('blur', releaseMovementKeys);
-    document.addEventListener('visibilitychange', releaseMovementKeys);
-
-    return () => {
-      window.removeEventListener('blur', releaseMovementKeys);
-      document.removeEventListener('visibilitychange', releaseMovementKeys);
-    };
-  }, []);
-
-  return null;
+function AppLoadingScreen() {
+  return (
+    <main className="flex h-screen w-full items-center justify-center bg-[#26375d] text-white">
+      <div className="comic-panel max-w-sm text-center text-ink">
+        <p className="font-display text-xs font-bold uppercase tracking-[0.18em] text-ink/55">
+          Music Universe
+        </p>
+        <p className="mt-2 font-display text-xl font-bold">Loading the world…</p>
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink/15">
+          <div className="h-full w-2/3 animate-pulse rounded-full bg-comic-yellow" />
+        </div>
+      </div>
+    </main>
+  );
 }
 
 /**
  * @license MIT
  * Copyright (c) 2026 Product World Interface Kit
  */
-
 export default function App() {
-  const map = useMemo(
-    () => [
-      { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
-      { name: 'backward', keys: ['ArrowDown', 'KeyS'] },
-      { name: 'leftward', keys: ['ArrowLeft', 'KeyA'] },
-      { name: 'rightward', keys: ['ArrowRight', 'KeyD'] },
-      { name: 'jump', keys: ['Space'] },
-      { name: 'run', keys: ['ShiftLeft', 'ShiftRight'] },
-    ],
-    []
-  );
-
   return (
-    <KeyboardControls map={map}>
-      <KeyboardFocusGuard />
-      <div className="relative w-full h-screen overflow-hidden">
-        <WorldCanvas />
-        <OverlayRoot />
-      </div>
-    </KeyboardControls>
+    <Suspense fallback={<AppLoadingScreen />}>
+      <ExperienceRoot />
+    </Suspense>
   );
 }
