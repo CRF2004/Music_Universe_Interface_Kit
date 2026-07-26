@@ -1,0 +1,53 @@
+{
+  "$schema": "./asset-manifest.schema.json",
+  "schemaVersion": 1,
+  "budgets": {
+    "totalOutputBytes": 52428800,
+    "model": {
+      "maxSourceBytes": 26214400,
+      "maxOutputBytes": 10485760
+    },
+    "texture": {
+      "maxSourceBytes": 8388608,
+      "maxOutputBytes": 2097152
+    },
+    "audio": {
+      "maxSourceBytes": 52428800,
+      "maxOutputBytes": 12582912
+    }
+  },
+  "assets": [
+    {
+      "id": "departure-portal",
+      "type": "model",
+      "source": "models/departure-portal.glb",
+      "license": {
+        "spdx": "MIT",
+        "author": "Music Universe",
+        "provenance": "Procedurally authored in scripts/generate-departure-portal.mjs."
+      },
+      "build": {
+        "compress": "meshopt",
+        "textureFormat": "webp",
+        "textureSize": 2048,
+        "simplify": false
+      }
+    },
+    {
+      "id": "pipeline-example-grid",
+      "type": "texture",
+      "source": "textures/pipeline-example-grid.svg",
+      "license": {
+        "spdx": "CC0-1.0",
+        "author": "Music Universe",
+        "provenance": "Created in-repository as an asset-pipeline fixture."
+      },
+      "build": {
+        "format": "webp",
+        "quality": 82,
+        "maxWidth": 1024,
+        "maxHeight": 1024
+      }
+    }
+  ]
+}

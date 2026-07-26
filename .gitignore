@@ -1,6 +1,8 @@
 node_modules/
 build/
 dist/
+public/assets/generated/
+output/
 coverage/
 .DS_Store
 *.log

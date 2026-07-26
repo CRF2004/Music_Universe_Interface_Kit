@@ -3,6 +3,7 @@ import { Html } from '@react-three/drei';
 import { useMemo, useRef } from 'react';
 import type { Group } from 'three';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
+import DeparturePortal from './DeparturePortal';
 
 function RainParticles({ intensity }: { intensity: number }) {
   const group = useRef<Group>(null);
@@ -71,12 +72,9 @@ export default function MusicReactiveWorld() {
         </group>
       )}
       {portalOpen && (
-        <group position={[0, 1.6, -10.5]}>
-          <mesh>
-            <torusGeometry args={[1.35, 0.16, 16, 64]} />
-            <meshStandardMaterial color="#b69cff" emissive="#8b5cf6" emissiveIntensity={2.5} />
-          </mesh>
-          <Html position={[0, 2, 0]} center>
+        <group position={[0, 0, -10.5]}>
+          <DeparturePortal />
+          <Html position={[0, 4.75, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Departure Portal
             </div>

@@ -147,6 +147,18 @@ const myAdapter: AppAdapter = {
 APP_URL="https://your-app-url.com"
 ```
 
+## 资产构建管线
+
+运行时资产统一在 `assets/asset-manifest.json` 中声明：
+
+```bash
+npm run assets:validate
+npm run assets:build
+```
+
+格式、体积预算、许可证字段和缓存策略请参阅
+[`docs/asset-pipeline.md`](docs/asset-pipeline.md)。
+
 ## License
 
 MIT

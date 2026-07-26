@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
-    "test": "node --import tsx --test src/**/*.test.ts",
+    "build": "npm run assets:build && vite build",
+    "test": "node scripts/run-tests.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "assets:validate": "node scripts/assets-pipeline.mjs validate",
+    "assets:build": "node scripts/assets-pipeline.mjs build",
+    "assets:generate:departure-portal": "node scripts/generate-departure-portal.mjs",
+    "assets:preview:departure-portal": "node scripts/render-glb-preview.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -29,12 +33,14 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@gltf-transform/cli": "^4.4.2",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.14",
-    "typescript": "~5.8.2",
     "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
     "vite": "^6.2.3"
   }
 }
