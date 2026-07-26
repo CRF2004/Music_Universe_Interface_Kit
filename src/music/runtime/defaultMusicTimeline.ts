@@ -9,10 +9,10 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
       {
         type: 'set-environment',
         payload: {
-          skyColor: '#07111f',
-          groundColor: '#211b3a',
-          fogColor: '#0b1020',
-          fogDensity: 0.012,
+          skyColor: '#233a72',
+          groundColor: '#7e6b9e',
+          fogColor: '#40557f',
+          fogDensity: 0.004,
           stars: 24,
           bloomIntensity: 0.25,
           rainIntensity: 0,
@@ -32,7 +32,7 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
     actions: [
       {
         type: 'set-environment',
-        payload: { skyColor: '#10183a', stars: 180, bloomIntensity: 0.45 },
+        payload: { skyColor: '#334b85', stars: 180, bloomIntensity: 0.45 },
       },
       {
         type: 'show-narration',
@@ -48,9 +48,10 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
       {
         type: 'set-environment',
         payload: {
-          skyColor: '#18213f',
-          fogColor: '#27324f',
-          fogDensity: 0.027,
+          skyColor: '#3a5486',
+          groundColor: '#6e668e',
+          fogColor: '#5e7195',
+          fogDensity: 0.006,
           rainIntensity: 0.7,
           stars: 120,
         },
@@ -69,7 +70,7 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
       { type: 'set-landmark', payload: { id: 'memory-tree', visible: true } },
       {
         type: 'set-environment',
-        payload: { groundColor: '#33264d', bloomIntensity: 0.65 },
+        payload: { groundColor: '#77628f', bloomIntensity: 0.65 },
       },
       {
         type: 'show-narration',
@@ -104,9 +105,9 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
       {
         type: 'set-environment',
         payload: {
-          skyColor: '#261447',
-          fogColor: '#24163e',
-          fogDensity: 0.014,
+          skyColor: '#5a347d',
+          fogColor: '#593c73',
+          fogDensity: 0.005,
           rainIntensity: 0,
           stars: 420,
           bloomIntensity: 1.15,
@@ -125,7 +126,7 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
     actions: [
       {
         type: 'set-environment',
-        payload: { skyColor: '#351756', groundColor: '#4a2b55', stars: 520, bloomIntensity: 1.35 },
+        payload: { skyColor: '#693b82', groundColor: '#8a5d83', stars: 520, bloomIntensity: 1.35 },
       },
       {
         type: 'show-narration',

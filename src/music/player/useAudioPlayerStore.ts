@@ -9,6 +9,7 @@ interface AudioStore {
   currentTime: number;
   duration: number;
   playing: boolean;
+  started: boolean;
   ended: boolean;
   status: AudioLoadStatus;
   error: string | null;
@@ -25,6 +26,7 @@ const initialState = {
   currentTime: 0,
   duration: 0,
   playing: false,
+  started: false,
   ended: false,
   status: 'idle' as AudioLoadStatus,
   error: null,
@@ -46,6 +48,7 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
         currentTime: 0,
         duration: 0,
         playing: false,
+        started: false,
         ended: false,
         status: 'loading',
         error: null,
@@ -65,7 +68,7 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
     try {
       if (get().ended) player.seek(0);
       await player.play();
-      set({ playing: true, ended: false, error: null });
+      set({ playing: true, started: true, ended: false, error: null });
     } catch (error) {
       set({
         playing: false,
@@ -109,7 +112,9 @@ export function getAuthoritativeAudioTime(): number {
 player.element.addEventListener('loadedmetadata', () => useAudioPlayerStore.getState().sync());
 player.element.addEventListener('durationchange', () => useAudioPlayerStore.getState().sync());
 player.element.addEventListener('timeupdate', () => useAudioPlayerStore.getState().sync());
-player.element.addEventListener('play', () => useAudioPlayerStore.setState({ playing: true, ended: false }));
+player.element.addEventListener('play', () =>
+  useAudioPlayerStore.setState({ playing: true, started: true, ended: false }),
+);
 player.element.addEventListener('pause', () => useAudioPlayerStore.setState({ playing: false }));
 player.element.addEventListener('ended', () => {
   useAudioPlayerStore.getState().sync();

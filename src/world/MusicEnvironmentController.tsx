@@ -9,7 +9,7 @@ export default function MusicEnvironmentController() {
   const scene = useThree((state) => state.scene);
 
   useEffect(() => {
-    scene.background = new THREE.Color(environment.skyColor ?? '#111827');
+    scene.background = new THREE.Color(environment.skyColor ?? '#26375d');
     scene.fog = environment.fogColor
       ? new THREE.FogExp2(environment.fogColor, environment.fogDensity ?? 0)
       : null;

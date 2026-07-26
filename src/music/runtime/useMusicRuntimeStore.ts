@@ -15,6 +15,10 @@ export const useMusicRuntimeStore = create<MusicRuntimeStore>((set) => ({
   ...initialState,
   setRuntime: (runtime) =>
     set(() => ({
-      ...runtime,
+      environment: runtime.environment,
+      cameraMode: runtime.cameraMode,
+      narration: runtime.narration,
+      portals: runtime.portals,
+      landmarks: runtime.landmarks,
     })),
 }));

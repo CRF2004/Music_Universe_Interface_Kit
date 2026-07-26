@@ -35,14 +35,7 @@ export default function CurvedWorld() {
         varying vec2 vUv;
         uniform vec3 uColor;
         void main() {
-          vec3 color = uColor;
-          // Stylized grid for comic look
-          float gridX = step(0.98, fract(vUv.x * 200.0));
-          float gridY = step(0.98, fract(vUv.y * 200.0));
-          float grid = max(gridX, gridY);
-          
-          color = mix(color, color * 0.9, grid);
-          gl_FragColor = vec4(color, 1.0);
+          gl_FragColor = vec4(uColor, 1.0);
         }
       `,
     });
@@ -53,13 +46,19 @@ export default function CurvedWorld() {
   }, [curvature, material]);
 
   useEffect(() => {
-    if (groundColor) material.uniforms.uColor.value.set(groundColor);
+    material.uniforms.uColor.value.set(groundColor ?? '#f7ead7');
   }, [groundColor, material]);
 
   return (
     <group>
       {/* Visual Mesh (Non-Physical) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, -0.01, 0]}>
+      <mesh
+        name="world-ground"
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        position={[0, -0.01, 0]}
+        userData={{ cameraOccluder: false }}
+      >
         <planeGeometry args={[1000, 1000, 100, 100]} />
         <primitive object={material} attach="material" />
       </mesh>

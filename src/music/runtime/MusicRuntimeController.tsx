@@ -8,17 +8,20 @@ import { useWorldStore } from '../../state/useWorldStore';
 import { isCameraMode } from './runtimeCamera';
 
 export default function MusicRuntimeController() {
+  const track = useAudioPlayerStore((state) => state.track);
   const currentTime = useAudioPlayerStore((state) => state.currentTime);
   const duration = useAudioPlayerStore((state) => state.duration);
+  const started = useAudioPlayerStore((state) => state.started);
   const setRuntime = useMusicRuntimeStore((state) => state.setRuntime);
   const setCameraMode = useWorldStore((state) => state.setCameraMode);
+  const experienceStarted = Boolean(track) && started;
 
   const cues = useMemo(
     () =>
-      duration > 0
+      experienceStarted && duration > 0
         ? compileNormalizedMusicTimeline(defaultNormalizedMusicTimeline, duration)
         : [],
-    [duration],
+    [duration, experienceStarted],
   );
 
   useEffect(() => {
@@ -28,8 +31,10 @@ export default function MusicRuntimeController() {
 
     if (isCameraMode(runtime.cameraMode)) {
       setCameraMode(runtime.cameraMode);
+    } else if (!experienceStarted) {
+      setCameraMode('explore');
     }
-  }, [cues, currentTime, setCameraMode, setRuntime]);
+  }, [cues, currentTime, experienceStarted, setCameraMode, setRuntime]);
 
   return null;
 }

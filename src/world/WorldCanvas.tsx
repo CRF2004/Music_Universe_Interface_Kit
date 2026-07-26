@@ -1,45 +1,47 @@
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
 import { Physics } from '@react-three/rapier';
-import { Environment, ContactShadows } from '@react-three/drei';
-import { EffectComposer, Noise, Vignette, Bloom, DotScreen } from '@react-three/postprocessing';
+import { ContactShadows } from '@react-three/drei';
 import { Leva } from 'leva';
 import Scene from './WorldScene';
 import CameraRig from '../camera/CameraRig';
 import { useWorldStore } from '../state/useWorldStore';
-import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 
-function MusicPostprocessing() {
-  const bloomIntensity = useMusicRuntimeStore((state) => state.environment.bloomIntensity ?? 0);
-
-  return <Bloom intensity={bloomIntensity} luminanceThreshold={1} />;
+function LoadingWorld() {
+  return (
+    <>
+      <color attach="background" args={['#26375d']} />
+      <ambientLight intensity={1.2} />
+      <directionalLight position={[6, 10, 4]} intensity={1.4} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
+        <planeGeometry args={[1000, 1000]} />
+        <meshStandardMaterial color="#f7ead7" />
+      </mesh>
+      <mesh position={[0, 0.65, 0]}>
+        <capsuleGeometry args={[0.3, 0.7, 4, 8]} />
+        <meshStandardMaterial color="#ff3b2f" />
+      </mesh>
+    </>
+  );
 }
 
 export default function WorldCanvas() {
   const isPaused = useWorldStore((state) => state.isPaused);
   const isDevMode = useWorldStore((state) => state.isDevMode);
-  const activeWorld = useWorldStore((state) => state.activeWorld);
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-[#111827]">
+    <div className="fixed inset-0 h-full w-full bg-[#26375d]">
       <Leva hidden={!isDevMode} />
       <Canvas shadows camera={{ position: [0, 5, 10], fov: 75 }}>
-        <Suspense fallback={null}>
-          <Environment preset="city" />
-          <ambientLight intensity={0.7} />
-          <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+        <Suspense fallback={<LoadingWorld />}>
           <Physics gravity={[0, -9.81, 0]} paused={isPaused}>
             <Scene />
           </Physics>
-          <CameraRig />
-          <ContactShadows opacity={0.4} scale={10} blur={2.4} far={4.5} />
-          <EffectComposer>
-            <Vignette eskil={false} offset={0.3} darkness={activeWorld?.style.vignetteIntensity ?? 0.5} />
-            <MusicPostprocessing />
-            {activeWorld?.style.grain && <Noise opacity={activeWorld.style.grainIntensity ?? 0.02} />}
-            {activeWorld?.style.halftone && <DotScreen angle={Math.PI * 0.25} scale={1} />}
-          </EffectComposer>
         </Suspense>
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[10, 10, 5]} intensity={1.15} castShadow />
+        <CameraRig />
+        <ContactShadows opacity={0.4} scale={10} blur={2.4} far={4.5} />
       </Canvas>
     </div>
   );
