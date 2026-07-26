@@ -15,15 +15,18 @@ export default function CurvedWorld() {
       uniforms: {
         uColor: { value: new THREE.Color('#f7ead7') }, // paper color
         uCurvature: { value: curvature },
+        uAccent: { value: new THREE.Color('#81709d') },
       },
       vertexShader: `
         varying vec2 vUv;
+        varying float vDistance;
         uniform float uCurvature;
         void main() {
           vUv = uv;
           vec4 worldPosition = modelMatrix * vec4(position, 1.0);
           
           float dist = length(worldPosition.xz);
+          vDistance = dist;
           // Route A: Only curve after a certain radius to maintain physical alignment near character
           float bendFactor = max(0.0, dist - 15.0); 
           worldPosition.y -= pow(bendFactor, 2.0) * uCurvature;
@@ -33,9 +36,20 @@ export default function CurvedWorld() {
       `,
       fragmentShader: `
         varying vec2 vUv;
+        varying float vDistance;
         uniform vec3 uColor;
+        uniform vec3 uAccent;
+        float hash(vec2 value) {
+          return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
+        }
         void main() {
-          gl_FragColor = vec4(uColor, 1.0);
+          vec2 grid = abs(fract(vUv * 220.0) - 0.5);
+          float seams = smoothstep(0.485, 0.498, max(grid.x, grid.y));
+          float grain = hash(floor(vUv * 480.0));
+          float distanceMix = smoothstep(8.0, 42.0, vDistance);
+          vec3 layered = mix(uColor, uAccent, distanceMix * 0.2 + seams * 0.08);
+          layered *= 0.94 + grain * 0.08;
+          gl_FragColor = vec4(layered, 1.0);
         }
       `,
     });
@@ -47,6 +61,9 @@ export default function CurvedWorld() {
 
   useEffect(() => {
     material.uniforms.uColor.value.set(groundColor ?? '#f7ead7');
+    material.uniforms.uAccent.value
+      .set(groundColor ?? '#f7ead7')
+      .offsetHSL(0.04, 0.08, -0.09);
   }, [groundColor, material]);
 
   return (
