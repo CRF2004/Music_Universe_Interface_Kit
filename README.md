@@ -89,6 +89,18 @@ npm run dev
 npm run build
 ```
 
+## Asset Pipeline
+
+Runtime assets are declared in `assets/asset-manifest.json` and generated with:
+
+```bash
+npm run assets:validate
+npm run assets:build
+```
+
+See [`docs/asset-pipeline.md`](docs/asset-pipeline.md) for formats, budgets,
+licensing requirements, and cache policy.
+
 ## License
 
 MIT

@@ -1,11 +1,35 @@
 import { InteractionPointDefinition } from './interactionTypes';
 import { Float, Html } from '@react-three/drei';
+import { CapsuleCollider, CuboidCollider, RigidBody } from '@react-three/rapier';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { visualRegistry } from './visualRegistry';
 import { InteractionDispatcher } from './InteractionDispatcher';
 
 interface Props {
   definition: InteractionPointDefinition;
+}
+
+function InteractionCollider({ definition }: Props) {
+  const type = definition.visual.type;
+
+  if (type === 'building') {
+    return <CuboidCollider args={[1.5, 2.5, 1.5]} position={[0, 2.5, 0]} />;
+  }
+  if (type === 'phone-booth') {
+    return <CuboidCollider args={[0.5, 1, 0.5]} position={[0, 1, 0]} />;
+  }
+  if (type === 'vehicle') {
+    return <CuboidCollider args={[1, 0.8, 0.55]} position={[0, 0.8, 0]} />;
+  }
+  if (type === 'npc') {
+    return <CapsuleCollider args={[0.4, 0.4]} position={[0, 0.8, 0]} />;
+  }
+  if (type === 'crate') {
+    return <CuboidCollider args={[0.5, 0.5, 0.5]} position={[0, 0.5, 0]} />;
+  }
+
+  // Portals stay physically traversable.
+  return null;
 }
 
 export default function InteractionPoint({ definition }: Props) {
@@ -21,6 +45,9 @@ export default function InteractionPoint({ definition }: Props) {
 
   return (
     <group position={definition.position} rotation={definition.rotation} scale={definition.scale}>
+      <RigidBody type="fixed" colliders={false} name={`${definition.id}-collider`}>
+        <InteractionCollider definition={definition} />
+      </RigidBody>
       <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
         <Visual definition={definition} onClick={handlePointerClick} />
       </Float>

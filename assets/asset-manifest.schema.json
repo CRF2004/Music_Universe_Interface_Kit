@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://music-universe.local/schemas/asset-manifest.schema.json",
+  "title": "Music Universe asset manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "budgets", "assets"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["totalOutputBytes", "model", "texture", "audio"],
+      "properties": {
+        "totalOutputBytes": {
+          "$ref": "#/$defs/positiveInteger"
+        },
+        "model": {
+          "$ref": "#/$defs/typeBudget"
+        },
+        "texture": {
+          "$ref": "#/$defs/typeBudget"
+        },
+        "audio": {
+          "$ref": "#/$defs/typeBudget"
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    }
+  },
+  "$defs": {
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "typeBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxSourceBytes", "maxOutputBytes"],
+      "properties": {
+        "maxSourceBytes": {
+          "$ref": "#/$defs/positiveInteger"
+        },
+        "maxOutputBytes": {
+          "$ref": "#/$defs/positiveInteger"
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "author", "provenance"],
+      "properties": {
+        "spdx": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "source", "license"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "type": {
+          "enum": ["model", "texture", "audio"]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "$ref": "#/$defs/license"
+        },
+        "build": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

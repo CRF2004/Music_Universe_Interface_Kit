@@ -143,6 +143,19 @@ export default function CameraRig() {
         });
       });
     }
+
+    if (
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).has('e2e')
+    ) {
+      const e2eWindow = window as Window & {
+        __MUSIC_UNIVERSE_E2E__?: { cameraOccludedMaterials?: number };
+      };
+      if (e2eWindow.__MUSIC_UNIVERSE_E2E__) {
+        e2eWindow.__MUSIC_UNIVERSE_E2E__.cameraOccludedMaterials =
+          occludedMaterials.current.size;
+      }
+    }
     
     // Update FOV
     easing.damp(camera, 'fov', preset.fov, preset.followSharpness, dt);
