@@ -159,6 +159,9 @@ npm run assets:build
 格式、体积预算、许可证字段和缓存策略请参阅
 [`docs/asset-pipeline.md`](docs/asset-pipeline.md)。
 
+免费 3D、PBR/HDRI、音效、字体与图标来源，以及逐项授权准入规则请参阅
+[`docs/asset-library-index.zh-CN.md`](docs/asset-library-index.zh-CN.md)。
+
 ## License
 
 MIT

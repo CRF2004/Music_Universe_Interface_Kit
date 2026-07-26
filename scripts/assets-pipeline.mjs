@@ -12,6 +12,7 @@ const execFileAsync = promisify(execFile);
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = path.join(repositoryRoot, 'assets', 'asset-manifest.json');
 const sourceRoot = path.join(repositoryRoot, 'assets', 'source');
+const licenseRoot = path.join(repositoryRoot, 'assets', 'licenses');
 const outputRoot = path.join(repositoryRoot, 'public', 'assets', 'generated');
 const gltfTransformBin = path.join(
   repositoryRoot,
@@ -128,12 +129,42 @@ async function validateManifest(manifest) {
       errors.push(`${label} source extension "${extension}" is invalid for ${asset.type}.`);
     }
 
+    const license = asset.license;
     if (
-      !asset.license?.spdx ||
-      !asset.license?.author ||
-      !asset.license?.provenance
+      !license?.spdx ||
+      !license?.author ||
+      !license?.provenance ||
+      !license?.sourceUrl ||
+      !license?.accessedAt ||
+      !license?.licenseVersion ||
+      !license?.licenseFile
     ) {
-      errors.push(`${label} license must include spdx, author, and provenance.`);
+      errors.push(
+        `${label} license must include spdx, author, provenance, sourceUrl, accessedAt, licenseVersion, and licenseFile.`,
+      );
+    } else {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(license.accessedAt)) {
+        errors.push(`${label} license.accessedAt must use YYYY-MM-DD.`);
+      }
+      const normalizedLicenseFile = license.licenseFile.replaceAll('\\', '/');
+      if (
+        !normalizedLicenseFile.startsWith('assets/licenses/') ||
+        normalizedLicenseFile.includes('../')
+      ) {
+        errors.push(`${label} license.licenseFile must stay inside assets/licenses.`);
+      } else {
+        const licensePath = path.resolve(repositoryRoot, normalizedLicenseFile);
+        if (licensePath !== licenseRoot && !licensePath.startsWith(`${licenseRoot}${path.sep}`)) {
+          errors.push(`${label} license.licenseFile escapes assets/licenses.`);
+        } else {
+          try {
+            const licenseStat = await stat(licensePath);
+            if (!licenseStat.isFile()) throw new Error('not a file');
+          } catch (error) {
+            errors.push(`${label} license snapshot cannot be read: ${error.message}.`);
+          }
+        }
+      }
     }
 
     const settings = asset.build ?? {};
