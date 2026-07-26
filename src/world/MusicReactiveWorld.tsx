@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 import type { Group } from 'three';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import DeparturePortal from './DeparturePortal';
+import MemoryTree from './MemoryTree';
 
 function RainParticles({ intensity }: { intensity: number }) {
   const group = useRef<Group>(null);
@@ -47,8 +48,7 @@ export default function MusicReactiveWorld() {
       {rainIntensity > 0 && <RainParticles intensity={rainIntensity} />}
       {memoryTreeVisible && (
         <group position={[-3, 0, -7]}>
-          <mesh position={[0, 1.25, 0]}><cylinderGeometry args={[0.2, 0.35, 2.5]} /><meshStandardMaterial color="#6b3f2a" /></mesh>
-          <mesh position={[0, 3, 0]}><sphereGeometry args={[1.35, 24, 24]} /><meshStandardMaterial color="#d39cff" emissive="#7138a8" emissiveIntensity={0.6} /></mesh>
+          <MemoryTree />
           <Html position={[0, 4.7, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Memory Tree

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#ffe6a7"/>
+      <stop offset="0.35" stop-color="#d7adff"/>
+      <stop offset="1" stop-color="#6d3d9d"/>
+    </radialGradient>
+    <pattern id="leaves" width="96" height="96" patternUnits="userSpaceOnUse">
+      <path d="M48 8C72 24 78 52 48 84C18 52 24 24 48 8Z" fill="#f6d6ff" fill-opacity=".42"/>
+      <path d="M48 16V76M48 40L30 28M48 52L68 38" stroke="#ffe58b" stroke-width="4" stroke-linecap="round" opacity=".65"/>
+    </pattern>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <rect width="1024" height="1024" fill="url(#leaves)"/>
+  <g fill="#fff6c7" opacity=".75">
+    <circle cx="170" cy="220" r="10"/><circle cx="785" cy="184" r="8"/>
+    <circle cx="628" cy="712" r="12"/><circle cx="328" cy="814" r="7"/>
+    <circle cx="910" cy="566" r="9"/><circle cx="486" cy="438" r="6"/>
+  </g>
+</svg>
