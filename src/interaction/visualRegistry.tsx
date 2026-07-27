@@ -58,6 +58,7 @@ const NPCVisual: VisualComponent = ({ definition, onClick }) => (
     assetId="guide-astronaut"
     targetHeight={1.7}
     colorToken={definition.visual.colorToken || '#42a5ff'}
+    outline={definition.visual.outline ?? false}
     onClick={onClick}
     fallback={<NPCFallback definition={definition} onClick={onClick} />}
   />
@@ -68,6 +69,7 @@ const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
     assetId="support-terminal"
     targetHeight={1.75}
     colorToken={definition.visual.colorToken || '#ff3b2f'}
+    outline={definition.visual.outline ?? false}
     onClick={onClick}
     fallback={<PhoneBoothFallback definition={definition} onClick={onClick} />}
   />
@@ -78,6 +80,7 @@ const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
     assetId="product-tower-hangar"
     targetHeight={5.2}
     colorToken={definition.visual.colorToken || '#9f63ff'}
+    outline={definition.visual.outline ?? false}
     onClick={onClick}
     fallback={<BuildingFallback definition={definition} onClick={onClick} />}
   />
@@ -88,6 +91,7 @@ const PortalVisual: VisualComponent = ({ definition, onClick }) => (
     assetId="docs-portal-gate"
     targetHeight={3.4}
     colorToken={definition.visual.colorToken || '#4adb7d'}
+    outline={definition.visual.outline ?? false}
     emissive
     onClick={onClick}
     fallback={<PortalFallback definition={definition} onClick={onClick} />}

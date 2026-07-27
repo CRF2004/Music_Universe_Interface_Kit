@@ -17,6 +17,7 @@ export interface WorldPerformanceTelemetry {
   onePercentLowFps: number | null;
   drawCalls: number;
   visibleTriangles: number;
+  interactionOutlineSegments: number;
   geometries: number;
   textures: number;
   estimatedGeometryBytes: number;
@@ -204,6 +205,9 @@ export default function WorldPerformanceProbe() {
       onePercentLowFps: percentile(sortedFps, 0.01),
       drawCalls: peakDrawCalls.current,
       visibleTriangles: peakTriangles.current,
+      interactionOutlineSegments: scene
+        .getObjectsByProperty('name', 'interaction-model-outline')
+        .length,
       geometries: gl.info.memory.geometries,
       textures: gl.info.memory.textures,
       ...memory,

@@ -2,6 +2,7 @@ import { useGLTF } from '@react-three/drei';
 import {
   Component,
   Suspense,
+  useEffect,
   useMemo,
   type ErrorInfo,
   type ReactNode,
@@ -9,6 +10,10 @@ import {
 import {
   Box3,
   Color,
+  EdgesGeometry,
+  LineBasicMaterial,
+  LineSegments,
+  Material,
   Mesh,
   MeshStandardMaterial,
   Vector3,
@@ -19,6 +24,7 @@ export interface RuntimeInteractionVisualProps {
   assetId: string;
   targetHeight: number;
   colorToken: string;
+  outline: boolean;
   emissive?: boolean;
   onClick?: (event: unknown) => void;
   fallback: ReactNode;
@@ -51,6 +57,7 @@ function RuntimeInteractionModel({
   url,
   targetHeight,
   colorToken,
+  outline,
   emissive,
 }: Omit<RuntimeInteractionVisualProps, 'assetId' | 'fallback' | 'onClick'> & {
   url: string;
@@ -65,6 +72,15 @@ function RuntimeInteractionModel({
 
     clone.position.set(-center.x, -bounds.min.y, -center.z);
     const accentColor = new Color(colorToken);
+    const outlineMaterial = outline
+      ? new LineBasicMaterial({
+          color: '#11131b',
+          transparent: true,
+          opacity: 0.72,
+          depthWrite: false,
+        })
+      : null;
+    if (outlineMaterial) outlineMaterial.userData.runtimeInteractionOwned = true;
     clone.traverse((object) => {
       const mesh = object as Mesh;
       if (!mesh.isMesh) return;
@@ -83,13 +99,46 @@ function RuntimeInteractionModel({
           material.emissive = new Color(colorToken);
           material.emissiveIntensity = 0.55;
         }
+        material.userData.runtimeInteractionOwned = true;
         return material;
       });
       mesh.material = Array.isArray(mesh.material) ? materials : materials[0];
+
+      if (outlineMaterial) {
+        const outline = new LineSegments(
+          new EdgesGeometry(mesh.geometry, 30),
+          outlineMaterial,
+        );
+        outline.name = 'interaction-model-outline';
+        outline.renderOrder = 3;
+        outline.userData.cameraOccluder = false;
+        mesh.add(outline);
+      }
     });
 
     return { instance: clone, scale: normalizedScale };
-  }, [colorToken, emissive, scene, targetHeight]);
+  }, [colorToken, emissive, outline, scene, targetHeight]);
+
+  useEffect(
+    () => () => {
+      const materials = new Set<Material>();
+      instance.traverse((object) => {
+        if (object instanceof LineSegments && object.name === 'interaction-model-outline') {
+          object.geometry.dispose();
+        }
+        if (object instanceof Mesh || object instanceof LineSegments) {
+          const objectMaterials = Array.isArray(object.material)
+            ? object.material
+            : [object.material];
+          objectMaterials.forEach((material) => {
+            if (material.userData.runtimeInteractionOwned) materials.add(material);
+          });
+        }
+      });
+      materials.forEach((material) => material.dispose());
+    },
+    [instance],
+  );
 
   return (
     <group scale={scale}>
@@ -102,6 +151,7 @@ export default function RuntimeInteractionVisual({
   assetId,
   targetHeight,
   colorToken,
+  outline,
   emissive = false,
   onClick,
   fallback,
@@ -117,6 +167,7 @@ export default function RuntimeInteractionVisual({
             url={asset.asset.url}
             targetHeight={targetHeight}
             colorToken={colorToken}
+            outline={outline}
             emissive={emissive}
           />
         </Suspense>

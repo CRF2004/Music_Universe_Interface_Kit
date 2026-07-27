@@ -3,7 +3,10 @@ import { WorldDefinition } from '../world/worldTypes';
 import { SpatialObjectDefinition, SpatialSceneDefinition } from './spatialSceneSchema';
 import { assertSpatialScene } from './validateSpatialScene';
 
-function compileObject(object: SpatialObjectDefinition): InteractionPointDefinition {
+function compileObject(
+  object: SpatialObjectDefinition,
+  defaultOutline?: boolean,
+): InteractionPointDefinition {
   const { transform, appearance = {}, interaction } = object;
 
   return {
@@ -23,6 +26,7 @@ function compileObject(object: SpatialObjectDefinition): InteractionPointDefinit
     visual: {
       type: object.type,
       ...appearance,
+      outline: appearance.outline ?? defaultOutline,
     },
     triggers: interaction.triggers,
     actions: interaction.actions,
@@ -48,6 +52,8 @@ export function compileSpatialScene(input: unknown): WorldDefinition {
     camera: environment.camera ?? {},
     terrain: environment.terrain,
     zones: scene.zones ?? [],
-    interactions: scene.objects.map(compileObject),
+    interactions: scene.objects.map((object) =>
+      compileObject(object, environment.effects?.outline),
+    ),
   };
 }
