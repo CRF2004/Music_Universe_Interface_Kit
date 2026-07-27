@@ -9,6 +9,8 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useEffect } from 'react';
 import { demoWorld } from '../content/demoWorld';
 import { demoAdapter } from '../adapters/demoAdapter';
+import AudioWorld from '../audio/AudioWorld';
+import WorldPerformanceProbe from '../performance/WorldPerformanceProbe';
 
 export default function WorldScene() {
   const registerInteractions = useInteractionStore((state) => state.registerInteractions);
@@ -28,6 +30,8 @@ export default function WorldScene() {
       <CurvedWorld />
       <MusicEnvironmentController />
       <MusicReactiveWorld />
+      <AudioWorld />
+      <WorldPerformanceProbe />
       <PlayerController />
       <InteractionSystem />
       {interactions.map((interaction) => (

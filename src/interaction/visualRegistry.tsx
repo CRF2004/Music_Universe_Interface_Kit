@@ -1,26 +1,27 @@
 import React from 'react';
 import { InteractionPointDefinition } from './interactionTypes';
+import RuntimeInteractionVisual from './RuntimeInteractionVisual';
 
 export type VisualComponent = React.FC<{ 
   definition: InteractionPointDefinition, 
   onClick?: (e: any) => void 
 }>;
 
-const NPCVisual: VisualComponent = ({ definition, onClick }) => (
+const NPCFallback = ({ definition, onClick }: Parameters<VisualComponent>[0]) => (
   <mesh castShadow onClick={onClick} position={[0, 0.8, 0]}>
     <capsuleGeometry args={[0.4, 0.8, 4, 8]} />
     <meshStandardMaterial color={definition.visual.colorToken || '#42a5ff'} />
   </mesh>
 );
 
-const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
+const PhoneBoothFallback = ({ definition, onClick }: Parameters<VisualComponent>[0]) => (
   <mesh castShadow onClick={onClick} position={[0, 1, 0]}>
     <boxGeometry args={[1, 2, 1]} />
     <meshStandardMaterial color={definition.visual.colorToken || '#ff3b2f'} />
   </mesh>
 );
 
-const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
+const BuildingFallback = ({ definition, onClick }: Parameters<VisualComponent>[0]) => (
   <mesh castShadow onClick={onClick} position={[0, 2.5, 0]}>
     <boxGeometry args={[3, 5, 3]} />
     <meshStandardMaterial color={definition.visual.colorToken || '#9f63ff'} />
@@ -41,7 +42,7 @@ const VehicleVisual: VisualComponent = ({ definition, onClick }) => (
   </group>
 );
 
-const PortalVisual: VisualComponent = ({ definition, onClick }) => (
+const PortalFallback = ({ definition, onClick }: Parameters<VisualComponent>[0]) => (
   <mesh castShadow onClick={onClick} position={[0, 1.5, 0]}>
     <torusGeometry args={[1.5, 0.2, 16, 32]} />
     <meshStandardMaterial 
@@ -50,6 +51,47 @@ const PortalVisual: VisualComponent = ({ definition, onClick }) => (
       emissiveIntensity={2} 
     />
   </mesh>
+);
+
+const NPCVisual: VisualComponent = ({ definition, onClick }) => (
+  <RuntimeInteractionVisual
+    assetId="guide-astronaut"
+    targetHeight={1.7}
+    colorToken={definition.visual.colorToken || '#42a5ff'}
+    onClick={onClick}
+    fallback={<NPCFallback definition={definition} onClick={onClick} />}
+  />
+);
+
+const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
+  <RuntimeInteractionVisual
+    assetId="support-terminal"
+    targetHeight={1.75}
+    colorToken={definition.visual.colorToken || '#ff3b2f'}
+    onClick={onClick}
+    fallback={<PhoneBoothFallback definition={definition} onClick={onClick} />}
+  />
+);
+
+const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
+  <RuntimeInteractionVisual
+    assetId="product-tower-hangar"
+    targetHeight={5.2}
+    colorToken={definition.visual.colorToken || '#9f63ff'}
+    onClick={onClick}
+    fallback={<BuildingFallback definition={definition} onClick={onClick} />}
+  />
+);
+
+const PortalVisual: VisualComponent = ({ definition, onClick }) => (
+  <RuntimeInteractionVisual
+    assetId="docs-portal-gate"
+    targetHeight={3.4}
+    colorToken={definition.visual.colorToken || '#4adb7d'}
+    emissive
+    onClick={onClick}
+    fallback={<PortalFallback definition={definition} onClick={onClick} />}
+  />
 );
 
 const CrateVisual: VisualComponent = ({ definition, onClick }) => (

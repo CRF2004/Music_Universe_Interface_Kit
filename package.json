@@ -12,6 +12,8 @@
     "lint": "tsc --noEmit",
     "assets:validate": "node scripts/assets-pipeline.mjs validate",
     "assets:build": "node scripts/assets-pipeline.mjs build",
+    "assets:report": "node scripts/generate-asset-report.mjs",
+    "performance:collect": "node scripts/collect-browser-performance.mjs",
     "assets:generate:departure-portal": "node scripts/generate-departure-portal.mjs",
     "assets:preview:departure-portal": "node scripts/render-glb-preview.mjs",
     "assets:generate:memory-tree": "node scripts/generate-memory-tree.mjs"

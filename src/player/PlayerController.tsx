@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { resolvePlayerMovement } from './playerMovement';
+import { FOOTSTEP_EVENT } from '../audio/audioEvents';
 
 interface MovementControls {
   forward: boolean;
@@ -32,6 +33,7 @@ export default function PlayerController() {
   const bodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
   const groundedFrames = useRef(0);
+  const lastFootstepAt = useRef(0);
   const getControls = useKeyboardControls<keyof MovementControls>()[1];
   const camera = useThree((state) => state.camera);
   const cameraForward = useRef(new THREE.Vector3());
@@ -95,6 +97,15 @@ export default function PlayerController() {
     if (controls.jump && groundedFrames.current > 3) {
       body.setLinvel({ x: velocity.x, y: 4.8, z: velocity.z }, true);
       groundedFrames.current = 0;
+    }
+
+    if (movement.moving && groundedFrames.current > 3) {
+      const now = performance.now();
+      const interval = controls.run ? 290 : 420;
+      if (now - lastFootstepAt.current >= interval) {
+        window.dispatchEvent(new Event(FOOTSTEP_EVENT));
+        lastFootstepAt.current = now;
+      }
     }
 
     if (e2eEnabled.current) {

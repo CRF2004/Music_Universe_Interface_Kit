@@ -1,5 +1,5 @@
 import { InteractionPointDefinition } from './interactionTypes';
-import { Float, Html } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 import { CapsuleCollider, CuboidCollider, RigidBody } from '@react-three/rapier';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { visualRegistry } from './visualRegistry';
@@ -13,10 +13,10 @@ function InteractionCollider({ definition }: Props) {
   const type = definition.visual.type;
 
   if (type === 'building') {
-    return <CuboidCollider args={[1.5, 2.5, 1.5]} position={[0, 2.5, 0]} />;
+    return <CuboidCollider args={[4, 2.6, 2.8]} position={[0, 2.6, 0]} />;
   }
   if (type === 'phone-booth') {
-    return <CuboidCollider args={[0.5, 1, 0.5]} position={[0, 1, 0]} />;
+    return <CuboidCollider args={[1.1, 0.9, 0.55]} position={[0, 0.9, 0]} />;
   }
   if (type === 'vehicle') {
     return <CuboidCollider args={[1, 0.8, 0.55]} position={[0, 0.8, 0]} />;
@@ -48,9 +48,7 @@ export default function InteractionPoint({ definition }: Props) {
       <RigidBody type="fixed" colliders={false} name={`${definition.id}-collider`}>
         <InteractionCollider definition={definition} />
       </RigidBody>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-        <Visual definition={definition} onClick={handlePointerClick} />
-      </Float>
+      <Visual definition={definition} onClick={handlePointerClick} />
 
       {/* Label */}
       <Html position={[0, definition.visual.type === 'building' ? 6 : 2.5, 0]} center distanceFactor={10}>
