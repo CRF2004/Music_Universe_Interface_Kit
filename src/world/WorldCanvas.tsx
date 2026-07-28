@@ -32,6 +32,7 @@ function LoadingWorld() {
 export default function WorldCanvas() {
   const isPaused = useWorldStore((state) => state.isPaused);
   const isDevMode = useWorldStore((state) => state.isDevMode);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
 
   return (
     <div className="fixed inset-0 h-full w-full bg-[#26375d]">
@@ -40,14 +41,14 @@ export default function WorldCanvas() {
           <DebugControls />
         </Suspense>
       )}
-      <Canvas shadows camera={{ position: [0, 5, 10], fov: 75 }}>
+      <Canvas shadows={!reducedEffects} dpr={reducedEffects ? 1 : [1, 1.5]} camera={{ position: [0, 5, 10], fov: 75 }}>
         <Suspense fallback={<LoadingWorld />}>
           <PhysicsWorld paused={isPaused} />
         </Suspense>
         <ambientLight intensity={0.85} />
         <directionalLight position={[10, 10, 5]} intensity={1.15} castShadow />
         <CameraRig />
-        <ContactShadows opacity={0.4} scale={10} blur={2.4} far={4.5} />
+        {!reducedEffects && <ContactShadows opacity={0.4} scale={10} blur={2.4} far={4.5} />}
       </Canvas>
     </div>
   );

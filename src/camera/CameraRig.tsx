@@ -27,6 +27,7 @@ function canOccludeCamera(object: THREE.Object3D): object is THREE.Mesh {
 export default function CameraRig() {
   const { camera, scene } = useThree();
   const currentMode = useWorldStore((state) => state.currentCameraMode);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const preset = cameraPresets[currentMode] || cameraPresets.explore;
 
   const playerRef = useRef<THREE.Object3D | null>(null);
@@ -105,10 +106,12 @@ export default function CameraRig() {
     const idealLookAt = new THREE.Vector3().copy(playerPos).add(new THREE.Vector3(0, preset.lookAtHeight, 0));
 
     // Smoothly damp position
-    easing.damp3(camera.position, targetPos, preset.followSharpness, dt);
+    if (reducedEffects) camera.position.copy(targetPos);
+    else easing.damp3(camera.position, targetPos, preset.followSharpness, dt);
     
     // Smoothly damp look-at target to eliminate micro-jitter
-    easing.damp3(lookAtTarget.current, idealLookAt, preset.rotationSharpness || 0.2, dt);
+    if (reducedEffects) lookAtTarget.current.copy(idealLookAt);
+    else easing.damp3(lookAtTarget.current, idealLookAt, preset.rotationSharpness || 0.2, dt);
 
     // Safeguard lookAt target
     if (!isNaN(lookAtTarget.current.x)) {
@@ -158,7 +161,8 @@ export default function CameraRig() {
     }
     
     // Update FOV
-    easing.damp(camera, 'fov', preset.fov, preset.followSharpness, dt);
+    if (reducedEffects && camera instanceof THREE.PerspectiveCamera) camera.fov = preset.fov;
+    else easing.damp(camera, 'fov', preset.fov, preset.followSharpness, dt);
     camera.updateProjectionMatrix();
   });
 

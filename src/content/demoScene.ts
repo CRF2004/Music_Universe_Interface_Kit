@@ -5,9 +5,9 @@ import {
 
 export const demoScene = {
   version: SPATIAL_SCENE_SCHEMA_VERSION,
-  id: 'demo-world',
-  name: 'Product World Alpha',
-  description: 'An experimental spatial interface for products.',
+  id: 'memory-journey',
+  name: 'Memory Journey',
+  description: 'Recover a forgotten song-memory and carry it to the departure gate.',
   spawn: [0, 0, 0],
   environment: {
     theme: 'rough-comic',
@@ -38,17 +38,20 @@ export const demoScene = {
     {
       id: 'npc-guide',
       type: 'npc',
-      label: 'Guide NPC',
+      label: 'The Listener Guide',
       transform: { position: [0, 0, -5] },
       appearance: {
         colorToken: '#42a5ff',
-        prompt: 'Talk to Guide',
+        prompt: 'Accept the journey',
       },
       interaction: {
         kind: 'dialog',
         radius: 3,
         enabled: true,
-        triggers: [{ type: 'proximity' }, { type: 'click' }],
+        triggers: [
+          { type: 'proximity', prompt: 'Press E to speak with the Guide' },
+          { type: 'click', prompt: 'Speak with the Guide' },
+        ],
         actions: [
           {
             id: 'open-guide-dialog',
@@ -56,20 +59,25 @@ export const demoScene = {
             target: 'guide-dialog',
             cameraMode: 'interaction',
           },
+          {
+            id: 'start-memory-journey',
+            type: 'set-flag',
+            payload: { key: 'journey.started', value: true },
+          },
         ],
       },
     },
     {
-      id: 'support-phone',
+      id: 'echo-terminal',
       type: 'phone-booth',
-      label: 'Support Phone',
+      label: 'Echo Terminal',
       transform: { position: [8, 0, -8] },
       appearance: {
         colorToken: '#ff3b2f',
-        prompt: 'Call Support',
+        prompt: 'Review controls and objective',
       },
       interaction: {
-        kind: 'agent',
+        kind: 'panel',
         radius: 3,
         enabled: true,
         triggers: [{ type: 'proximity' }, { type: 'click' }],
@@ -77,56 +85,98 @@ export const demoScene = {
           {
             id: 'open-support-panel',
             type: 'panel',
-            target: 'support-panel',
+            target: 'echo-terminal',
             cameraMode: 'interaction',
           },
         ],
       },
     },
     {
-      id: 'product-tower',
+      id: 'memory-archive',
       type: 'building',
-      label: 'Product Tower',
-      transform: { position: [-10, 0, -12] },
+      label: 'Memory Archive',
+      transform: { position: [-8, 0, -11] },
       appearance: {
         colorToken: '#9f63ff',
-        prompt: 'Inspect Product',
+        prompt: 'Recover the memory',
       },
       interaction: {
         kind: 'inspect',
         radius: 5,
         enabled: true,
-        triggers: [{ type: 'proximity' }, { type: 'click' }],
+        triggers: [
+          {
+            type: 'proximity',
+            prompt: 'Press E to recover the memory',
+            conditions: [
+              { type: 'flag', key: 'journey.started', operator: 'equals', value: true },
+            ],
+          },
+          {
+            type: 'click',
+            prompt: 'Recover the memory',
+            conditions: [
+              { type: 'flag', key: 'journey.started', operator: 'equals', value: true },
+            ],
+          },
+        ],
         actions: [
           {
-            id: 'open-product-panel',
+            id: 'open-memory-fragment',
             type: 'panel',
-            target: 'product-panel',
+            target: 'memory-fragment',
             cameraMode: 'ui-safe',
+          },
+          {
+            id: 'receive-memory',
+            type: 'set-flag',
+            payload: { key: 'memory.received', value: true },
           },
         ],
       },
     },
     {
-      id: 'docs-portal',
+      id: 'departure-gate',
       type: 'portal',
-      label: 'Docs Portal',
-      transform: { position: [12, 0, 5] },
+      label: 'Departure Gate',
+      transform: { position: [0, 0, -15] },
       appearance: {
         colorToken: '#4adb7d',
-        prompt: 'Enter Docs',
+        prompt: 'Carry the memory through',
       },
       interaction: {
         kind: 'route',
         radius: 4,
         enabled: true,
-        triggers: [{ type: 'proximity' }, { type: 'click' }],
+        triggers: [
+          {
+            type: 'proximity',
+            prompt: 'Press E to enter the Departure Gate',
+            conditions: [
+              { type: 'flag', key: 'memory.received', operator: 'equals', value: true },
+              { type: 'flag', key: 'world.departureGateOpen', operator: 'equals', value: true },
+            ],
+          },
+          {
+            type: 'click',
+            prompt: 'Enter the Departure Gate',
+            conditions: [
+              { type: 'flag', key: 'memory.received', operator: 'equals', value: true },
+              { type: 'flag', key: 'world.departureGateOpen', operator: 'equals', value: true },
+            ],
+          },
+        ],
         actions: [
           {
-            id: 'open-docs',
+            id: 'show-journey-ending',
             type: 'panel',
-            target: 'docs-panel',
+            target: 'journey-ending',
             cameraMode: 'ui-safe',
+          },
+          {
+            id: 'complete-memory-journey',
+            type: 'set-flag',
+            payload: { key: 'journey.completed', value: true },
           },
         ],
       },

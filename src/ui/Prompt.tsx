@@ -7,6 +7,7 @@ export default function Prompt() {
   const activePanelId = useInteractionStore((state) => state.activePanelId);
   
   const nearestInteraction = nearestId ? interactions.get(nearestId) : null;
+  const prompt = nearestInteraction?.triggers.find((trigger) => trigger.type === 'proximity')?.prompt;
   const show = nearestInteraction && !activePanelId;
 
   return (
@@ -23,7 +24,7 @@ export default function Prompt() {
               E
             </div>
             <div>
-              <p className="font-display font-bold text-sm uppercase tracking-wider text-ink/60">Interaction Nearby</p>
+              <p className="font-display font-bold text-sm uppercase tracking-wider text-ink/60">{prompt ?? 'Interaction nearby'}</p>
               <p className="font-display font-black text-xl">{nearestInteraction?.label}</p>
             </div>
           </motion.div>

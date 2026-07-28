@@ -1,21 +1,29 @@
 import { create } from 'zustand';
-import { InteractionPointDefinition } from '../interaction/interactionTypes';
-import { AppAdapter } from '../adapters/appAdapterTypes';
+import type { AppAdapter } from '../adapters/appAdapterTypes';
+import {
+  clearInteractionFlag,
+  createInteractionEventMetadata,
+  interactionEventBus,
+  setInteractionFlag,
+  type InteractionRuntimeEvent,
+  type InteractionRuntimeResetEvent,
+  type InteractionRuntimeValue,
+} from '../interaction/interactionRuntime';
+import type { InteractionPointDefinition } from '../interaction/interactionTypes';
 
-interface TriggerRuntimeState {
-  executedTriggers: Set<string>; // interactionId + triggerType
+export interface TriggerRuntimeState {
+  executedTriggers: Set<string>;
   lastExecutedAt: Record<string, number>;
 }
 
-interface InteractionState {
+export interface InteractionState {
   interactions: Map<string, InteractionPointDefinition>;
   activeInteractionId: string | null;
   nearestInteractionId: string | null;
   activePanelId: string | null;
-  activePanelPayload: any | null;
+  activePanelPayload: unknown;
   activeAdapter: AppAdapter | null;
-  
-  // Runtime trigger state
+  interactionFlags: Readonly<Record<string, InteractionRuntimeValue>>;
   triggerState: TriggerRuntimeState;
 
   registerInteraction: (interaction: InteractionPointDefinition) => void;
@@ -24,78 +32,167 @@ interface InteractionState {
   setActiveInteraction: (id: string | null) => void;
   setNearestInteraction: (id: string | null) => void;
   setAdapter: (adapter: AppAdapter | null) => void;
-  openPanel: (panelId: string, payload?: any) => void;
+  openPanel: (panelId: string, payload?: unknown) => void;
   closePanel: () => void;
-  
-  // Update trigger runtime state
-  recordTriggerExecution: (interactionId: string, triggerType: string) => void;
+  setFlag: (key: string, value: InteractionRuntimeValue) => void;
+  clearFlag: (key: string) => void;
+  recordTriggerExecution: (
+    interactionId: string,
+    triggerType: string,
+    executedAt?: number,
+  ) => void;
+  resetInteractionRuntime: (
+    reason: InteractionRuntimeResetEvent['reason'],
+    initialFlags?: Readonly<Record<string, InteractionRuntimeValue>>,
+  ) => void;
 }
 
-export const useInteractionStore = create<InteractionState>((set) => ({
+function publishEvent(
+  event: InteractionRuntimeEvent,
+  adapter: AppAdapter | null,
+) {
+  interactionEventBus.publish(event);
+  adapter?.onWorldEvent?.(event);
+}
+
+export const useInteractionStore = create<InteractionState>((set, get) => ({
   interactions: new Map(),
   activeInteractionId: null,
   nearestInteractionId: null,
   activePanelId: null,
   activePanelPayload: null,
   activeAdapter: null,
+  interactionFlags: {},
   triggerState: {
     executedTriggers: new Set(),
     lastExecutedAt: {},
   },
-  
-  recordTriggerExecution: (interactionId, triggerType) => set((state) => {
-    const key = `${interactionId}:${triggerType}`;
-    const newExecuted = new Set(state.triggerState.executedTriggers);
-    newExecuted.add(key);
-    
-    return {
-      triggerState: {
-        executedTriggers: newExecuted,
-        lastExecutedAt: {
-          ...state.triggerState.lastExecutedAt,
-          [key]: Date.now()
+
+  recordTriggerExecution: (
+    interactionId,
+    triggerType,
+    executedAt = Date.now(),
+  ) =>
+    set((state) => {
+      const key = `${interactionId}:${triggerType}`;
+      const executedTriggers = new Set(state.triggerState.executedTriggers);
+      executedTriggers.add(key);
+
+      return {
+        triggerState: {
+          executedTriggers,
+          lastExecutedAt: {
+            ...state.triggerState.lastExecutedAt,
+            [key]: executedAt,
+          },
+        },
+      };
+    }),
+
+  registerInteraction: (interaction) =>
+    set((state) => {
+      if (state.interactions.has(interaction.id)) return state;
+      const interactions = new Map(state.interactions);
+      interactions.set(interaction.id, interaction);
+      return { interactions };
+    }),
+
+  registerInteractions: (newItems) =>
+    set((state) => {
+      const interactions = new Map(state.interactions);
+      let changed = false;
+      newItems.forEach((item) => {
+        if (!state.interactions.has(item.id)) {
+          interactions.set(item.id, item);
+          changed = true;
         }
-      }
-    };
-  }),
+      });
+      return changed ? { interactions } : state;
+    }),
 
-  registerInteraction: (interaction) => set((state) => {
-    if (state.interactions.has(interaction.id)) return state;
-    const newInteractions = new Map(state.interactions);
-    newInteractions.set(interaction.id, interaction);
-    return { interactions: newInteractions };
-  }),
-
-  registerInteractions: (newItems) => set((state) => {
-    const nextMap = new Map(state.interactions);
-    let changed = false;
-    newItems.forEach(item => {
-      if (!state.interactions.has(item.id)) {
-        nextMap.set(item.id, item);
-        changed = true;
-      }
-    });
-    return changed ? { interactions: nextMap } : state;
-  }),
-
-  unregisterInteraction: (id) => set((state) => {
-    const newInteractions = new Map(state.interactions);
-    newInteractions.delete(id);
-    return { interactions: newInteractions };
-  }),
+  unregisterInteraction: (id) =>
+    set((state) => {
+      const interactions = new Map(state.interactions);
+      interactions.delete(id);
+      return { interactions };
+    }),
 
   setActiveInteraction: (id) => set({ activeInteractionId: id }),
   setNearestInteraction: (id) => set({ nearestInteractionId: id }),
   setAdapter: (adapter) => set({ activeAdapter: adapter }),
-  
-  openPanel: (panelId, payload = null) => set({ 
-    activePanelId: panelId, 
-    activePanelPayload: payload 
-  }),
-  
-  closePanel: () => set({ 
-    activePanelId: null, 
-    activePanelPayload: null,
-    activeInteractionId: null 
-  }),
+
+  openPanel: (panelId, payload = null) =>
+    set({
+      activePanelId: panelId,
+      activePanelPayload: payload,
+    }),
+
+  closePanel: () =>
+    set({
+      activePanelId: null,
+      activePanelPayload: null,
+      activeInteractionId: null,
+    }),
+
+  setFlag: (key, value) => {
+    let event: InteractionRuntimeEvent | undefined;
+    set((state) => {
+      const next = setInteractionFlag(
+        { flags: state.interactionFlags },
+        key,
+        value,
+      );
+      if (next.flags === state.interactionFlags) return state;
+      event = {
+        ...createInteractionEventMetadata(),
+        type: 'interaction.flag-changed',
+        key,
+        previousValue: state.interactionFlags[key],
+        value,
+      };
+      return { interactionFlags: next.flags };
+    });
+    if (event) publishEvent(event, get().activeAdapter);
+  },
+
+  clearFlag: (key) => {
+    let event: InteractionRuntimeEvent | undefined;
+    set((state) => {
+      const next = clearInteractionFlag(
+        { flags: state.interactionFlags },
+        key,
+      );
+      if (next.flags === state.interactionFlags) return state;
+      event = {
+        ...createInteractionEventMetadata(),
+        type: 'interaction.flag-changed',
+        key,
+        previousValue: state.interactionFlags[key],
+      };
+      return { interactionFlags: next.flags };
+    });
+    if (event) publishEvent(event, get().activeAdapter);
+  },
+
+  resetInteractionRuntime: (reason, initialFlags = {}) => {
+    set({
+      activeInteractionId: null,
+      nearestInteractionId: null,
+      activePanelId: null,
+      activePanelPayload: null,
+      interactionFlags: { ...initialFlags },
+      triggerState: {
+        executedTriggers: new Set(),
+        lastExecutedAt: {},
+      },
+    });
+    publishEvent(
+      {
+        ...createInteractionEventMetadata(),
+        type: 'interaction.runtime-reset',
+        reason,
+      },
+      get().activeAdapter,
+    );
+  },
 }));

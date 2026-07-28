@@ -1,6 +1,10 @@
-# Product World Interface Kit
+# Music Universe Interface Kit
 
-一个高张力的 3D 空间界面开发套件，基于 React Three Fiber、Rapier 物理引擎和自定义曲面世界着色器构建。专为构建空间化仪表盘、AI Agent 环境和产品探索世界而设计。
+一个把音乐变成可进入世界的空间体验运行时与创作基础，基于 React Three Fiber、
+Rapier 物理引擎、确定性音乐时间线和自定义曲面世界着色器构建。
+
+当前产品方向不是通用 3D 桌面或世界模型展示，而是帮助音乐人和创作者把一首曲目制作成
+完整、可编辑、可分享的 3–5 分钟互动旅程。
 
 ## 特性
 
@@ -18,7 +22,7 @@
 - **React 19 + Vite 6**
 - **Three.js / @react-three/fiber 9**
 - **Rapier 物理引擎 / @react-three/rapier**
-- **Ecctrl**：健壮的角色控制器
+- **自定义 Rapier 角色控制器**：相机相对移动、跳跃和运行
 - **Zustand**：轻量级状态管理
 - **Tailwind CSS v4**：主题驱动的样式方案
 - **@react-three/postprocessing**：后处理特效
@@ -62,7 +66,7 @@ src/
 │   ├── visualRegistry.tsx        # 视觉对象注册表（NPC、电话亭等）
 │   └── interactionTypes.ts       # 类型定义
 ├── player/          # 角色控制器与输入抽象
-│   └── PlayerController.tsx      # 基于 Ecctrl 的角色控制
+│   └── PlayerController.tsx      # 自定义 Rapier 角色控制
 ├── camera/          # 摄像机云台与预设
 │   ├── CameraRig.tsx            # 动态摄像机跟踪与平滑
 │   ├── cameraPresets.ts         # 五种摄像机预设配置
@@ -146,6 +150,14 @@ const myAdapter: AppAdapter = {
 ```env
 APP_URL="https://your-app-url.com"
 ```
+
+## 产品路线与开发流程
+
+- [`docs/music-universe-roadmap.md`](docs/music-universe-roadmap.md)：产品方向、阶段顺序与退出条件。
+- [`NOW.md`](NOW.md)：当前开发基线、优先级和暂不开展的工作。
+- [`docs/development-workflow.md`](docs/development-workflow.md)：需求准入、切片、验证和完成标准。
+- [`docs/creator-workflow.md`](docs/creator-workflow.md)：创作者工作流目标。
+- [`AGENTS.md`](AGENTS.md)：后续 Agent 开发必须遵守的仓库级规范。
 
 ## 资产构建管线
 

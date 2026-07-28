@@ -1,89 +1,89 @@
-import React from 'react';
+import type React from 'react';
+import { useInteractionStore } from '../state/useInteractionStore';
 
-export type PanelComponent = React.FC<{ 
-  payload?: any; 
-  onClose: () => void; 
+export type PanelComponent = React.FC<{
+  payload?: unknown;
+  onClose: () => void;
 }>;
 
 const GuideDialog: PanelComponent = ({ onClose }) => (
   <div className="space-y-6">
-    <div className="flex items-center gap-4">
-      <div className="w-16 h-16 bg-comic-blue rounded-full border-4 border-ink" />
+    <header className="flex items-center gap-4">
+      <div aria-hidden="true" className="h-16 w-16 rounded-full border-4 border-ink bg-comic-blue" />
       <div>
-        <h2 className="text-3xl font-display font-black uppercase italic">World Guide</h2>
-        <p className="text-ink/60 font-bold uppercase tracking-widest text-xs">Navigation Assistant</p>
+        <h2 className="font-display text-3xl font-black uppercase italic">The Listener Guide</h2>
+        <p className="text-xs font-bold uppercase tracking-widest text-ink/60">Keeper of the first note</p>
       </div>
+    </header>
+    <div className="space-y-4 border-l-4 border-comic-blue py-2 pl-6 text-lg leading-relaxed">
+      <p>This planet has forgotten why it was singing. The Archive still holds one memory.</p>
+      <p>Move with <strong>WASD</strong> or the arrow keys. Find the Memory Archive, recover what it remembers, then follow the light to the gate.</p>
     </div>
-    <div className="space-y-4 font-sans text-lg leading-relaxed border-l-4 border-comic-blue pl-6 py-2">
-      <p>Welcome to the <strong>Product World</strong>, stranger. This is an experimental spatial interface where apps are places and features are objects.</p>
-      <p>You can use <strong>WASD</strong> to move around and <strong>SPACE</strong> to jump. Approach any interesting object to interact with it.</p>
-    </div>
-    <div className="flex gap-4 pt-4">
-      <button onClick={onClose} className="comic-button bg-comic-blue text-white w-full py-3 text-xl">Understood</button>
-    </div>
+    <button autoFocus onClick={onClose} className="comic-button w-full bg-comic-blue py-3 text-xl text-white">
+      I’ll carry the memory
+    </button>
   </div>
 );
 
-const SupportPanel: PanelComponent = ({ onClose }) => (
+const EchoTerminal: PanelComponent = ({ onClose }) => {
+  const flags = useInteractionStore((state) => state.interactionFlags);
+  const objective = !flags['journey.started']
+    ? 'Speak with the Listener Guide.'
+    : !flags['memory.received']
+      ? 'Find the Memory Archive.'
+      : !flags['journey.completed']
+        ? 'Follow the Light Path to the Departure Gate.'
+        : 'The journey is complete. Stay, or replay the music.';
+
+  return (
+    <div className="space-y-6">
+      <h2 className="font-display text-4xl font-black uppercase">Echo Terminal</h2>
+      <div className="border-2 border-dashed border-comic-blue bg-comic-blue/10 p-5">
+        <p className="text-xs font-bold uppercase tracking-widest text-ink/60">Current objective</p>
+        <p className="mt-2 text-xl font-bold">{objective}</p>
+      </div>
+      <dl className="grid gap-3 text-base sm:grid-cols-2">
+        <div><dt className="font-bold">Move</dt><dd>WASD / arrow keys</dd></div>
+        <div><dt className="font-bold">Interact</dt><dd>E or click an object</dd></div>
+        <div><dt className="font-bold">Jump</dt><dd>Space</dd></div>
+        <div><dt className="font-bold">Run</dt><dd>Hold Shift</dd></div>
+      </dl>
+      <button autoFocus onClick={onClose} className="comic-button w-full bg-white">Return to the world</button>
+    </div>
+  );
+};
+
+const MemoryFragment: PanelComponent = ({ onClose }) => (
   <div className="space-y-6">
-    <h2 className="text-4xl font-display font-black uppercase underline decoration-comic-red decoration-8 underline-offset-8">Terminal 7: Support</h2>
-    <div className="bg-comic-red/10 p-6 border-2 border-comic-red border-dashed">
-      <p className="font-mono text-comic-red font-bold animate-pulse">CONNECTING TO SUPPORT AGENT...</p>
-    </div>
-    <p className="font-sans text-lg">"Hello! I am your AI support interface. How can I help you explore this world today?"</p>
-    <div className="flex flex-col gap-2">
-      <button className="comic-button bg-white text-left hover:bg-paper">Tell me about the features</button>
-      <button className="comic-button bg-white text-left hover:bg-paper">I want to report a glitch</button>
-      <button className="comic-button bg-white text-left hover:bg-paper">Just looking around</button>
-    </div>
+    <p className="text-xs font-bold uppercase tracking-[0.2em] text-comic-purple">Recovered memory 01</p>
+    <h2 className="font-display text-4xl font-black">“We sang so the dark would know where to find us.”</h2>
+    <p className="border-l-4 border-comic-purple pl-5 text-lg leading-relaxed">
+      The Archive releases a warm pulse into your hands. Beyond the storm, a path begins to answer.
+    </p>
+    <button autoFocus onClick={onClose} className="comic-button w-full bg-comic-purple py-3 text-white">
+      Carry the memory
+    </button>
   </div>
 );
 
-const ProductPanel: PanelComponent = ({ onClose }) => (
-  <div className="space-y-6">
-    <div className="h-48 bg-comic-purple/20 flex items-center justify-center border-4 border-ink overflow-hidden group">
-       <div className="text-6xl group-hover:scale-125 transition-transform">🚀</div>
-    </div>
-    <h2 className="text-5xl font-display font-black uppercase">The Super Feature</h2>
-    <p className="text-xl font-medium text-ink/80">This isn't just a building; it's a visualization of our core product value. Here we demonstrate power, scale, and high-tension character.</p>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="comic-panel !p-4 bg-comic-yellow/20">
-        <p className="font-display font-black text-2xl uppercase">99% uptime</p>
-        <p className="text-sm opacity-60">Guaranteed by the spatial gods</p>
-      </div>
-      <div className="comic-panel !p-4 bg-paper/20">
-        <p className="font-display font-black text-2xl uppercase">Zero Latency</p>
-        <p className="text-sm opacity-60">Except for character walking</p>
-      </div>
-    </div>
-    <button className="comic-button bg-comic-yellow w-full py-4 text-2xl">Start Free Trial</button>
-  </div>
-);
-
-const DocsPanel: PanelComponent = ({ onClose }) => (
-  <div className="space-y-6">
-    <h2 className="text-3xl font-display font-black uppercase italic border-b-4 border-ink pb-4">Documentation Portal</h2>
-    <div className="space-y-4">
-      <div className="p-4 bg-paper border-2 border-ink">
-         <p className="font-bold">Spatial UI 101: The Grid</p>
-         <p className="text-sm">Learn how we map 2D coordinates to 3D metaphors using our proprietary AppAdapter pattern.</p>
-      </div>
-      <div className="p-4 bg-paper border-2 border-ink">
-         <p className="font-bold">Character Ergonomics</p>
-         <p className="text-sm">Why the camera FOV is 82 degrees and why it matters for immersive conversion.</p>
-      </div>
-    </div>
-    <div className="pt-4">
-      <button onClick={onClose} className="comic-button bg-white">Back to World</button>
-    </div>
+const JourneyEnding: PanelComponent = ({ onClose }) => (
+  <div className="space-y-6 text-center">
+    <p className="text-xs font-bold uppercase tracking-[0.2em] text-comic-green">Memory delivered</p>
+    <h2 className="font-display text-5xl font-black">The planet remembers.</h2>
+    <p className="mx-auto max-w-lg text-lg leading-relaxed">
+      The gate holds steady. You can remain in the afterglow, or use Replay in the music player to begin with a clean memory.
+    </p>
+    <button autoFocus onClick={onClose} className="comic-button w-full bg-comic-green py-3 text-xl">
+      Stay in the afterglow
+    </button>
   </div>
 );
 
 export const panelRegistry: Record<string, PanelComponent> = {
   'guide-dialog': GuideDialog,
-  'support-panel': SupportPanel,
-  'product-panel': ProductPanel,
-  'docs-panel': DocsPanel,
+  'echo-terminal': EchoTerminal,
+  'memory-fragment': MemoryFragment,
+  'journey-ending': JourneyEnding,
 };
 
 export const registerPanel = (id: string, component: PanelComponent) => {

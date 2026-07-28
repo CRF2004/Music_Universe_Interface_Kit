@@ -10,6 +10,7 @@ import {
   PointsMaterial,
 } from 'three';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
+import { useWorldStore } from '../state/useWorldStore';
 import DeparturePortal from './DeparturePortal';
 import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
@@ -46,8 +47,11 @@ function RainParticles({ intensity }: { intensity: number }) {
 }
 
 export default function MusicReactiveWorld() {
-  const stars = useMusicRuntimeStore((state) => state.environment.stars ?? 0);
-  const rainIntensity = useMusicRuntimeStore((state) => state.environment.rainIntensity ?? 0);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
+  const runtimeStars = useMusicRuntimeStore((state) => state.environment.stars ?? 0);
+  const runtimeRainIntensity = useMusicRuntimeStore((state) => state.environment.rainIntensity ?? 0);
+  const stars = reducedEffects ? Math.min(runtimeStars, 90) : runtimeStars;
+  const rainIntensity = reducedEffects ? 0 : runtimeRainIntensity;
   const portalOpen = useMusicRuntimeStore((state) => state.portals.departure ?? false);
   const memoryTreeVisible = useMusicRuntimeStore((state) => state.landmarks['memory-tree'] ?? false);
   const lightPathVisible = useMusicRuntimeStore((state) => state.landmarks['light-path'] ?? false);
@@ -80,7 +84,7 @@ export default function MusicReactiveWorld() {
       />
       {rainIntensity > 0 && <RainParticles intensity={rainIntensity} />}
       {memoryTreeVisible && (
-        <group position={[-3, 0, -7]}>
+        <group position={[-8, 0, -11]}>
           <MemoryTree />
           <Html position={[0, 4.7, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
@@ -100,11 +104,11 @@ export default function MusicReactiveWorld() {
         </group>
       )}
       {portalOpen && (
-        <group position={[0, 0, -10.5]}>
+        <group position={[0, 0, -15]}>
           <DeparturePortal />
           <Html position={[0, 4.75, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
-              Departure Portal
+              Departure Gate
             </div>
           </Html>
         </group>

@@ -1,6 +1,6 @@
 {
-  "name": "Product World Interface Kit",
-  "description": "A 3D spatial interface kit for products and AI agents with a curved world effect and character control.",
+  "name": "Memory Journey — Music Universe",
+  "description": "A short, interactive music world about recovering and carrying one forgotten memory.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

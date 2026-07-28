@@ -2,45 +2,36 @@ import { AppAdapter } from './appAdapterTypes';
 import { panelRegistry } from '../ui/panelRegistry';
 
 export const demoAdapter: AppAdapter = {
-  id: 'demo-adapter',
-  name: 'Demo Product World',
+  id: 'memory-journey-adapter',
+  name: 'Memory Journey',
   version: '0.1.0',
 
   panels: {
     'guide-dialog': {
       id: 'guide-dialog',
-      title: 'World Guide',
-      component: panelRegistry['guide-dialog'] as any,
+      title: 'The Listener Guide',
+      component: panelRegistry['guide-dialog'],
       preferredCameraMode: 'ui-safe'
     },
-    'support-panel': {
-      id: 'support-panel',
-      title: 'Support Terminal',
-      component: panelRegistry['support-panel'] as any,
+    'echo-terminal': {
+      id: 'echo-terminal',
+      title: 'Echo Terminal',
+      component: panelRegistry['echo-terminal'],
       preferredCameraMode: 'ui-safe'
     },
-    'product-panel': {
-      id: 'product-panel',
-      title: 'Product Details',
-      component: panelRegistry['product-panel'] as any,
+    'memory-fragment': {
+      id: 'memory-fragment',
+      title: 'Recovered Memory',
+      component: panelRegistry['memory-fragment'],
       preferredCameraMode: 'inspection'
     },
-    'docs-panel': {
-      id: 'docs-panel',
-      title: 'Documentation',
-      component: panelRegistry['docs-panel'] as any,
+    'journey-ending': {
+      id: 'journey-ending',
+      title: 'Journey Complete',
+      component: panelRegistry['journey-ending'],
       preferredCameraMode: 'ui-safe'
     }
   },
 
-  commands: {
-    'start-trial': {
-      id: 'start-trial',
-      label: 'Start Trial',
-      run: async (payload, context) => {
-        console.log('Command Context:', context);
-        return { ok: true, message: 'Trial started!' };
-      }
-    }
-  }
+  commands: {},
 };

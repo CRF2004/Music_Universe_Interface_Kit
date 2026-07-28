@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useInteractionStore } from '../../state/useInteractionStore';
 import { LocalAudioPlayer } from './LocalAudioPlayer';
 import type { AudioLoadStatus, LocalAudioTrack } from './audioUploadTypes';
 
@@ -42,7 +43,13 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
     }
 
     try {
+      const replacingTrack = Boolean(get().track);
       const track = player.load(file);
+      useInteractionStore
+        .getState()
+        .resetInteractionRuntime(
+          replacingTrack ? 'track-replaced' : 'track-loaded',
+        );
       set({
         track,
         currentTime: 0,
@@ -66,7 +73,10 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
     if (!get().track) return;
 
     try {
-      if (get().ended) player.seek(0);
+      if (get().ended) {
+        useInteractionStore.getState().resetInteractionRuntime('replay');
+        player.seek(0);
+      }
       await player.play();
       set({ playing: true, started: true, ended: false, error: null });
     } catch (error) {
@@ -89,6 +99,7 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
 
   clear() {
     player.clear();
+    useInteractionStore.getState().resetInteractionRuntime('track-replaced');
     set(initialState);
   },
 
@@ -107,6 +118,10 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
 
 export function getAuthoritativeAudioTime(): number {
   return player.currentTime;
+}
+
+export function setMusicPlaybackVolume(volume: number): void {
+  player.setVolume(volume);
 }
 
 player.element.addEventListener('loadedmetadata', () => useAudioPlayerStore.getState().sync());

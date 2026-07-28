@@ -19,6 +19,11 @@
   body {
     @apply bg-paper text-ink font-sans antialiased overflow-hidden;
   }
+
+  :focus-visible {
+    outline: 4px solid #ffd84a;
+    outline-offset: 3px;
+  }
 }
 
 .comic-panel {
@@ -27,4 +32,13 @@
 
 .comic-button {
   @apply border-2 border-ink px-4 py-2 font-display font-bold transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(17,17,17,1)];
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

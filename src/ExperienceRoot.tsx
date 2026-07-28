@@ -1,5 +1,8 @@
 import { KeyboardControls } from '@react-three/drei';
 import { useEffect, useMemo } from 'react';
+import { MotionConfig } from 'motion/react';
+import { useWorldStore } from './state/useWorldStore';
+import { useExperienceSettingsStore } from './state/useExperienceSettingsStore';
 import OverlayRoot from './ui/OverlayRoot';
 import WorldCanvas from './world/WorldCanvas';
 
@@ -38,6 +41,23 @@ function KeyboardFocusGuard() {
 }
 
 export default function ExperienceRoot() {
+  const setReducedEffects = useWorldStore((state) => state.setReducedEffects);
+  const setHelpOpen = useWorldStore((state) => state.setHelpOpen);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
+  const hydrateExperienceSettings = useExperienceSettingsStore((state) => state.hydrate);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const saved = window.localStorage.getItem('music-universe.reduced-effects');
+    setReducedEffects(saved === null ? media.matches : saved === 'true');
+    if (window.localStorage.getItem('music-universe.onboarding-seen') !== 'true') {
+      setHelpOpen(true);
+    }
+  }, [setHelpOpen, setReducedEffects]);
+
+  useEffect(() => {
+    hydrateExperienceSettings();
+  }, [hydrateExperienceSettings]);
   const map = useMemo(
     () => [
       { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -51,12 +71,14 @@ export default function ExperienceRoot() {
   );
 
   return (
-    <KeyboardControls map={map}>
-      <KeyboardFocusGuard />
-      <div className="relative h-screen w-full overflow-hidden">
-        <WorldCanvas />
-        <OverlayRoot />
-      </div>
-    </KeyboardControls>
+    <MotionConfig reducedMotion={reducedEffects ? 'always' : 'never'}>
+      <KeyboardControls map={map}>
+        <KeyboardFocusGuard />
+        <div className="relative h-screen w-full overflow-hidden">
+          <WorldCanvas />
+          <OverlayRoot />
+        </div>
+      </KeyboardControls>
+    </MotionConfig>
   );
 }

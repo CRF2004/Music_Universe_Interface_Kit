@@ -12,7 +12,13 @@ export default function InteractionSystem() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'KeyE' && nearestId) {
+      const target = e.target;
+      const editing =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName));
+      if (e.code === 'KeyE' && nearestId && !editing) {
+        e.preventDefault();
         InteractionDispatcher.executeInteraction(nearestId, 'proximity'); // We use proximity as the default 'E' trigger type or logic
       }
     };

@@ -1,9 +1,27 @@
-import { useAudioPlayerStore } from './useAudioPlayerStore';
+import { useEffect } from 'react';
+import { useExperienceSettingsStore } from '../../state/useExperienceSettingsStore';
+import { setMusicPlaybackVolume, useAudioPlayerStore } from './useAudioPlayerStore';
 
 export default function MusicPlayerHUD() {
   const { track, currentTime, duration, playing, status, error, load, play, pause, seek } =
     useAudioPlayerStore();
   const ready = Boolean(track) && duration > 0;
+  const {
+    musicVolume,
+    effectsVolume,
+    musicMuted,
+    effectsMuted,
+    subtitlesEnabled,
+    setMusicVolume,
+    setEffectsVolume,
+    toggleMusicMuted,
+    toggleEffectsMuted,
+    toggleSubtitles,
+  } = useExperienceSettingsStore();
+
+  useEffect(() => {
+    setMusicPlaybackVolume(musicMuted ? 0 : musicVolume);
+  }, [musicMuted, musicVolume]);
 
   return (
     <section
@@ -61,6 +79,64 @@ export default function MusicPlayerHUD() {
         disabled={!ready}
         onChange={(e) => seek(Number(e.target.value))}
       />
+
+      <div className="mt-4 space-y-3 border-t-2 border-ink/15 pt-3">
+        <div className="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-2">
+          <label className="text-xs font-bold uppercase tracking-wide" htmlFor="music-volume">
+            Music
+          </label>
+          <input
+            id="music-volume"
+            aria-label="Music volume"
+            className="w-full accent-comic-blue"
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={musicVolume}
+            onChange={(event) => setMusicVolume(Number(event.target.value))}
+          />
+          <button
+            aria-pressed={musicMuted}
+            className="comic-button bg-white px-2 py-1 text-xs"
+            onClick={toggleMusicMuted}
+          >
+            {musicMuted ? 'Unmute' : 'Mute'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-2">
+          <label className="text-xs font-bold uppercase tracking-wide" htmlFor="effects-volume">
+            Effects
+          </label>
+          <input
+            id="effects-volume"
+            aria-label="Effects volume"
+            className="w-full accent-comic-purple"
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={effectsVolume}
+            onChange={(event) => setEffectsVolume(Number(event.target.value))}
+          />
+          <button
+            aria-pressed={effectsMuted}
+            className="comic-button bg-white px-2 py-1 text-xs"
+            onClick={toggleEffectsMuted}
+          >
+            {effectsMuted ? 'Unmute' : 'Mute'}
+          </button>
+        </div>
+
+        <button
+          aria-pressed={subtitlesEnabled}
+          className="comic-button w-full bg-white py-1 text-sm"
+          onClick={toggleSubtitles}
+        >
+          Subtitles: {subtitlesEnabled ? 'On' : 'Off'}
+        </button>
+      </div>
 
       {!track && (
         <p className="mt-2 text-xs text-ink/65">The world changes only after you press Play.</p>

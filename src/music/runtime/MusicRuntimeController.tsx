@@ -6,6 +6,7 @@ import { replayMusicTimeline } from './musicExperienceRuntime';
 import { useMusicRuntimeStore } from './useMusicRuntimeStore';
 import { useWorldStore } from '../../state/useWorldStore';
 import { isCameraMode } from './runtimeCamera';
+import { useInteractionStore } from '../../state/useInteractionStore';
 
 export default function MusicRuntimeController() {
   const track = useAudioPlayerStore((state) => state.track);
@@ -15,6 +16,7 @@ export default function MusicRuntimeController() {
   const setRuntime = useMusicRuntimeStore((state) => state.setRuntime);
   const setCameraMode = useWorldStore((state) => state.setCameraMode);
   const experienceStarted = Boolean(track) && started;
+  const departureGateOpen = useMusicRuntimeStore((state) => state.portals.departure ?? false);
 
   const cues = useMemo(
     () =>
@@ -35,6 +37,15 @@ export default function MusicRuntimeController() {
       setCameraMode('explore');
     }
   }, [cues, currentTime, experienceStarted, setCameraMode, setRuntime]);
+
+  useEffect(() => {
+    const interactionState = useInteractionStore.getState();
+    if (departureGateOpen) {
+      interactionState.setFlag('world.departureGateOpen', true);
+    } else {
+      interactionState.clearFlag('world.departureGateOpen');
+    }
+  }, [departureGateOpen]);
 
   return null;
 }
