@@ -39,16 +39,22 @@ export function findRuntimeAsset(
   if (type && asset.type !== type) {
     throw new Error(`Runtime asset "${id}" is ${asset.type}, expected ${type}.`);
   }
-  if (!asset.url.startsWith('/assets/generated/')) {
+  if (!/^assets\/generated\/[a-z0-9][a-z0-9.-]+$/.test(asset.url)) {
     throw new Error(`Runtime asset "${id}" has an invalid generated URL.`);
   }
   return asset;
 }
 
+export function resolveRuntimeAssetUrl(assetUrl: string, baseUrl: string) {
+  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return `${normalizedBaseUrl}${assetUrl}`;
+}
+
 let manifestPromise: Promise<RuntimeAssetManifest> | undefined;
 
 export function loadRuntimeAssetManifest() {
-  manifestPromise ??= fetch('/assets/generated/asset-manifest.json', {
+  const baseUrl = import.meta.env.BASE_URL;
+  manifestPromise ??= fetch(`${baseUrl}assets/generated/asset-manifest.json`, {
     cache: 'no-cache',
   }).then(async (response) => {
     if (!response.ok) {
@@ -71,6 +77,10 @@ export function useRuntimeAsset(id: string, type?: RuntimeAssetType): RuntimeAss
     let cancelled = false;
     loadRuntimeAssetManifest()
       .then((manifest) => findRuntimeAsset(manifest, id, type))
+      .then((asset) => ({
+        ...asset,
+        url: resolveRuntimeAssetUrl(asset.url, import.meta.env.BASE_URL),
+      }))
       .then((asset) => {
         if (!cancelled) setState({ status: 'ready', asset });
       })

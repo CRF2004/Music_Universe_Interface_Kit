@@ -28,6 +28,21 @@ of feature preferences.
 3. Provide the documented demo audio or ask the participant to choose a track.
 4. Start recording time only after the first-entry dialog appears.
 
+## GitHub Pages research deployment
+
+The Pages workflow publishes automatically after a push to `main`. It can also
+deploy a selected research branch manually:
+
+1. open **Actions → Deploy GitHub Pages**;
+2. choose **Run workflow**;
+3. select the branch or tag containing the research version;
+4. wait for the `github-pages` environment to report its URL;
+5. open that HTTPS URL in a fresh private window before sharing it.
+
+Only one Pages deployment is live at a time. A manual research deployment can
+temporarily replace the `main` version, and the next push to `main` restores the
+main build. Record the deployed commit in every observation session.
+
 ## Tasks and observable success
 
 | Task | Success without coaching | Record |

@@ -105,6 +105,8 @@ Implemented:
 - narration subtitles can be toggled without hiding interaction guidance;
 - the first-user protocol and engineering proxy run are documented in
   `docs/first-user-observation.md`.
+- GitHub Pages builds automatically from `main` and supports manual deployment
+  of a selected research branch with repository-safe asset paths.
 
 Next:
 

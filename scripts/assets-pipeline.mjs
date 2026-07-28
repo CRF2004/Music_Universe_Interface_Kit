@@ -342,7 +342,7 @@ async function buildAssets(manifest, sourceSizes) {
     generatedAssets.push({
       id: asset.id,
       type: asset.type,
-      url: `/assets/generated/${path.basename(hashedOutputPath)}`,
+      url: `assets/generated/${path.basename(hashedOutputPath)}`,
       sourceBytes: sourceSizes.get(asset.id),
       outputBytes,
       sha256,
