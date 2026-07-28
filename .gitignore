@@ -4,6 +4,8 @@ dist/
 public/assets/generated/
 output/
 coverage/
+.playwright-cli/
+.playwright-mcp/
 .DS_Store
 *.log
 .env*

@@ -5,6 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: process.env.VITE_BASE_PATH ?? '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -22,12 +23,26 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
     build: {
+      // The physics runtime includes Rapier's WebAssembly bridge. Its raw
+      // module is large, but the release budget is based on compressed
+      // transfer size and it is loaded only with the 3D world.
+      chunkSizeWarningLimit: 2500,
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined;
             if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/')) {
               return 'react-vendor';
+            }
+            if (id.includes('/@react-three/rapier/') || id.includes('/@dimforge/rapier3d-compat/')) {
+              return 'physics-runtime';
+            }
+            if (id.includes('/@react-three/fiber/') || id.includes('/@react-three/drei/')) {
+              return 'three-react';
+            }
+            if (id.includes('/three/')) return 'three-runtime';
+            if (id.includes('/motion/') || id.includes('/framer-motion/')) {
+              return 'motion-runtime';
             }
             if (id.includes('/leva/')) return 'debug-tools';
             return undefined;

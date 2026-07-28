@@ -73,13 +73,18 @@ src/
 
 ## Roadmap
 
-1. Music experience runtime
-2. World model adapters
-3. Creator workflow
-4. Public music world database
-5. Remixable interactive music universe
+The project advances through gated phases:
 
-See `docs/music-universe-roadmap.md`.
+1. runtime reliability;
+2. one complete listener vertical slice;
+3. a versioned, editable project schema and creator workflow;
+4. assisted generation;
+5. controlled publishing, then remix.
+
+See [`docs/music-universe-roadmap.md`](docs/music-universe-roadmap.md) for
+direction, [`NOW.md`](NOW.md) for current priorities, and
+[`docs/development-workflow.md`](docs/development-workflow.md) for the delivery
+process. Repository agents must also follow [`AGENTS.md`](AGENTS.md).
 
 ## Development
 
@@ -100,6 +105,9 @@ npm run assets:build
 
 See [`docs/asset-pipeline.md`](docs/asset-pipeline.md) for formats, budgets,
 licensing requirements, and cache policy.
+
+The verified free-source index and per-asset acceptance rules are documented in
+[`docs/asset-library-index.zh-CN.md`](docs/asset-library-index.zh-CN.md).
 
 ## License
 

@@ -85,6 +85,7 @@ function connectToTarget(webSocketUrl) {
 
 const target = await findPageTarget();
 const client = await connectToTarget(target.webSocketDebuggerUrl);
+let scenarioSetup = null;
 
 try {
   await client.send('Runtime.enable');
@@ -102,30 +103,46 @@ try {
   if (scenario === 'departure') {
     const setup = await client.send('Runtime.evaluate', {
       expression: `(async () => {
-        let audioUrl;
         let input;
         let range;
         let playButton;
         const controlsDeadline = performance.now() + 15_000;
         while (performance.now() < controlsDeadline) {
-          audioUrl = performance
-            .getEntriesByType('resource')
-            .map((entry) => entry.name)
-            .find((url) => url.includes('/wind-ambience.'));
           input = document.querySelector('input[type="file"][accept="audio/*"]');
           range = document.querySelector('input[aria-label="Music progress"]');
           playButton = [...document.querySelectorAll('button')]
             .find((button) => button.textContent?.trim() === 'Play');
-          if (audioUrl && input && range && playButton) break;
+          if (input && range && playButton) break;
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
-        if (!audioUrl || !input || !range || !playButton) {
-          throw new Error('Could not find the audio asset or music controls.');
+        if (!input || !range || !playButton) {
+          throw new Error('Could not find the music controls.');
         }
 
-        const blob = await (await fetch(audioUrl)).blob();
+        const sampleRate = 8_000;
+        const sampleCount = sampleRate * 12;
+        const wav = new ArrayBuffer(44 + sampleCount * 2);
+        const view = new DataView(wav);
+        const writeText = (offset, text) => {
+          for (let index = 0; index < text.length; index += 1) {
+            view.setUint8(offset + index, text.charCodeAt(index));
+          }
+        };
+        writeText(0, 'RIFF');
+        view.setUint32(4, 36 + sampleCount * 2, true);
+        writeText(8, 'WAVEfmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeText(36, 'data');
+        view.setUint32(40, sampleCount * 2, true);
+        const blob = new Blob([wav], { type: 'audio/wav' });
         const transfer = new DataTransfer();
-        transfer.items.add(new File([blob], 'performance-journey.ogg', { type: 'audio/ogg' }));
+        transfer.items.add(new File([blob], 'performance-journey.wav', { type: 'audio/wav' }));
         input.files = transfer.files;
         input.dispatchEvent(new Event('change', { bubbles: true }));
 
@@ -142,15 +159,25 @@ try {
 
         playButton.click();
         await new Promise((resolve) => setTimeout(resolve, 150));
-        range.value = String(Number(range.max) * 0.9);
+        const rangeValueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+        range.step = 'any';
+        rangeValueSetter?.call(range, String(Number(range.max) * 0.9));
+        range.dispatchEvent(new Event('input', { bubbles: true }));
         range.dispatchEvent(new Event('change', { bubbles: true }));
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        const pauseButton = [...document.querySelectorAll('button')]
+          .find((button) => button.textContent?.trim() === 'Pause');
+        pauseButton?.click();
         await new Promise((resolve) => setTimeout(resolve, 750));
         window.__MUSIC_UNIVERSE_E2E__?.setPlayerTransform([0, 0.65, -5], Math.PI);
         await new Promise((resolve) => setTimeout(resolve, 750));
         return {
           duration: Number(range.max),
-          position: Number(range.value),
-          portalVisible: document.body.textContent?.includes('Departure Portal') ?? false,
+          position: Number(document.querySelector('input[aria-label="Music progress"]')?.value ?? 0),
+          memoryTreeVisible: document.body.textContent?.includes('Memory Tree') ?? false,
         };
       })()`,
       awaitPromise: true,
@@ -158,8 +185,23 @@ try {
       userGesture: true,
     });
     if (setup.exceptionDetails) {
-      throw new Error(setup.exceptionDetails.text ?? 'Scenario setup failed.');
+      const diagnostics = await client.send('Runtime.evaluate', {
+        expression: `({
+          title: document.title,
+          body: document.body?.innerText?.slice(0, 800),
+          resources: performance.getEntriesByType('resource').map((entry) => entry.name).slice(-30)
+        })`,
+        returnByValue: true,
+      });
+      throw new Error(
+        `${setup.exceptionDetails.text ?? 'Scenario setup failed.'}\n${JSON.stringify(
+          diagnostics.result?.value ?? null,
+          null,
+          2,
+        )}`,
+      );
     }
+    scenarioSetup = setup.result?.value ?? null;
     await new Promise((resolve) => setTimeout(resolve, settleMs));
   }
   const result = await client.send('Runtime.evaluate', {
@@ -186,7 +228,21 @@ try {
 
   const telemetry = result.result?.value;
   if (!telemetry) {
-    throw new Error('The page did not publish performance telemetry.');
+    const diagnostics = await client.send('Runtime.evaluate', {
+      expression: `({
+        title: document.title,
+        body: document.body?.innerText?.slice(0, 800),
+        startup: window.__MUSIC_UNIVERSE_E2E__ ?? null
+      })`,
+      returnByValue: true,
+    });
+    throw new Error(
+      `The page did not publish performance telemetry.\n${JSON.stringify(
+        diagnostics.result?.value ?? null,
+        null,
+        2,
+      )}`,
+    );
   }
 
   process.stdout.write(
@@ -197,6 +253,7 @@ try {
         browser: browserVersion.product,
         userAgent: browserVersion.userAgent,
         scenario,
+        scenarioSetup,
         ...telemetry,
         hardwareAccelerated:
           !/swiftshader|llvmpipe|software/i.test(telemetry.renderer ?? ''),

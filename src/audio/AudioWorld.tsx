@@ -7,6 +7,7 @@ import {
 } from 'three';
 import { useRuntimeAsset } from '../assets/runtimeAssetManifest';
 import { FOOTSTEP_EVENT } from './audioEvents';
+import { useExperienceSettingsStore } from '../state/useExperienceSettingsStore';
 
 interface AudioE2ETelemetry {
   spatialLoopsPlaying: number;
@@ -99,15 +100,21 @@ function UiAndFootstepAudio({
   uiConfirm,
   footstepA,
   footstepB,
-}: Pick<AudioUrls, 'uiHover' | 'uiConfirm' | 'footstepA' | 'footstepB'>) {
+  effectsVolume,
+  effectsMuted,
+}: Pick<AudioUrls, 'uiHover' | 'uiConfirm' | 'footstepA' | 'footstepB'> & {
+  effectsVolume: number;
+  effectsMuted: boolean;
+}) {
   useEffect(() => {
     const hover = new Audio(uiHover);
     const confirm = new Audio(uiConfirm);
     const footsteps = [new Audio(footstepA), new Audio(footstepB)];
-    hover.volume = 0.18;
-    confirm.volume = 0.28;
+    const channelVolume = effectsMuted ? 0 : effectsVolume;
+    hover.volume = 0.18 * channelVolume;
+    confirm.volume = 0.28 * channelVolume;
     footsteps.forEach((audio) => {
-      audio.volume = 0.22;
+      audio.volume = 0.22 * channelVolume;
       audio.preload = 'auto';
     });
     let footstepIndex = 0;
@@ -162,7 +169,7 @@ function UiAndFootstepAudio({
         audio.removeAttribute('src');
       });
     };
-  }, [footstepA, footstepB, uiConfirm, uiHover]);
+  }, [effectsMuted, effectsVolume, footstepA, footstepB, uiConfirm, uiHover]);
 
   return null;
 }
@@ -170,6 +177,9 @@ function UiAndFootstepAudio({
 function AudioRuntime({ urls }: { urls: AudioUrls }) {
   const camera = useThree((state) => state.camera);
   const [listener] = useState(() => new AudioListener());
+  const effectsVolume = useExperienceSettingsStore((state) => state.effectsVolume);
+  const effectsMuted = useExperienceSettingsStore((state) => state.effectsMuted);
+  const channelVolume = effectsMuted ? 0 : effectsVolume;
 
   useEffect(() => {
     camera.add(listener);
@@ -184,14 +194,14 @@ function AudioRuntime({ urls }: { urls: AudioUrls }) {
         listener={listener}
         url={urls.portalHum}
         distance={3.2}
-        volume={0.24}
-        position={[12, 1.6, 5]}
+        volume={0.24 * channelVolume}
+        position={[0, 1.6, -15]}
       />
       <SpatialLoop
         listener={listener}
         url={urls.windAmbience}
         distance={22}
-        volume={0.12}
+        volume={0.12 * channelVolume}
         position={[0, 5, -9]}
       />
       <UiAndFootstepAudio
@@ -199,6 +209,8 @@ function AudioRuntime({ urls }: { urls: AudioUrls }) {
         uiConfirm={urls.uiConfirm}
         footstepA={urls.footstepA}
         footstepB={urls.footstepB}
+        effectsVolume={effectsVolume}
+        effectsMuted={effectsMuted}
       />
     </>
   );

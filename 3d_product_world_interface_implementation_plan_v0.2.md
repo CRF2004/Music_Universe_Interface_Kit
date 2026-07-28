@@ -5,6 +5,14 @@
 > Date: 2026-05-26  
 > Goal: Build a reusable 3D web interface foundation that can later connect to different applications: product sites, AI agents, file managers, dashboards, documentation portals, onboarding flows, and experimental desktop-like interfaces.
 
+> **Historical architecture reference:** this document records the generic
+> Product World foundation that preceded the Music Universe product direction.
+> It is not the active product roadmap or task queue. Use
+> `docs/music-universe-roadmap.md` for product phases and `NOW.md` for current
+> priorities. Reusable runtime decisions in this document remain informative,
+> but generic desktop, dashboard, and product-site goals must not override the
+> Music Universe roadmap.
+
 ---
 
 ## 1. Product direction
@@ -2100,4 +2108,3 @@ Not the other way around.
 - Quaternius assets: https://quaternius.com/
 - Poly Haven: https://polyhaven.com/
 - ambientCG: https://ambientcg.com/
-

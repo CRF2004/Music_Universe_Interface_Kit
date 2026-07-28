@@ -1,4 +1,7 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
+import { detectWorldStartupSupport } from './runtime/worldStartup';
+import WorldRuntimeErrorBoundary from './ui/WorldRuntimeErrorBoundary';
+import WorldStartupFallback from './ui/WorldStartupFallback';
 
 const ExperienceRoot = lazy(() => import('./ExperienceRoot'));
 
@@ -20,12 +23,26 @@ function AppLoadingScreen() {
 
 /**
  * @license MIT
- * Copyright (c) 2026 Product World Interface Kit
+ * Copyright (c) 2026 Music Universe
  */
 export default function App() {
+  const [startupSupport] = useState(detectWorldStartupSupport);
+  const reloadWorld = () => window.location.reload();
+
+  if ('reason' in startupSupport) {
+    return (
+      <WorldStartupFallback
+        kind={startupSupport.reason}
+        onRetry={reloadWorld}
+      />
+    );
+  }
+
   return (
-    <Suspense fallback={<AppLoadingScreen />}>
-      <ExperienceRoot />
-    </Suspense>
+    <WorldRuntimeErrorBoundary onRetry={reloadWorld}>
+      <Suspense fallback={<AppLoadingScreen />}>
+        <ExperienceRoot />
+      </Suspense>
+    </WorldRuntimeErrorBoundary>
   );
 }

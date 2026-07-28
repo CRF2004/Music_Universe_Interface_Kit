@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   findRuntimeAsset,
+  resolveRuntimeAssetUrl,
   type RuntimeAssetManifest,
 } from './runtimeAssetManifest';
 
@@ -12,7 +13,7 @@ const manifest: RuntimeAssetManifest = {
     {
       id: 'departure-portal',
       type: 'model',
-      url: '/assets/generated/departure-portal.abc123.glb',
+      url: 'assets/generated/departure-portal.abc123.glb',
       sourceBytes: 512,
       outputBytes: 128,
       sha256: 'abc123',
@@ -32,6 +33,13 @@ const manifest: RuntimeAssetManifest = {
 describe('runtime asset manifest', () => {
   it('resolves a generated asset by id and type', () => {
     assert.equal(findRuntimeAsset(manifest, 'departure-portal', 'model').outputBytes, 128);
+    assert.equal(
+      resolveRuntimeAssetUrl(
+        manifest.assets[0].url,
+        '/Music_Universe_Interface_Kit/',
+      ),
+      '/Music_Universe_Interface_Kit/assets/generated/departure-portal.abc123.glb',
+    );
   });
 
   it('rejects missing assets, type mismatches, and unsafe URLs', () => {
@@ -43,6 +51,22 @@ describe('runtime asset manifest', () => {
           {
             ...manifest,
             assets: [{ ...manifest.assets[0], url: 'https://example.com/portal.glb' }],
+          },
+          'departure-portal',
+        ),
+      /invalid generated URL/,
+    );
+    assert.throws(
+      () =>
+        findRuntimeAsset(
+          {
+            ...manifest,
+            assets: [
+              {
+                ...manifest.assets[0],
+                url: 'assets/generated/../../private.txt',
+              },
+            ],
           },
           'departure-portal',
         ),

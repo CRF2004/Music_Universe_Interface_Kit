@@ -21,6 +21,11 @@ export type SpatialInteractionKind =
   | 'inspect'
   | 'custom';
 
+export type SpatialActionKind =
+  | SpatialInteractionKind
+  | 'set-flag'
+  | 'clear-flag';
+
 export type SpatialTriggerKind =
   | 'proximity'
   | 'click'
@@ -134,7 +139,7 @@ export interface SpatialTriggerDefinition {
 
 export interface SpatialActionDefinition {
   id: string;
-  type: SpatialInteractionKind;
+  type: SpatialActionKind;
   target?: string;
   payload?: JsonObject;
   closeOnComplete?: boolean;

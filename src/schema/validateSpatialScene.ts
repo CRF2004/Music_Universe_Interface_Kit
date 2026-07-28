@@ -28,8 +28,11 @@ export class SpatialSceneValidationError extends Error {
 const THEMES = new Set(['rough-comic', 'low-poly', 'minimal']);
 const TERRAIN_TYPES = new Set(['curved-plane', 'flat-plane', 'sphere']);
 const INTERACTION_KINDS = new Set(['dialog', 'panel', 'command', 'route', 'agent', 'inspect', 'custom']);
+const ACTION_KINDS = new Set([...INTERACTION_KINDS, 'set-flag', 'clear-flag']);
 const TRIGGER_KINDS = new Set(['proximity', 'click', 'hotkey', 'collision', 'zone-enter', 'zone-exit', 'scripted']);
 const CAMERA_MODES = new Set(['explore', 'interaction', 'cinematic', 'inspection', 'ui-safe']);
+const CONDITION_TYPES = new Set(['flag', 'app-state', 'inventory', 'permission', 'custom']);
+const CONDITION_OPERATORS = new Set(['equals', 'not-equals', 'exists', 'includes', 'gt', 'lt']);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -55,6 +58,71 @@ function requireNonEmptyString(
   if (typeof value !== 'string' || value.trim().length === 0) {
     issues.push({ path, message: 'must be a non-empty string' });
   }
+}
+
+function validateConditions(
+  input: unknown,
+  path: string,
+  issues: SpatialSceneValidationIssue[],
+): void {
+  if (input === undefined) return;
+  if (!Array.isArray(input)) {
+    issues.push({ path, message: 'must be an array' });
+    return;
+  }
+
+  input.forEach((condition, conditionIndex) => {
+    const conditionPath = `${path}[${conditionIndex}]`;
+    if (!isRecord(condition)) {
+      issues.push({ path: conditionPath, message: 'must be an object' });
+      return;
+    }
+
+    if (!CONDITION_TYPES.has(String(condition.type))) {
+      issues.push({
+        path: `${conditionPath}.type`,
+        message: 'is not a supported condition type',
+      });
+    }
+    requireNonEmptyString(condition.key, `${conditionPath}.key`, issues);
+
+    if (
+      condition.operator !== undefined &&
+      !CONDITION_OPERATORS.has(String(condition.operator))
+    ) {
+      issues.push({
+        path: `${conditionPath}.operator`,
+        message: 'is not a supported condition operator',
+      });
+      return;
+    }
+
+    const operator =
+      condition.operator ?? (condition.value === undefined ? 'exists' : 'equals');
+    if (
+      (operator === 'equals' ||
+        operator === 'not-equals' ||
+        operator === 'includes' ||
+        operator === 'gt' ||
+        operator === 'lt') &&
+      condition.value === undefined
+    ) {
+      issues.push({
+        path: `${conditionPath}.value`,
+        message: `is required for the ${operator} operator`,
+      });
+    }
+    if (
+      (operator === 'gt' || operator === 'lt') &&
+      condition.value !== undefined &&
+      !isFiniteNumber(condition.value)
+    ) {
+      issues.push({
+        path: `${conditionPath}.value`,
+        message: `must be a finite number for the ${operator} operator`,
+      });
+    }
+  });
 }
 
 export function validateSpatialScene(input: unknown): SpatialSceneValidationResult {
@@ -162,6 +230,11 @@ export function validateSpatialScene(input: unknown): SpatialSceneValidationResu
           if (trigger.type === 'hotkey' && (typeof trigger.hotkey !== 'string' || trigger.hotkey.length === 0)) {
             issues.push({ path: `${triggerPath}.hotkey`, message: 'is required for hotkey triggers' });
           }
+          validateConditions(
+            trigger.conditions,
+            `${triggerPath}.conditions`,
+            issues,
+          );
         });
       }
 
@@ -184,11 +257,39 @@ export function validateSpatialScene(input: unknown): SpatialSceneValidationResu
             actionIds.add(action.id);
           }
 
-          if (!INTERACTION_KINDS.has(String(action.type))) {
+          if (!ACTION_KINDS.has(String(action.type))) {
             issues.push({ path: `${actionPath}.type`, message: 'is not supported' });
           }
           if (action.cameraMode !== undefined && !CAMERA_MODES.has(String(action.cameraMode))) {
             issues.push({ path: `${actionPath}.cameraMode`, message: 'is not supported' });
+          }
+          validateConditions(
+            action.conditions,
+            `${actionPath}.conditions`,
+            issues,
+          );
+          if (action.type === 'set-flag' || action.type === 'clear-flag') {
+            if (!isRecord(action.payload)) {
+              issues.push({
+                path: `${actionPath}.payload`,
+                message: `must be an object for ${action.type}`,
+              });
+            } else {
+              requireNonEmptyString(
+                action.payload.key,
+                `${actionPath}.payload.key`,
+                issues,
+              );
+              if (
+                action.type === 'set-flag' &&
+                action.payload.value === undefined
+              ) {
+                issues.push({
+                  path: `${actionPath}.payload.value`,
+                  message: 'is required for set-flag',
+                });
+              }
+            }
           }
         });
       }

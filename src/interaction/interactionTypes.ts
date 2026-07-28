@@ -9,6 +9,11 @@ export type InteractionKind =
   | 'inspect'
   | 'custom'
 
+export type InteractionActionKind =
+  | InteractionKind
+  | 'set-flag'
+  | 'clear-flag'
+
 export type TriggerKind =
   | 'proximity'
   | 'click'
@@ -27,14 +32,14 @@ export interface InteractionCondition {
     | 'custom'
   key: string
   operator?: 'equals' | 'not-equals' | 'exists' | 'includes' | 'gt' | 'lt'
-  value?: any
+  value?: unknown
 }
 
 export interface InteractionActionDefinition {
   id: string
-  type: InteractionKind
+  type: InteractionActionKind
   target?: string
-  payload?: Record<string, any>
+  payload?: Record<string, unknown>
   closeOnComplete?: boolean
   cameraMode?: CameraMode
   conditions?: InteractionCondition[]
@@ -49,7 +54,7 @@ export interface InteractionTriggerDefinition {
   once?: boolean
   cooldownMs?: number
   conditions?: InteractionCondition[]
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export type BuiltInVisualType =
@@ -93,5 +98,5 @@ export interface InteractionPointDefinition {
   triggers: InteractionTriggerDefinition[]
   actions: InteractionActionDefinition[]
 
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }

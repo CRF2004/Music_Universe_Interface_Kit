@@ -36,6 +36,10 @@ export class LocalAudioPlayer {
     this.element.pause();
   }
 
+  setVolume(volume: number): void {
+    this.element.volume = Math.min(1, Math.max(0, volume));
+  }
+
   seek(seconds: number): void {
     const maximum = Number.isFinite(this.element.duration) ? this.element.duration : Number.POSITIVE_INFINITY;
     this.element.currentTime = Math.min(maximum, Math.max(0, seconds));
