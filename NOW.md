@@ -35,6 +35,10 @@ phases until the runtime baseline and experience loop pass their exit gates.
   resolution, LOD behavior, scenery layout, interaction conditions, scene
   condition validation, Store/Dispatcher flags and lifecycle reset, and WebGL
   startup probing.
+- An optional development-only Tripo CLI can stage reproducible text/image-to-3D
+  candidates with generation receipts. Candidates still require rights,
+  geometry, perceptual, collision, asset-pipeline, and performance review before
+  entering the runtime manifest; creator-facing generation remains Phase 3.
 
 ## Baseline verification
 
@@ -166,6 +170,8 @@ acceptance evidence for this repair pass.
 ## Not now
 
 - world-model integrations;
+- creator-facing Tripo/API generation; the internal candidate CLI does not
+  promote this work ahead of the versioned project and editor;
 - multiple experience templates;
 - community publishing or remix;
 - multiplayer;

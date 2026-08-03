@@ -143,3 +143,17 @@ licenses allow it. A remix retains:
 
 Full automation is not a separate product path. It is an optional acceleration
 layer over the same editable project workflow.
+
+## Planned generated 3D provider boundary
+
+Tripo is available as an optional internal candidate-generation tool, not a
+current creator capability. Its staged evaluation and official documentation
+links are recorded in
+[`tripo-asset-generation.md`](tripo-asset-generation.md).
+
+When assisted asset generation reaches Phase 3, provider credentials and async
+jobs belong behind a backend adapter. Creators must be able to compare, accept,
+edit, replace, or reject candidates, and every accepted result must become a
+normal validated `MusicWorldProject` asset with provenance, input-rights
+declaration, cost, review status, and a non-generated fallback. No project may
+depend on an expiring provider URL.

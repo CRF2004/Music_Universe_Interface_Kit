@@ -13,6 +13,7 @@
     "assets:validate": "node scripts/assets-pipeline.mjs validate",
     "assets:build": "node scripts/assets-pipeline.mjs build",
     "assets:report": "node scripts/generate-asset-report.mjs",
+    "assets:tripo": "node scripts/tripo-generate.mjs",
     "performance:collect": "node scripts/collect-browser-performance.mjs",
     "journey:regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs",
     "assets:generate:departure-portal": "node scripts/generate-departure-portal.mjs",

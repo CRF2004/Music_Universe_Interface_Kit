@@ -25,6 +25,12 @@ npm run assets:preview:departure-portal
 
 The preview is written to `output/playwright/departure-portal-preview.png`.
 
+For a distinctive hero asset that cannot be satisfied by reuse, the repository
+also has an optional Tripo text/image-to-3D candidate CLI. It writes only to an
+ignored review directory and cannot bypass this pipeline. See
+[`tripo-asset-generation.md`](tripo-asset-generation.md) for the official
+tutorial URLs, commands, rights review, and staged product plan.
+
 ## Adding an asset
 
 1. Put the source in `assets/source/models`, `textures`, or `audio`.
