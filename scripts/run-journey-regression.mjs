@@ -1,0 +1,580 @@
+import { spawn } from 'node:child_process';
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { homedir, tmpdir } from 'node:os';
+import path from 'node:path';
+
+const root = process.cwd();
+const outputDir = path.join(root, 'output', 'playwright', 'journey-regression');
+const reportPath = path.join(outputDir, 'report.json');
+const pageUrl =
+  process.env.JOURNEY_REGRESSION_URL ??
+  'http://localhost/?e2e=1';
+const checks = [];
+const snapshots = {};
+const screenshots = [];
+const report = {
+  capturedAt: new Date().toISOString(),
+  page: pageUrl,
+  status: 'running',
+  checks,
+  snapshots,
+  screenshots,
+  consoleErrors: [],
+};
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function check(name, condition, details = null) {
+  checks.push({ name, passed: Boolean(condition), details });
+  if (!condition) throw new Error(`Regression check failed: ${name}`);
+}
+
+async function waitFor(predicate, label, timeoutMs = 15_000) {
+  const deadline = Date.now() + timeoutMs;
+  let latest;
+  while (Date.now() < deadline) {
+    latest = await predicate();
+    if (latest) return latest;
+    await wait(100);
+  }
+  throw new Error(`Timed out waiting for ${label}. Last value: ${JSON.stringify(latest)}`);
+}
+
+async function findChromium() {
+  if (process.env.CHROME_BIN) return process.env.CHROME_BIN;
+  const cacheRoot = path.join(homedir(), '.cache', 'ms-playwright');
+  const entries = await readdir(cacheRoot, { withFileTypes: true }).catch(() => []);
+  const headlessCandidates = entries
+    .filter(
+      (entry) =>
+        entry.isDirectory() && entry.name.startsWith('chromium_headless_shell-'),
+    )
+    .sort((left, right) => right.name.localeCompare(left.name))
+    .map((entry) =>
+      path.join(
+        cacheRoot,
+        entry.name,
+        'chrome-headless-shell-linux64',
+        'chrome-headless-shell',
+      ),
+    );
+  const chromiumCandidates = entries
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('chromium-'))
+    .sort((left, right) => right.name.localeCompare(left.name))
+    .flatMap((entry) => [
+      path.join(cacheRoot, entry.name, 'chrome-linux64', 'chrome'),
+      path.join(cacheRoot, entry.name, 'chrome-linux', 'chrome'),
+    ]);
+  const candidates = [...headlessCandidates, ...chromiumCandidates];
+
+  for (const candidate of candidates) {
+    try {
+      await import('node:fs/promises').then(({ access }) => access(candidate));
+      return candidate;
+    } catch {
+      // Try the next Playwright-managed Chromium installation.
+    }
+  }
+  throw new Error(
+    'Chromium was not found. Set CHROME_BIN or run "npx playwright install chromium".',
+  );
+}
+
+function connectCdpPipe(input, output) {
+  return new Promise((resolve) => {
+    const pending = new Map();
+    const listeners = new Map();
+    let nextId = 1;
+    let buffered = Buffer.alloc(0);
+    const rejectPending = (error) => {
+      pending.forEach(({ reject: rejectRequest, timeout }) => {
+        clearTimeout(timeout);
+        rejectRequest(error);
+      });
+      pending.clear();
+    };
+    input.on('error', (error) => rejectPending(error));
+    output.on('error', (error) => rejectPending(error));
+    output.on('close', () =>
+      rejectPending(new Error('Chromium closed the DevTools pipe.')),
+    );
+
+    const handleMessage = (message) => {
+      if (message.id && pending.has(message.id)) {
+        const request = pending.get(message.id);
+        pending.delete(message.id);
+        clearTimeout(request.timeout);
+        if (message.error) request.reject(new Error(message.error.message));
+        else request.resolve(message.result);
+        return;
+      }
+      listeners.get(message.method)?.forEach((listener) => listener(message.params));
+    };
+
+    output.on('data', (chunk) => {
+      buffered = Buffer.concat([buffered, chunk]);
+      let boundary = buffered.indexOf(0);
+      while (boundary >= 0) {
+        const payload = buffered.subarray(0, boundary).toString('utf8');
+        buffered = buffered.subarray(boundary + 1);
+        if (payload) handleMessage(JSON.parse(payload));
+        boundary = buffered.indexOf(0);
+      }
+    });
+
+    resolve({
+      close: () => input.end(),
+      on(method, listener) {
+        const methodListeners = listeners.get(method) ?? new Set();
+        methodListeners.add(listener);
+        listeners.set(method, methodListeners);
+      },
+      send(method, params = {}, sessionId) {
+        return new Promise((resolveRequest, rejectRequest) => {
+          const id = nextId++;
+          const timeout = setTimeout(() => {
+            pending.delete(id);
+            rejectRequest(new Error(`DevTools command timed out: ${method}`));
+          }, 40_000);
+          pending.set(id, {
+            resolve: resolveRequest,
+            reject: rejectRequest,
+            timeout,
+          });
+          input.write(
+            `${JSON.stringify({
+              id,
+              method,
+              params,
+              ...(sessionId ? { sessionId } : {}),
+            })}\0`,
+          );
+        });
+      },
+    });
+  });
+}
+
+await mkdir(outputDir, { recursive: true });
+const profileDir = await mkdtemp(path.join(tmpdir(), 'music-universe-journey-'));
+const chromium = await findChromium();
+
+let browser;
+let client;
+let rootClient;
+let browserLog = '';
+
+try {
+  browser = spawn(
+    chromium,
+    [
+      '--headless=new',
+      '--no-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-breakpad',
+      '--disable-crash-reporter',
+      '--allow-file-access-from-files',
+      '--disable-web-security',
+      '--enable-webgl',
+      '--enable-unsafe-swiftshader',
+      '--ignore-gpu-blocklist',
+      '--use-angle=swiftshader',
+      '--remote-debugging-pipe',
+      `--user-data-dir=${profileDir}`,
+      '--window-size=1440,900',
+      'about:blank',
+    ],
+    { stdio: ['ignore', 'ignore', 'pipe', 'pipe', 'pipe'] },
+  );
+  browser.stderr.on('data', (chunk) => {
+    browserLog += chunk.toString();
+  });
+  await wait(500);
+  if (browser.exitCode !== null) {
+    throw new Error(
+      `Chromium exited before DevTools attached (code ${browser.exitCode}).\n${browserLog}`,
+    );
+  }
+
+  rootClient = await connectCdpPipe(browser.stdio[3], browser.stdio[4]);
+  const target = await rootClient.send('Target.createTarget', { url: 'about:blank' });
+  const attached = await rootClient.send('Target.attachToTarget', {
+    targetId: target.targetId,
+    flatten: true,
+  });
+  const sessionId = attached.sessionId;
+  client = {
+    close: () => undefined,
+    on: (method, listener) => rootClient.on(method, listener),
+    send: (method, params = {}) => rootClient.send(method, params, sessionId),
+  };
+  await client.send('Page.enable');
+  await client.send('Runtime.enable');
+  await client.send('Log.enable');
+  client.on('Runtime.exceptionThrown', (params) => {
+    report.consoleErrors.push(
+      params.exceptionDetails?.exception?.description ??
+        params.exceptionDetails?.text ??
+        'Unhandled runtime exception',
+    );
+  });
+  client.on('Log.entryAdded', ({ entry }) => {
+    if (entry.level === 'error') report.consoleErrors.push(entry.text);
+  });
+  const mimeTypes = {
+    '.css': 'text/css; charset=utf-8',
+    '.glb': 'model/gltf-binary',
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.wav': 'audio/wav',
+  };
+  if (!process.env.JOURNEY_REGRESSION_URL) {
+    await client.send('Fetch.enable', {
+      patterns: [{ urlPattern: 'http://localhost/*' }],
+    });
+    client.on('Fetch.requestPaused', async ({ requestId, request }) => {
+      try {
+        const url = new URL(request.url);
+        const relativePath =
+          decodeURIComponent(url.pathname).replace(/^\/+/, '') || 'index.html';
+        const absolutePath = path.resolve(root, 'dist', relativePath);
+        const distRoot = `${path.resolve(root, 'dist')}${path.sep}`;
+        if (!absolutePath.startsWith(distRoot)) {
+          throw new Error(`Unsafe dist request: ${relativePath}`);
+        }
+        const body = await readFile(absolutePath);
+        await client.send('Fetch.fulfillRequest', {
+          requestId,
+          responseCode: 200,
+          responseHeaders: [
+            {
+              name: 'Content-Type',
+              value: mimeTypes[path.extname(absolutePath)] ?? 'application/octet-stream',
+            },
+            { name: 'Cache-Control', value: 'no-store' },
+          ],
+          body: body.toString('base64'),
+        });
+      } catch {
+        await client.send('Fetch.fulfillRequest', {
+          requestId,
+          responseCode: 404,
+          body: Buffer.from('Not found').toString('base64'),
+        });
+      }
+    });
+  }
+  await client.send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `
+      window.__JOURNEY_REGRESSION_ERRORS__ = [];
+      window.addEventListener('error', (event) => {
+        window.__JOURNEY_REGRESSION_ERRORS__.push(event.error?.stack || event.message);
+      });
+      window.addEventListener('unhandledrejection', (event) => {
+        window.__JOURNEY_REGRESSION_ERRORS__.push(
+          event.reason?.stack || event.reason?.message || String(event.reason)
+        );
+      });
+    `,
+  });
+  await client.send('Emulation.setDeviceMetricsOverride', {
+    width: 1440,
+    height: 900,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  await client.send('Page.navigate', { url: pageUrl });
+
+  const evaluate = async (expression, userGesture = false) => {
+    const result = await client.send('Runtime.evaluate', {
+      expression,
+      awaitPromise: true,
+      returnByValue: true,
+      userGesture,
+    });
+    if (result.exceptionDetails) {
+      throw new Error(
+        result.exceptionDetails.exception?.description ??
+          result.exceptionDetails.text ??
+          'Browser evaluation failed.',
+      );
+    }
+    return result.result?.value;
+  };
+  const worldSnapshot = () =>
+    evaluate('window.__MUSIC_UNIVERSE_WORLD_E2E__?.snapshot ?? null');
+  const setPlayer = async (position, yaw = Math.PI) => {
+    await evaluate(
+      `window.__MUSIC_UNIVERSE_E2E__?.setPlayerTransform(${JSON.stringify(position)}, ${yaw})`,
+    );
+    await wait(900);
+  };
+  const settleReviewCamera = async () => {
+    await wait(2200);
+  };
+  const closePanel = () =>
+    evaluate(`document.querySelector('[aria-label="Close dialog"]')?.click()`);
+  const screenshot = async (name) => {
+    const result = await client.send('Page.captureScreenshot', {
+      format: 'png',
+      captureBeyondViewport: false,
+    });
+    const relativePath = `output/playwright/journey-regression/${name}.png`;
+    await writeFile(path.join(root, relativePath), Buffer.from(result.data, 'base64'));
+    screenshots.push(relativePath);
+  };
+
+  await waitFor(
+    () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
+    'world inspection probes',
+  );
+  await evaluate(
+    `[...document.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('Enter the world'))?.click()`,
+    true,
+  );
+  await wait(500);
+
+  snapshots.initial = await worldSnapshot();
+  check('initial objective is the Listener Guide', snapshots.initial.currentObjectiveId === 'npc-guide');
+  check('initial journey flags are clear', Object.keys(snapshots.initial.flags).length === 0);
+  const archive = snapshots.initial.interactions.find(
+    (interaction) => interaction.id === 'memory-archive',
+  );
+  check('Memory Archive exists in the semantic world', Boolean(archive), archive);
+  check(
+    'Memory Archive collider covers the normalized hangar',
+    archive?.collider?.type === 'cuboid' &&
+      archive.collider.halfExtents[0] >= 5.2 &&
+      archive.collider.halfExtents[2] >= 7.1,
+    archive?.collider,
+  );
+  check(
+    'Memory Archive interaction is reachable outside its collider',
+    archive.radius > archive.collider.halfExtents[2],
+    { radius: archive.radius, halfExtents: archive.collider.halfExtents },
+  );
+  const audioReady = await evaluate(
+    `(async () => {
+      const input = document.querySelector('input[type="file"][accept="audio/*"]');
+      if (!input) throw new Error('Music file input was not found.');
+      const sampleRate = 8000;
+      const sampleCount = sampleRate * 4;
+      const wav = new ArrayBuffer(44 + sampleCount * 2);
+      const view = new DataView(wav);
+      const text = (offset, value) => {
+        for (let index = 0; index < value.length; index += 1) {
+          view.setUint8(offset + index, value.charCodeAt(index));
+        }
+      };
+      text(0, 'RIFF');
+      view.setUint32(4, 36 + sampleCount * 2, true);
+      text(8, 'WAVEfmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      text(36, 'data');
+      view.setUint32(40, sampleCount * 2, true);
+      const transfer = new DataTransfer();
+      const blob = new Blob([wav], { type: 'audio/wav' });
+      transfer.items.add(new File([blob], 'journey-regression.wav', { type: 'audio/wav' }));
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      const deadline = performance.now() + 20000;
+      let range;
+      let playButton;
+      while (performance.now() < deadline) {
+        range = document.querySelector('input[aria-label="Music progress"]');
+        playButton = [...document.querySelectorAll('button')]
+          .find((button) => button.textContent?.trim() === 'Play');
+        if (range && playButton && !playButton.disabled && Number(range.max) > 0) break;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      if (!range || !playButton || playButton.disabled) {
+        throw new Error('Synthetic journey audio did not become ready: ' + JSON.stringify({
+          selectedFiles: input.files?.length ?? 0,
+          rangePresent: Boolean(range),
+          rangeMaximum: Number(range?.max ?? 0),
+          playPresent: Boolean(playButton),
+          playDisabled: playButton?.disabled ?? null,
+          body: document.body.innerText.slice(0, 600),
+        }));
+      }
+      return { duration: Number(range.max), currentTime: Number(range.value) };
+    })()`,
+    true,
+  );
+  check('synthetic journey audio becomes ready', audioReady.duration > 0, audioReady);
+  await setPlayer([0, 0.65, 0]);
+  await settleReviewCamera();
+  await screenshot('00-spawn');
+
+  // Walk forward into the front face of the Archive and assert Rapier stops the capsule.
+  await setPlayer([-8, 0.65, -2.8]);
+  await evaluate(
+    `window.__MUSIC_UNIVERSE_E2E__?.drivePlayer([0, 0, -5], 900)`,
+  );
+  await wait(950);
+  await wait(250);
+  const collisionPosition = await evaluate(
+    'window.__MUSIC_UNIVERSE_E2E__?.playerPosition ?? null',
+  );
+  check(
+    'player is stopped outside the Archive front collider',
+    Array.isArray(collisionPosition) &&
+      collisionPosition[2] > -3.75 &&
+      Math.abs(collisionPosition[0] + 8) < 1.25,
+    collisionPosition,
+  );
+
+  await setPlayer([0, 0.65, -4]);
+  check(
+    'Guide interaction executes',
+    await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true),
+  );
+  snapshots.afterGuide = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.currentObjectiveId === 'memory-archive' ? snapshot : null;
+  }, 'Guide objective transition');
+  check('Guide advances objective to Archive', snapshots.afterGuide.currentObjectiveId === 'memory-archive');
+  check('Guide sets journey.started', snapshots.afterGuide.flags['journey.started'] === true);
+  await closePanel();
+  await wait(450);
+  await screenshot('01-guide-complete');
+
+  await setPlayer([-2, 0.65, -11]);
+  check(
+    'Archive interaction executes from outside the collider',
+    await evaluate(
+      `window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('memory-archive')`,
+      true,
+    ),
+  );
+  snapshots.afterArchive = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.currentObjectiveId === 'departure-gate' ? snapshot : null;
+  }, 'Archive objective transition');
+  check('Archive advances objective to Gate', snapshots.afterArchive.currentObjectiveId === 'departure-gate');
+  check('Archive sets memory.received', snapshots.afterArchive.flags['memory.received'] === true);
+  await closePanel();
+  await wait(450);
+  await screenshot('02-archive-complete');
+
+  const audioSetup = await evaluate(
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Music progress"]');
+      const playButton = [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Play');
+      if (!range || !playButton || playButton.disabled) {
+        throw new Error('Synthetic journey audio controls are no longer ready.');
+      }
+      playButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(range, String(Number(range.max) * 0.9));
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Pause')?.click();
+      return { duration: Number(range.max), currentTime: Number(range.value) };
+    })()`,
+    true,
+  );
+  snapshots.gateOpen = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.flags?.['world.departureGateOpen'] === true
+      ? snapshot
+      : null;
+  }, 'departure gate timeline cue');
+  check('synthetic audio reaches the gate cue', audioSetup.currentTime >= audioSetup.duration * 0.84, audioSetup);
+  check('timeline opens the departure gate', snapshots.gateOpen.flags['world.departureGateOpen'] === true);
+
+  await setPlayer([0, 0.65, -11.5]);
+  check(
+    'Gate interaction executes',
+    await evaluate(
+      `window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('departure-gate')`,
+      true,
+    ),
+  );
+  snapshots.completed = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.flags?.['journey.completed'] === true ? snapshot : null;
+  }, 'journey completion state');
+  check('Gate completes the journey', snapshots.completed.flags['journey.completed'] === true);
+  check('completed journey has no remaining objective', snapshots.completed.currentObjectiveId === null);
+  await screenshot('03-gate-complete');
+  await closePanel();
+
+  await evaluate(
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Music progress"]');
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(range, String(Math.max(0, Number(range.max) - 0.12)));
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+      [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Play')?.click();
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Play')?.click();
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Pause')?.click();
+    })()`,
+    true,
+  );
+  snapshots.replay = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.currentObjectiveId === 'npc-guide' &&
+      snapshot.flags?.['journey.started'] !== true
+      ? snapshot
+      : null;
+  }, 'replay reset state');
+  check('Replay resets deliberate journey flags', snapshots.replay.flags['journey.started'] !== true);
+  check('Replay restores the Guide objective', snapshots.replay.currentObjectiveId === 'npc-guide');
+  check('Replay reconstructs the closed gate state', snapshots.replay.flags['world.departureGateOpen'] !== true);
+  await setPlayer([0, 0.65, 0]);
+  await settleReviewCamera();
+  await screenshot('04-replay-reset');
+
+  const pageErrors = await evaluate('window.__JOURNEY_REGRESSION_ERRORS__ ?? []');
+  report.consoleErrors.push(...pageErrors);
+  check('browser emitted no runtime errors', report.consoleErrors.length === 0, report.consoleErrors);
+  report.status = 'passed';
+} catch (error) {
+  report.status = 'failed';
+  report.failure = error instanceof Error ? error.stack ?? error.message : String(error);
+  process.exitCode = 1;
+} finally {
+  report.finishedAt = new Date().toISOString();
+  report.browserLog = browserLog.trim().split('\n').slice(-20);
+  await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  client?.close();
+  rootClient?.close();
+  browser?.kill('SIGTERM');
+  await wait(250);
+  await rm(profileDir, { recursive: true, force: true });
+  process.stdout.write(
+    `${report.status.toUpperCase()}: ${path.relative(root, reportPath)}\n`,
+  );
+  if (report.status === 'passed') {
+    process.stdout.write(`${checks.length} checks passed; ${screenshots.length} screenshots captured.\n`);
+  } else {
+    process.stderr.write(`${report.failure}\n`);
+  }
+}

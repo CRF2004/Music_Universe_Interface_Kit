@@ -23,6 +23,7 @@ interface PlayerE2ETelemetry {
   velocity: [number, number, number];
   cameraOccludedMaterials?: number;
   setPlayerTransform: (position: [number, number, number], yaw: number) => void;
+  drivePlayer: (velocity: [number, number, number], durationMs: number) => void;
 }
 
 type E2EWindow = Window & {
@@ -39,6 +40,10 @@ export default function PlayerController() {
   const cameraForward = useRef(new THREE.Vector3());
   const targetQuaternion = useRef(new THREE.Quaternion());
   const targetEuler = useRef(new THREE.Euler());
+  const e2eDrive = useRef<{
+    velocity: [number, number, number];
+    until: number;
+  } | null>(null);
   const e2eEnabled = useRef(
     typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('e2e'),
   );
@@ -57,11 +62,24 @@ export default function PlayerController() {
 
     const controls = getControls();
     const velocity = body.linvel();
+    const drive = e2eDrive.current;
+    const driveActive =
+      e2eEnabled.current && drive !== null && performance.now() < drive.until;
+    if (drive && !driveActive) e2eDrive.current = null;
 
     camera.getWorldDirection(cameraForward.current);
     const movement = resolvePlayerMovement(controls, cameraForward.current, camera.up);
 
-    if (movement.moving) {
+    if (driveActive && drive) {
+      body.setLinvel(
+        {
+          x: drive.velocity[0],
+          y: drive.velocity[1],
+          z: drive.velocity[2],
+        },
+        true,
+      );
+    } else if (movement.moving) {
       const speed = controls.run ? 7.5 : 5;
       body.setLinvel(
         {
@@ -99,7 +117,7 @@ export default function PlayerController() {
       groundedFrames.current = 0;
     }
 
-    if (movement.moving && groundedFrames.current > 3) {
+    if ((movement.moving || driveActive) && groundedFrames.current > 3) {
       const now = performance.now();
       const interval = controls.run ? 290 : 420;
       if (now - lastFootstepAt.current >= interval) {
@@ -122,6 +140,12 @@ export default function PlayerController() {
           body.setTranslation({ x: position[0], y: position[1], z: position[2] }, true);
           body.setLinvel({ x: 0, y: 0, z: 0 }, true);
           model.rotation.set(0, yaw, 0);
+        },
+        drivePlayer(velocity, durationMs) {
+          e2eDrive.current = {
+            velocity,
+            until: performance.now() + Math.max(0, durationMs),
+          };
         },
       };
     }

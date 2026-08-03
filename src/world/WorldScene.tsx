@@ -11,6 +11,8 @@ import { demoWorld } from '../content/demoWorld';
 import { demoAdapter } from '../adapters/demoAdapter';
 import AudioWorld from '../audio/AudioWorld';
 import WorldPerformanceProbe from '../performance/WorldPerformanceProbe';
+import JourneyWorldGuide from './JourneyWorldGuide';
+import WorldInspectionProbe from '../runtime/WorldInspectionProbe';
 
 export default function WorldScene() {
   const registerInteractions = useInteractionStore((state) => state.registerInteractions);
@@ -32,8 +34,10 @@ export default function WorldScene() {
       <MusicReactiveWorld />
       <AudioWorld />
       <WorldPerformanceProbe />
+      <WorldInspectionProbe />
       <PlayerController />
       <InteractionSystem />
+      <JourneyWorldGuide />
       {interactions.map((interaction) => (
         <InteractionPoint key={interaction.id} definition={interaction} />
       ))}

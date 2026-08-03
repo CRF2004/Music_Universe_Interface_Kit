@@ -26,7 +26,11 @@ function AppLoadingScreen() {
  * Copyright (c) 2026 Music Universe
  */
 export default function App() {
-  const [startupSupport] = useState(detectWorldStartupSupport);
+  const [startupSupport] = useState(() =>
+    detectWorldStartupSupport(undefined, {
+      allowSoftwareRenderer: new URLSearchParams(window.location.search).has('e2e'),
+    }),
+  );
   const reloadWorld = () => window.location.reload();
 
   if ('reason' in startupSupport) {

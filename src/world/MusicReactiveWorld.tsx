@@ -4,7 +4,6 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import {
   BufferGeometry,
   Float32BufferAttribute,
-  Group,
   InstancedMesh,
   Object3D,
   PointsMaterial,
@@ -15,34 +14,49 @@ import DeparturePortal from './DeparturePortal';
 import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
 import MemoryTree from './MemoryTree';
+import { createSkyStarPositions } from './environmentLayout';
 
 function RainParticles({ intensity }: { intensity: number }) {
-  const group = useRef<Group>(null);
   const mesh = useRef<InstancedMesh>(null);
   const dropCount = Math.max(1, Math.round(intensity * 80));
   const helper = useMemo(() => new Object3D(), []);
-
-  useLayoutEffect(() => {
-    if (!mesh.current) return;
-    for (let index = 0; index < dropCount; index += 1) {
-      helper.position.set((index % 16) - 8, 2 + (index % 10), -2 - (index % 12));
-      helper.updateMatrix();
-      mesh.current.setMatrixAt(index, helper.matrix);
-    }
-    mesh.current.instanceMatrix.needsUpdate = true;
-  }, [dropCount, helper]);
+  const drops = useMemo(
+    () =>
+      Array.from({ length: dropCount }, (_, index) => ({
+        x: ((index * 37) % 173) / 8 - 10.8,
+        z: -2 - ((index * 61) % 181) / 7,
+        phase: ((index * 47) % 101) / 101,
+        speed: 5.2 + ((index * 29) % 37) / 10,
+        length: 0.7 + ((index * 13) % 19) / 20,
+      })),
+    [dropCount],
+  );
 
   useFrame(({ clock }) => {
-    if (group.current) group.current.position.y = -((clock.getElapsedTime() * 4) % 10);
+    if (!mesh.current) return;
+    const elapsed = clock.getElapsedTime();
+    drops.forEach((drop, index) => {
+      const cycleHeight = 13;
+      const rawY = drop.phase * cycleHeight - elapsed * drop.speed;
+      const y = 1 + ((rawY % cycleHeight) + cycleHeight) % cycleHeight;
+      helper.position.set(drop.x, y, drop.z);
+      helper.scale.set(1, drop.length, 1);
+      helper.updateMatrix();
+      mesh.current.setMatrixAt(index, helper.matrix);
+    });
+    mesh.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <group ref={group}>
-      <instancedMesh ref={mesh} args={[undefined, undefined, dropCount]}>
-        <boxGeometry args={[0.015, 0.45, 0.015]} />
-        <meshBasicMaterial color="#8ac7ff" transparent opacity={0.45} depthWrite={false} />
-      </instancedMesh>
-    </group>
+    <instancedMesh
+      ref={mesh}
+      args={[undefined, undefined, dropCount]}
+      frustumCulled={false}
+      userData={{ cameraOccluder: false }}
+    >
+      <boxGeometry args={[0.018, 0.42, 0.018]} />
+      <meshBasicMaterial color="#8ac7ff" transparent opacity={0.48} depthWrite={false} />
+    </instancedMesh>
   );
 }
 
@@ -58,10 +72,7 @@ export default function MusicReactiveWorld() {
 
   const starField = useMemo(() => {
     const geometry = new BufferGeometry();
-    const positions: number[] = [];
-    for (let index = 0; index < Math.min(stars, 520); index += 1) {
-      positions.push((index % 26) - 13, 3 + (index % 11) * 0.7, -5 - (index % 17));
-    }
+    const positions = createSkyStarPositions(Math.min(stars, 520));
     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
     const material = new PointsMaterial({
       color: 'white',

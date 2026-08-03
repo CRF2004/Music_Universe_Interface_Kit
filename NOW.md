@@ -1,8 +1,7 @@
 # NOW — Music Universe baseline and vertical slice
 
-> Last updated: 2026-07-28
-> Branch at audit: `agent/external-assets-outline`
-> Baseline commit at audit: `d734b4d feat: add data-driven outlines to interaction models`
+> Last updated: 2026-08-01
+> Baseline commit at audit: `a67004f Establish Memory Journey vertical slice and Pages research deployment (#15)`
 
 ## Current phase
 
@@ -39,21 +38,22 @@ phases until the runtime baseline and experience loop pass their exit gates.
 
 ## Baseline verification
 
-Run on 2026-07-28:
+Run on 2026-08-01:
 
 ```text
-npm test       46 passing
+npm test       51 passing
 npm run lint   passing
 npm run build  passing; 15 assets, 240.60 kB generated total
+npm run journey:regression  passing; 22 checks, 5 screenshots, 0 browser errors
 ```
 
 Current production split:
 
 ```text
-ExperienceRoot app code  37.39 kB (11.84 kB gzip)
-PhysicsWorld app code     41.59 kB (13.43 kB gzip)
+ExperienceRoot app code  38.48 kB (12.17 kB gzip)
+PhysicsWorld app code     48.30 kB (15.32 kB gzip)
 Three runtime            732.43 kB (189.75 kB gzip)
-Rapier runtime         2,260.67 kB (838.07 kB gzip)
+Rapier runtime         2,260.70 kB (838.08 kB gzip)
 ```
 
 The former application-chunk warnings are resolved through explicit cache
@@ -107,13 +107,50 @@ Implemented:
   `docs/first-user-observation.md`.
 - GitHub Pages builds automatically from `main` and supports manual deployment
   of a selected research branch with repository-safe asset paths.
+- the first observation repair pass replaces synchronized rain with independent
+  drop motion, stabilizes instanced-rock visibility, adds rock collision, and
+  introduces a three-stage world-space trail and destination beacon;
+- objective completion now produces explicit feedback and advances a visible
+  three-step journey state;
+- an instanced memory grove adds mid-ground depth and visibly reacts when the
+  memory is recovered;
+- research builds hide development controls by default and keep idle audio
+  controls compact.
+- built-in prop rendering and collision now share reviewed visual profiles;
+- physics debug rendering and a machine-readable world inspection snapshot are
+  available for agent/browser regression work.
+- `npm run journey:regression` builds a relative-path production bundle and
+  contains the full Guide -> Archive -> Gate -> Replay semantic, collision, and
+  fixed-camera regression flow. The complete asset-build -> production-build ->
+  Chromium path passes locally with 22 checks, five screenshots, and no browser
+  runtime errors.
 
 Next:
 
-1. Recruit 3–5 first-time participants and record completion problems with the
-   prepared observation protocol.
-2. Complete integrated-GPU minimum/reference-tier departure measurements; the
+1. Run a second first-time observation round with 3–5 participants and measure
+   whether they identify the first objective within 30 seconds, finish without
+   verbal guidance, and understand each interaction result.
+2. Use the second round to decide whether the remaining visual roughness needs
+   an art-direction/material pass or additional authored environmental events;
+   do not respond by adding undirected asset volume.
+3. Complete integrated-GPU minimum/reference-tier departure measurements; the
    RTX 4050 high-tier run passes at 144.93 FPS median / 72.46 FPS 1% low.
+The agent owns the initial art and experience proposal for each scene pass.
+Use `docs/experience-direction-rubric.md` before requesting subjective user
+feedback; the user should not need to prescribe implementation details.
+
+## First observation findings
+
+The first external observation reported:
+
+- rough visuals and insufficient environmental variety;
+- intermittent missing rocks, collision clipping, and apparently frozen rain;
+- unclear task purpose and weak interaction feedback;
+- low moment-to-moment engagement.
+
+The immediate priority is therefore experience comprehension and spatial
+reliability, not feature expansion. The next observation round is the
+acceptance evidence for this repair pass.
 
 ## Known gaps
 

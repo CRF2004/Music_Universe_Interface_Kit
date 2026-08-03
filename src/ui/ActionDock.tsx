@@ -7,16 +7,21 @@ export default function ActionDock() {
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const setReducedEffects = useWorldStore((state) => state.setReducedEffects);
   const setHelpOpen = useWorldStore((state) => state.setHelpOpen);
+  const debugAvailable =
+    import.meta.env.DEV ||
+    new URLSearchParams(window.location.search).has('debug');
 
   return (
     <div className="absolute top-6 left-6 flex flex-col gap-3 pointer-events-auto">
-      <button 
-        onClick={toggleDevMode}
-        className={`comic-button flex items-center gap-2 ${isDevMode ? 'bg-comic-yellow' : 'bg-paper'}`}
-      >
-        <Monitor size={18} />
-        <span className="hidden sm:inline">Debug</span>
-      </button>
+      {debugAvailable && (
+        <button
+          onClick={toggleDevMode}
+          className={`comic-button flex items-center gap-2 ${isDevMode ? 'bg-comic-yellow' : 'bg-paper'}`}
+        >
+          <Monitor size={18} />
+          <span className="hidden sm:inline">Debug</span>
+        </button>
+      )}
       
       <div className="flex gap-3">
         <button

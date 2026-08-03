@@ -1,6 +1,7 @@
 import React from 'react';
 import { InteractionPointDefinition } from './interactionTypes';
 import RuntimeInteractionVisual from './RuntimeInteractionVisual';
+import { interactionVisualProfiles } from './visualProfiles';
 
 export type VisualComponent = React.FC<{ 
   definition: InteractionPointDefinition, 
@@ -56,7 +57,7 @@ const PortalFallback = ({ definition, onClick }: Parameters<VisualComponent>[0])
 const NPCVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
     assetId="guide-astronaut"
-    targetHeight={1.7}
+    targetHeight={interactionVisualProfiles.npc.targetHeight}
     colorToken={definition.visual.colorToken || '#42a5ff'}
     outline={definition.visual.outline ?? false}
     onClick={onClick}
@@ -67,7 +68,7 @@ const NPCVisual: VisualComponent = ({ definition, onClick }) => (
 const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
     assetId="support-terminal"
-    targetHeight={1.75}
+    targetHeight={interactionVisualProfiles['phone-booth'].targetHeight}
     colorToken={definition.visual.colorToken || '#ff3b2f'}
     outline={definition.visual.outline ?? false}
     onClick={onClick}
@@ -78,7 +79,7 @@ const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
 const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
     assetId="product-tower-hangar"
-    targetHeight={5.2}
+    targetHeight={interactionVisualProfiles.building.targetHeight}
     colorToken={definition.visual.colorToken || '#9f63ff'}
     outline={definition.visual.outline ?? false}
     onClick={onClick}
@@ -89,7 +90,7 @@ const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
 const PortalVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
     assetId="docs-portal-gate"
-    targetHeight={3.4}
+    targetHeight={interactionVisualProfiles.portal.targetHeight}
     colorToken={definition.visual.colorToken || '#4adb7d'}
     outline={definition.visual.outline ?? false}
     emissive

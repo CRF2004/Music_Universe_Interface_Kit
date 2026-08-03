@@ -4,31 +4,26 @@ import { CapsuleCollider, CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useInteractionStore } from '../state/useInteractionStore';
 import { visualRegistry } from './visualRegistry';
 import { InteractionDispatcher } from './InteractionDispatcher';
+import { getInteractionVisualProfile } from './visualProfiles';
 
 interface Props {
   definition: InteractionPointDefinition;
 }
 
 function InteractionCollider({ definition }: Props) {
-  const type = definition.visual.type;
+  const profile = getInteractionVisualProfile(definition.visual.type).collider;
 
-  if (type === 'building') {
-    return <CuboidCollider args={[4, 2.6, 2.8]} position={[0, 2.6, 0]} />;
+  if (profile.type === 'cuboid') {
+    return <CuboidCollider args={profile.halfExtents} position={profile.position} />;
   }
-  if (type === 'phone-booth') {
-    return <CuboidCollider args={[1.1, 0.9, 0.55]} position={[0, 0.9, 0]} />;
+  if (profile.type === 'capsule') {
+    return (
+      <CapsuleCollider
+        args={[profile.halfHeight, profile.radius]}
+        position={profile.position}
+      />
+    );
   }
-  if (type === 'vehicle') {
-    return <CuboidCollider args={[1, 0.8, 0.55]} position={[0, 0.8, 0]} />;
-  }
-  if (type === 'npc') {
-    return <CapsuleCollider args={[0.4, 0.4]} position={[0, 0.8, 0]} />;
-  }
-  if (type === 'crate') {
-    return <CuboidCollider args={[0.5, 0.5, 0.5]} position={[0, 0.5, 0]} />;
-  }
-
-  // Portals stay physically traversable.
   return null;
 }
 

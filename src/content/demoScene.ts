@@ -102,7 +102,9 @@ export const demoScene = {
       },
       interaction: {
         kind: 'inspect',
-        radius: 5,
+        // The normalized hangar is ~14.2 m deep. Keep the interaction reachable
+        // from outside its solid collision volume.
+        radius: 8.5,
         enabled: true,
         triggers: [
           {
