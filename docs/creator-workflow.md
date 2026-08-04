@@ -1,7 +1,7 @@
 # Creator Workflow
 
 > Product workflow target; capabilities are introduced by roadmap phase.
-> Last updated: 2026-07-26
+> Last updated: 2026-08-04
 
 ## Product goal
 
@@ -143,6 +143,39 @@ licenses allow it. A remix retains:
 
 Full automation is not a separate product path. It is an optional acceleration
 layer over the same editable project workflow.
+
+## Phase 2 editor architecture reference
+
+[Pascal Editor](https://github.com/pascalorg/editor) is tracked as a Phase 2
+technical reference for the future Creator editor. It is not an adopted runtime
+dependency or a replacement for `MusicWorldProject`.
+
+Patterns worth carrying into the Creator design:
+
+- a versioned, validated canonical project model with explicit migrations;
+- one mutation/patch layer shared by inspector UI, undo/redo, automation, and
+  future agent-facing tools;
+- transaction boundaries that make multi-field edits atomic and reversible;
+- IndexedDB-backed drafts, crash recovery, and explicit save/publish states;
+- typed registries for editor panels, project nodes, renderers, and plugins;
+- derived render state and dirty-node tracking kept outside canonical project
+  data;
+- headless validation and editing tools operating on the same data model as the
+  visual editor, as demonstrated by Pascal's
+  [MCP package](https://github.com/pascalorg/editor/blob/main/packages/mcp/README.md).
+
+The project should not inherit Pascal's building-specific scene ontology,
+editor/viewer runtime, Next.js monorepo, or WebGPU assumptions. Its built-in
+asset catalog is not an approved asset source without per-item provenance and
+license review under this repository's asset pipeline.
+
+Any future evaluation must be a disposable, bounded spike after the first
+versioned `MusicWorldProject` schema exists. The spike should prove one narrow
+end-to-end capability—such as an undoable landmark transform persisted and
+reloaded through the canonical project API—rather than create a parallel scene
+model. Pascal's
+[plugin architecture](https://github.com/pascalorg/editor/blob/main/wiki/architecture/plugin-authoring.md)
+is useful reference material for that evaluation.
 
 ## Planned generated 3D provider boundary
 

@@ -1,7 +1,7 @@
 # World Development and Autonomous Validation Tooling
 
 > Status: active tooling direction
-> Last reviewed: 2026-07-30
+> Last reviewed: 2026-08-04
 
 ## Problem
 
@@ -120,6 +120,14 @@ writes its JSON report and fixed-stage screenshots to
   Three Fiber components. Test it on a disposable branch against one scenery
   component. Adopt only if it preserves schema-driven scene data and does not
   make the visual editor a runtime dependency.
+- [Pascal Editor](https://github.com/pascalorg/editor) is a Phase 2 technical
+  reference for the future Creator editor, especially its validated scene data,
+  transaction/undo model, IndexedDB persistence, typed plugin registry, and
+  shared visual/headless mutation layer. Do not add its packages, building
+  schema, Next.js/WebGPU runtime, or asset catalog to the product by default. A
+  future spike must use the canonical `MusicWorldProject` API and prove one
+  disposable, narrow editing slice; every exported asset still requires normal
+  provenance, license, budget, and perceptual validation.
 - [ecctrl](https://github.com/pmndrs/ecctrl) offers a Rapier-backed character
   controller. It may reduce future work on slopes, stairs, moving platforms,
   and camera behavior, but replacing the current deterministic controller
@@ -144,7 +152,9 @@ does not authorize bypassing that pipeline.
 
 ## Decision
 
-The highest-return work is a thin inspection and regression layer around the
-current R3F/Rapier runtime, not an engine migration. Triplex, gltfjsx, ecctrl,
-and GPU tiering are candidates for bounded pilots after the full journey smoke
-runner is stable.
+The highest-return current work is a thin inspection and regression layer
+around the current R3F/Rapier runtime, not an engine migration. Triplex,
+gltfjsx, ecctrl, and GPU tiering are candidates for bounded pilots after the
+full journey smoke runner is stable. Pascal remains a Phase 2 architecture
+reference, not a current dependency or pilot, until the versioned project
+schema and Creator workflow are active work.
