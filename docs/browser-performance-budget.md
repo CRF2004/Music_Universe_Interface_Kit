@@ -146,6 +146,26 @@ The vertical slice is ready only when:
 Change a budget only with measurements and a product tradeoff, not to silence a
 warning.
 
+## Browser reliability run — 2026-08-11
+
+Production black-box regression on Windows verified:
+
+- Chrome loaded, sought, replaced, and completed the authorized Crywolf demo
+  with 30 checks and no application runtime errors;
+- Edge completed the deterministic WAV lifecycle, including natural end,
+  replay reconstruction, interactions, and context-loss recovery, with 28
+  checks and no application runtime errors;
+- forced WebGL 2 unavailability remained readable across three reloads;
+- a forced runtime render failure reached the reloadable error boundary, and
+  removing the E2E-only fault restored normal world startup.
+
+The E2E fault parameters are ignored unless `e2e=1` is also present. The
+headless software-audio environment decodes and seeks the authorized MP3 but
+does not advance its media clock reliably, so natural-end evidence comes from
+the deterministic WAV fixture. A headed hardware-browser pass remains required
+for the demo track's audible natural end. Firefox and macOS Safari also remain
+outstanding in the supported-browser matrix.
+
 ## Measurement record — 2026-07-27 container baseline
 
 This run is useful for correctness and resource-count baselining, but it is

@@ -12,6 +12,9 @@ import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
+const browserArgument = process.argv.find((argument) => argument.startsWith('--browser='));
+const requestedBrowser = browserArgument?.slice('--browser='.length) ?? 'chrome';
+const recoveryMode = process.argv.includes('--recovery');
 const localDemoPath = process.argv.includes('--local-demo')
   ? path.join(root, 'assets', 'source', 'audio', 'crywolf-athetosis-demo.mp3')
   : null;
@@ -26,6 +29,8 @@ const screenshots = [];
 const report = {
   capturedAt: new Date().toISOString(),
   page: pageUrl,
+  browser: requestedBrowser,
+  mode: recoveryMode ? 'recovery' : 'journey',
   status: 'running',
   checks,
   snapshots,
@@ -53,16 +58,24 @@ async function waitFor(predicate, label, timeoutMs = 15_000) {
 
 async function findChromium() {
   if (process.env.CHROME_BIN) return process.env.CHROME_BIN;
-  const installedBrowserCandidates =
+  const installedBrowsers =
     process.platform === 'win32'
-      ? [
-          path.join(process.env.PROGRAMFILES ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-          path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-          path.join(process.env.LOCALAPPDATA ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-          path.join(process.env.PROGRAMFILES ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-          path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-        ]
-      : [];
+      ? {
+          chrome: [
+            path.join(process.env.PROGRAMFILES ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+            path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+            path.join(process.env.LOCALAPPDATA ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+          ],
+          edge: [
+            path.join(process.env.PROGRAMFILES ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+            path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+          ],
+        }
+      : { chrome: [], edge: [] };
+  if (!Object.hasOwn(installedBrowsers, requestedBrowser)) {
+    throw new Error(`Unsupported browser "${requestedBrowser}". Use chrome or edge.`);
+  }
+  const installedBrowserCandidates = installedBrowsers[requestedBrowser];
   const cacheRoot =
     process.platform === 'win32' && process.env.LOCALAPPDATA
       ? path.join(process.env.LOCALAPPDATA, 'ms-playwright')
@@ -95,8 +108,8 @@ async function findChromium() {
     );
   const candidates = [
     ...installedBrowserCandidates,
-    ...headlessCandidates,
-    ...chromiumCandidates,
+    ...(requestedBrowser === 'chrome' ? headlessCandidates : []),
+    ...(requestedBrowser === 'chrome' ? chromiumCandidates : []),
   ];
 
   for (const candidate of candidates) {
@@ -108,7 +121,7 @@ async function findChromium() {
     }
   }
   throw new Error(
-    'Chromium was not found. Set CHROME_BIN or run "npx playwright install chromium".',
+    `${requestedBrowser} was not found. Set CHROME_BIN or install the requested browser.`,
   );
 }
 
@@ -303,11 +316,15 @@ try {
           body: body.toString('base64'),
         });
       } catch {
-        await client.send('Fetch.fulfillRequest', {
-          requestId,
-          responseCode: 404,
-          body: Buffer.from('Not found').toString('base64'),
-        });
+        try {
+          await client.send('Fetch.fulfillRequest', {
+            requestId,
+            responseCode: 404,
+            body: Buffer.from('Not found').toString('base64'),
+          });
+        } catch {
+          // Navigation can cancel an intercepted request before it is fulfilled.
+        }
       }
     });
   }
@@ -371,7 +388,63 @@ try {
     screenshots.push(relativePath);
   };
 
-  await waitFor(
+  if (recoveryMode) {
+    const recoveryUrl = new URL(pageUrl);
+    recoveryUrl.searchParams.set('e2e', '1');
+    recoveryUrl.searchParams.set('e2eFault', 'webgl2-unavailable');
+    await client.send('Page.navigate', { url: recoveryUrl.toString() });
+    await waitFor(
+      () => evaluate(`document.body.innerText.includes('This world needs WebGL 2')`),
+      'WebGL unavailable recovery page',
+    );
+    check(
+      'WebGL unavailable shows a readable recovery page',
+      await evaluate(`document.body.innerText.includes('Enable hardware acceleration')`),
+    );
+    check(
+      'WebGL unavailable offers reload',
+      await evaluate(
+        `[...document.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Reload world')`,
+      ),
+    );
+    await screenshot('recovery-webgl2-unavailable');
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      await client.send('Page.reload');
+      const stable = await waitFor(
+        () => evaluate(`document.body.innerText.includes('This world needs WebGL 2')`),
+        `WebGL unavailable reload ${attempt}`,
+      );
+      check(`WebGL unavailable remains stable after reload ${attempt}`, stable === true);
+    }
+
+    recoveryUrl.searchParams.set('e2eFault', 'runtime-error');
+    await client.send('Page.navigate', { url: recoveryUrl.toString() });
+    await waitFor(
+      () => evaluate(`document.body.innerText.includes('The world could not finish loading')`),
+      'runtime error recovery page',
+    );
+    check(
+      'Runtime failure shows a readable recovery page',
+      await evaluate(`document.body.innerText.includes('has not been uploaded to a server')`),
+    );
+    check(
+      'Runtime failure offers reload',
+      await evaluate(
+        `[...document.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Reload world')`,
+      ),
+    );
+    await screenshot('recovery-runtime-error');
+
+    recoveryUrl.searchParams.delete('e2eFault');
+    await client.send('Page.navigate', { url: recoveryUrl.toString() });
+    const recovered = await waitFor(
+      () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
+      'world recovery after fault removal',
+    );
+    check('World starts normally after removing the E2E fault', recovered === true);
+    report.consoleErrors.length = 0;
+  } else {
+    await waitFor(
     () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
     'world inspection probes',
   );
@@ -635,24 +708,60 @@ try {
   await screenshot('03-gate-complete');
   await closePanel();
 
-  await evaluate(
-    `(async () => {
+  let naturalEnd = null;
+  if (localDemoPath) {
+    await evaluate(
+      `(async () => {
+        const input = document.querySelector('input[type="file"][accept="audio/*"]');
+        if (!input) throw new Error('Audio replacement input was not found.');
+        const response = await fetch('/__local_demo_audio__');
+        if (!response.ok) throw new Error('Replacement audio fixture was unavailable.');
+        const transfer = new DataTransfer();
+        transfer.items.add(new File([await response.blob()], 'ATHETOSIS - Crywolf.mp3', {
+          type: 'audio/mpeg',
+        }));
+        Object.defineProperty(input, 'files', { configurable: true, value: transfer.files });
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      })()`,
+      true,
+    );
+  } else {
+    naturalEnd = await evaluate(
+      `(async () => {
       const range = document.querySelector('input[aria-label="Music progress"]');
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-      setter?.call(range, String(Math.max(0, Number(range.max) - 0.12)));
+      setter?.call(range, String(Math.max(0, Number(range.max) - 0.5)));
       range.dispatchEvent(new Event('input', { bubbles: true }));
       range.dispatchEvent(new Event('change', { bubbles: true }));
       [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Play')?.click();
-      await new Promise((resolve) => setTimeout(resolve, 650));
+      const deadline = performance.now() + 5000;
+      while (performance.now() < deadline) {
+        const playReady = [...document.querySelectorAll('button')]
+          .some((button) => button.textContent?.trim() === 'Play');
+        if (playReady && Number(range.value) >= Number(range.max) - 0.05) break;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      const endedAt = Number(range.value);
+      const duration = Number(range.max);
+      if (endedAt < duration - 0.05) {
+        throw new Error('Audio did not reach its natural end before replay.');
+      }
       [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Play')?.click();
       await new Promise((resolve) => setTimeout(resolve, 250));
       [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Pause')?.click();
-    })()`,
-    true,
-  );
+      return { endedAt, duration };
+      })()`,
+      true,
+    );
+    check(
+      'Audio reaches its natural end before replay',
+      naturalEnd.endedAt >= naturalEnd.duration - 0.05,
+      naturalEnd,
+    );
+  }
   snapshots.replay = await waitFor(async () => {
     const snapshot = await worldSnapshot();
     return snapshot?.currentObjectiveId === 'npc-guide' &&
@@ -660,9 +769,24 @@ try {
       ? snapshot
       : null;
   }, 'replay reset state');
-  check('Replay resets deliberate journey flags', snapshots.replay.flags['journey.started'] !== true);
-  check('Replay restores the Guide objective', snapshots.replay.currentObjectiveId === 'npc-guide');
-  check('Replay reconstructs the closed gate state', snapshots.replay.flags['world.departureGateOpen'] !== true);
+  check(
+    localDemoPath
+      ? 'Final track replacement resets deliberate journey flags'
+      : 'Replay resets deliberate journey flags',
+    snapshots.replay.flags['journey.started'] !== true,
+  );
+  check(
+    localDemoPath
+      ? 'Final track replacement restores the Guide objective'
+      : 'Replay restores the Guide objective',
+    snapshots.replay.currentObjectiveId === 'npc-guide',
+  );
+  check(
+    localDemoPath
+      ? 'Final track replacement reconstructs the closed gate state'
+      : 'Replay reconstructs the closed gate state',
+    snapshots.replay.flags['world.departureGateOpen'] !== true,
+  );
   await setPlayer([0, 0.65, 0]);
   await settleReviewCamera();
   await screenshot('04-replay-reset');
@@ -692,6 +816,7 @@ try {
   const pageErrors = await evaluate('window.__JOURNEY_REGRESSION_ERRORS__ ?? []');
   report.consoleErrors.push(...pageErrors);
   check('browser emitted no runtime errors', report.consoleErrors.length === 0, report.consoleErrors);
+  }
   report.status = 'passed';
 } catch (error) {
   report.status = 'failed';
@@ -703,9 +828,20 @@ try {
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   client?.close();
   rootClient?.close();
-  browser?.kill('SIGTERM');
-  await wait(250);
-  await rm(profileDir, { recursive: true, force: true });
+  if (browser && browser.exitCode === null) {
+    const exited = new Promise((resolve) => {
+      browser.once('exit', resolve);
+      setTimeout(resolve, 2_000);
+    });
+    browser.kill('SIGTERM');
+    await exited;
+  }
+  await rm(profileDir, {
+    recursive: true,
+    force: true,
+    maxRetries: process.platform === 'win32' ? 5 : 0,
+    retryDelay: 200,
+  });
   process.stdout.write(
     `${report.status.toUpperCase()}: ${path.relative(root, reportPath)}\n`,
   );
