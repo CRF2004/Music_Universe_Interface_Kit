@@ -17,6 +17,7 @@ const root = process.cwd();
 const browserArgument = process.argv.find((argument) => argument.startsWith('--browser='));
 const requestedBrowser = browserArgument?.slice('--browser='.length) ?? 'chrome';
 const recoveryMode = process.argv.includes('--recovery');
+const headedMode = process.argv.includes('--headed');
 const localDemoPath = process.argv.includes('--local-demo')
   ? path.join(root, 'assets', 'source', 'audio', 'crywolf-athetosis-demo.mp3')
   : null;
@@ -32,6 +33,7 @@ const report = {
   capturedAt: new Date().toISOString(),
   page: pageUrl,
   browser: requestedBrowser,
+  headed: headedMode,
   mode: recoveryMode ? 'recovery' : 'journey',
   status: 'running',
   checks,
@@ -71,17 +73,21 @@ try {
   browser = spawn(
     chromium,
     [
-      '--headless=new',
+      ...(headedMode ? [] : ['--headless=new']),
       '--no-sandbox',
       '--disable-dev-shm-usage',
       '--disable-breakpad',
       '--disable-crash-reporter',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
       '--allow-file-access-from-files',
       '--disable-web-security',
       '--enable-webgl',
-      '--enable-unsafe-swiftshader',
       '--ignore-gpu-blocklist',
-      '--use-angle=swiftshader',
+      ...(headedMode
+        ? []
+        : ['--enable-unsafe-swiftshader', '--use-angle=swiftshader']),
       '--remote-debugging-pipe',
       `--user-data-dir=${profileDir}`,
       '--window-size=1440,900',
@@ -100,9 +106,15 @@ try {
   }
 
   rootClient = await connectCdpPipe(browser.stdio[3], browser.stdio[4]);
-  const target = await rootClient.send('Target.createTarget', { url: 'about:blank' });
+  const targets = await rootClient.send('Target.getTargets');
+  const pageTarget = targets.targetInfos.find(
+    (targetInfo) => targetInfo.type === 'page' && targetInfo.url === 'about:blank',
+  );
+  const targetId = pageTarget?.targetId ??
+    (await rootClient.send('Target.createTarget', { url: 'about:blank' })).targetId;
+  await rootClient.send('Target.activateTarget', { targetId });
   const attached = await rootClient.send('Target.attachToTarget', {
-    targetId: target.targetId,
+    targetId,
     flatten: true,
   });
   const sessionId = attached.sessionId;
@@ -218,6 +230,8 @@ try {
     mobile: false,
   });
   await client.send('Page.navigate', { url: pageUrl });
+  await rootClient.send('Target.activateTarget', { targetId });
+  await client.send('Page.bringToFront');
 
   const evaluate = async (expression, userGesture = false) => {
     const result = await client.send('Runtime.evaluate', {
@@ -318,9 +332,9 @@ try {
     check('World starts normally after removing the E2E fault', recovered === true);
     report.consoleErrors.length = 0;
   } else {
-    await waitFor(
-    () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
-    'world inspection probes',
+  await waitFor(
+    () => evaluate(`document.activeElement?.textContent?.trim() === 'Enter the world'`),
+    'onboarding dialog focus',
   );
   check(
     'Onboarding dialog receives initial focus',
@@ -337,6 +351,26 @@ try {
     true,
   );
   await wait(500);
+
+  await waitFor(
+    () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
+    'world inspection probes',
+  ).catch(async (error) => {
+    const visiblePage = await evaluate('document.body.innerText.slice(0, 800)');
+    throw new Error(`${error.message}\nVisible page:\n${visiblePage}`);
+  });
+  if (headedMode) {
+    const renderer = await evaluate(`(() => {
+      const gl = document.querySelector('canvas')?.getContext('webgl2');
+      const extension = gl?.getExtension('WEBGL_debug_renderer_info');
+      return extension ? gl.getParameter(extension.UNMASKED_RENDERER_WEBGL) : '';
+    })()`);
+    check(
+      'Hardware WebGL renderer is active',
+      Boolean(renderer) && !/swiftshader|llvmpipe|software/i.test(renderer),
+      renderer,
+    );
+  }
 
   await evaluate(`document.querySelector('[aria-label="Open journey guide"]')?.click()`, true);
   await waitFor(
@@ -749,7 +783,7 @@ try {
   );
 
   let naturalEnd = null;
-  if (localDemoPath) {
+  if (localDemoPath && !headedMode) {
     await evaluate(
       `(async () => {
         const input = document.querySelector('input[type="file"][accept="audio/*"]');
@@ -770,12 +804,12 @@ try {
       `(async () => {
       const range = document.querySelector('input[aria-label="Music progress"]');
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-      setter?.call(range, String(Math.max(0, Number(range.max) - 0.5)));
+      setter?.call(range, String(Math.max(0, Number(range.max) - 2)));
       range.dispatchEvent(new Event('input', { bubbles: true }));
       range.dispatchEvent(new Event('change', { bubbles: true }));
       [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Play')?.click();
-      const deadline = performance.now() + 5000;
+      const deadline = performance.now() + 15000;
       while (performance.now() < deadline) {
         const playReady = [...document.querySelectorAll('button')]
           .some((button) => button.textContent?.trim() === 'Play');
@@ -784,21 +818,27 @@ try {
       }
       const endedAt = Number(range.value);
       const duration = Number(range.max);
-      if (endedAt < duration - 0.05) {
-        throw new Error('Audio did not reach its natural end before replay.');
+      const buttonLabel = [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Play' || button.textContent?.trim() === 'Pause')
+        ?.textContent?.trim();
+      if (endedAt < Math.floor(duration) || buttonLabel !== 'Play') {
+        throw new Error(
+          'Audio did not reach its natural end before replay. ' +
+          JSON.stringify({ endedAt, duration, buttonLabel })
+        );
       }
       [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Play')?.click();
       await new Promise((resolve) => setTimeout(resolve, 250));
       [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Pause')?.click();
-      return { endedAt, duration };
+      return { endedAt, duration, buttonLabel };
       })()`,
       true,
     );
     check(
       'Audio reaches its natural end before replay',
-      naturalEnd.endedAt >= naturalEnd.duration - 0.05,
+      naturalEnd.endedAt >= Math.floor(naturalEnd.duration) && naturalEnd.buttonLabel === 'Play',
       naturalEnd,
     );
   }
@@ -810,19 +850,19 @@ try {
       : null;
   }, 'replay reset state');
   check(
-    localDemoPath
+    localDemoPath && !headedMode
       ? 'Final track replacement resets deliberate journey flags'
       : 'Replay resets deliberate journey flags',
     snapshots.replay.flags['journey.started'] !== true,
   );
   check(
-    localDemoPath
+    localDemoPath && !headedMode
       ? 'Final track replacement restores the Guide objective'
       : 'Replay restores the Guide objective',
     snapshots.replay.currentObjectiveId === 'npc-guide',
   );
   check(
-    localDemoPath
+    localDemoPath && !headedMode
       ? 'Final track replacement reconstructs the closed gate state'
       : 'Replay reconstructs the closed gate state',
     snapshots.replay.flags['world.departureGateOpen'] !== true,

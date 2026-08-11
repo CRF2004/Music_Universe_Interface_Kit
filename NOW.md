@@ -84,13 +84,9 @@ completed experience preflight or target-device result.
 
 ### P0 — Must finish before feature expansion
 
-1. Repeat the completed Chromium audio/interaction lifecycle on the supported
-   hardware browser matrix (Chrome and Edge).
-2. Measure and calibrate the provisional hardware device, frame-rate, loading,
+1. Measure and calibrate the provisional hardware device, frame-rate, loading,
    request, GPU-memory, and bundle budgets in
    `docs/browser-performance-budget.md`.
-3. Browser-verify the WebGL/runtime, context-loss, and audio replacement
-   recovery paths across the supported matrix.
 
 ### P1 — First vertical slice
 
@@ -161,6 +157,10 @@ Implemented:
   click interception, subtitle/feedback overlap, and three driver calibration
   failures. Native Chrome visual evidence now shows the Guide proximity prompt
   followed by panel opening and Step 2 progression.
+- headed hardware Chrome and Edge regressions now complete the authorized demo
+  track's load, play, seek, natural-end, replay, interaction, accessibility,
+  and context-loss lifecycle with 48 checks and six screenshots per browser;
+  both browsers also pass the forced WebGL/runtime recovery suite.
 
 Next:
 

@@ -19,6 +19,8 @@
     "journey:demo-regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs --local-demo",
     "journey:edge-regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs --browser=edge",
     "journey:recovery-regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs --recovery",
+    "journey:headed-chrome-demo-regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs --local-demo --headed",
+    "journey:headed-edge-demo-regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs --local-demo --headed --browser=edge",
     "crew:report:validate": "node crew/tools/validate-experience-report.mjs",
     "crew:report:compare": "node crew/tools/compare-experience-reports.mjs",
     "assets:generate:departure-portal": "node scripts/generate-departure-portal.mjs",

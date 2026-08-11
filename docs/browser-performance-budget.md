@@ -152,21 +152,22 @@ warning.
 
 Production black-box regression on Windows verified:
 
-- Chrome loaded, sought, replaced, and completed the authorized Crywolf demo
-  with 46 checks and no application runtime errors;
-- Edge completed the deterministic WAV lifecycle, including natural end,
-  replay reconstruction, interactions, and context-loss recovery, with 47
-  checks and no application runtime errors;
+- headed hardware Chrome and Edge each loaded, sought, naturally ended, and
+  replayed the authorized Crywolf demo while completing the interaction,
+  accessibility, and context-loss lifecycle with 48 checks, six screenshots,
+  and no application runtime errors;
+- headless Chrome and Edge each completed the deterministic WAV lifecycle with
+  47 checks and no application runtime errors;
 - forced WebGL 2 unavailability remained readable across three reloads;
 - a forced runtime render failure reached the reloadable error boundary, and
   removing the E2E-only fault restored normal world startup.
 
 The E2E fault parameters are ignored unless `e2e=1` is also present. The
 headless software-audio environment decodes and seeks the authorized MP3 but
-does not advance its media clock reliably, so natural-end evidence comes from
-the deterministic WAV fixture. A headed hardware-browser pass remains required
-for the demo track's audible natural end. The first-release supported-browser
-matrix is Chrome and Edge.
+does not advance its media clock reliably, so headless natural-end evidence
+comes from the deterministic WAV fixture. The headed hardware passes provide
+the authorized demo track's natural-end and replay evidence. The first-release
+supported-browser matrix is Chrome and Edge.
 
 ## Measurement record — 2026-07-27 container baseline
 
