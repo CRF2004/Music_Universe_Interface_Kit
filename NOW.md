@@ -85,7 +85,7 @@ completed experience preflight or target-device result.
 ### P0 — Must finish before feature expansion
 
 1. Repeat the completed Chromium audio/interaction lifecycle on the supported
-   hardware browser matrix.
+   hardware browser matrix (Chrome and Edge).
 2. Measure and calibrate the provisional hardware device, frame-rate, loading,
    request, GPU-memory, and bundle budgets in
    `docs/browser-performance-budget.md`.

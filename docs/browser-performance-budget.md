@@ -17,9 +17,11 @@ budget or declaring the slice release-ready.
 The first release targets current and previous major versions of:
 
 - Chrome;
-- Edge;
-- Firefox;
-- Safari on macOS.
+- Edge.
+
+Firefox and Safari are compatibility follow-ups rather than Phase 0 release
+blockers. They must not be described as supported until their full audio,
+journey, and recovery lifecycle has equivalent evidence.
 
 The runtime requires:
 
@@ -151,9 +153,9 @@ warning.
 Production black-box regression on Windows verified:
 
 - Chrome loaded, sought, replaced, and completed the authorized Crywolf demo
-  with 30 checks and no application runtime errors;
+  with 46 checks and no application runtime errors;
 - Edge completed the deterministic WAV lifecycle, including natural end,
-  replay reconstruction, interactions, and context-loss recovery, with 28
+  replay reconstruction, interactions, and context-loss recovery, with 47
   checks and no application runtime errors;
 - forced WebGL 2 unavailability remained readable across three reloads;
 - a forced runtime render failure reached the reloadable error boundary, and
@@ -163,8 +165,8 @@ The E2E fault parameters are ignored unless `e2e=1` is also present. The
 headless software-audio environment decodes and seeks the authorized MP3 but
 does not advance its media clock reliably, so natural-end evidence comes from
 the deterministic WAV fixture. A headed hardware-browser pass remains required
-for the demo track's audible natural end. Firefox and macOS Safari also remain
-outstanding in the supported-browser matrix.
+for the demo track's audible natural end. The first-release supported-browser
+matrix is Chrome and Edge.
 
 ## Measurement record — 2026-07-27 container baseline
 

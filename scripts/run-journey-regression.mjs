@@ -1,15 +1,17 @@
 import { spawn } from 'node:child_process';
 import {
-  access,
   mkdtemp,
   mkdir,
   readFile,
-  readdir,
   rm,
   writeFile,
 } from 'node:fs/promises';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
+import {
+  connectCdpPipe,
+  findBrowserExecutable,
+} from './browser-regression-harness.mjs';
 
 const root = process.cwd();
 const browserArgument = process.argv.find((argument) => argument.startsWith('--browser='));
@@ -56,153 +58,9 @@ async function waitFor(predicate, label, timeoutMs = 15_000) {
   throw new Error(`Timed out waiting for ${label}. Last value: ${JSON.stringify(latest)}`);
 }
 
-async function findChromium() {
-  if (process.env.CHROME_BIN) return process.env.CHROME_BIN;
-  const installedBrowsers =
-    process.platform === 'win32'
-      ? {
-          chrome: [
-            path.join(process.env.PROGRAMFILES ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-            path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-            path.join(process.env.LOCALAPPDATA ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-          ],
-          edge: [
-            path.join(process.env.PROGRAMFILES ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-            path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-          ],
-        }
-      : { chrome: [], edge: [] };
-  if (!Object.hasOwn(installedBrowsers, requestedBrowser)) {
-    throw new Error(`Unsupported browser "${requestedBrowser}". Use chrome or edge.`);
-  }
-  const installedBrowserCandidates = installedBrowsers[requestedBrowser];
-  const cacheRoot =
-    process.platform === 'win32' && process.env.LOCALAPPDATA
-      ? path.join(process.env.LOCALAPPDATA, 'ms-playwright')
-      : path.join(homedir(), '.cache', 'ms-playwright');
-  const entries = await readdir(cacheRoot, { withFileTypes: true }).catch(() => []);
-  const headlessCandidates = entries
-    .filter(
-      (entry) =>
-        entry.isDirectory() && entry.name.startsWith('chromium_headless_shell-'),
-    )
-    .sort((left, right) => right.name.localeCompare(left.name))
-    .map((entry) =>
-      path.join(
-        cacheRoot,
-        entry.name,
-        'chrome-headless-shell-linux64',
-        'chrome-headless-shell',
-      ),
-    );
-  const chromiumCandidates = entries
-    .filter((entry) => entry.isDirectory() && entry.name.startsWith('chromium-'))
-    .sort((left, right) => right.name.localeCompare(left.name))
-    .flatMap((entry) =>
-      process.platform === 'win32'
-        ? [path.join(cacheRoot, entry.name, 'chrome-win', 'chrome.exe')]
-        : [
-            path.join(cacheRoot, entry.name, 'chrome-linux64', 'chrome'),
-            path.join(cacheRoot, entry.name, 'chrome-linux', 'chrome'),
-          ],
-    );
-  const candidates = [
-    ...installedBrowserCandidates,
-    ...(requestedBrowser === 'chrome' ? headlessCandidates : []),
-    ...(requestedBrowser === 'chrome' ? chromiumCandidates : []),
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      await access(candidate);
-      return candidate;
-    } catch {
-      // Try the next Playwright-managed Chromium installation.
-    }
-  }
-  throw new Error(
-    `${requestedBrowser} was not found. Set CHROME_BIN or install the requested browser.`,
-  );
-}
-
-function connectCdpPipe(input, output) {
-  return new Promise((resolve) => {
-    const pending = new Map();
-    const listeners = new Map();
-    let nextId = 1;
-    let buffered = Buffer.alloc(0);
-    const rejectPending = (error) => {
-      pending.forEach(({ reject: rejectRequest, timeout }) => {
-        clearTimeout(timeout);
-        rejectRequest(error);
-      });
-      pending.clear();
-    };
-    input.on('error', (error) => rejectPending(error));
-    output.on('error', (error) => rejectPending(error));
-    output.on('close', () =>
-      rejectPending(new Error('Chromium closed the DevTools pipe.')),
-    );
-
-    const handleMessage = (message) => {
-      if (message.id && pending.has(message.id)) {
-        const request = pending.get(message.id);
-        pending.delete(message.id);
-        clearTimeout(request.timeout);
-        if (message.error) request.reject(new Error(message.error.message));
-        else request.resolve(message.result);
-        return;
-      }
-      listeners.get(message.method)?.forEach((listener) => listener(message.params));
-    };
-
-    output.on('data', (chunk) => {
-      buffered = Buffer.concat([buffered, chunk]);
-      let boundary = buffered.indexOf(0);
-      while (boundary >= 0) {
-        const payload = buffered.subarray(0, boundary).toString('utf8');
-        buffered = buffered.subarray(boundary + 1);
-        if (payload) handleMessage(JSON.parse(payload));
-        boundary = buffered.indexOf(0);
-      }
-    });
-
-    resolve({
-      close: () => input.end(),
-      on(method, listener) {
-        const methodListeners = listeners.get(method) ?? new Set();
-        methodListeners.add(listener);
-        listeners.set(method, methodListeners);
-      },
-      send(method, params = {}, sessionId) {
-        return new Promise((resolveRequest, rejectRequest) => {
-          const id = nextId++;
-          const timeout = setTimeout(() => {
-            pending.delete(id);
-            rejectRequest(new Error(`DevTools command timed out: ${method}`));
-          }, 40_000);
-          pending.set(id, {
-            resolve: resolveRequest,
-            reject: rejectRequest,
-            timeout,
-          });
-          input.write(
-            `${JSON.stringify({
-              id,
-              method,
-              params,
-              ...(sessionId ? { sessionId } : {}),
-            })}\0`,
-          );
-        });
-      },
-    });
-  });
-}
-
 await mkdir(outputDir, { recursive: true });
 const profileDir = await mkdtemp(path.join(tmpdir(), 'music-universe-journey-'));
-const chromium = await findChromium();
+const chromium = await findBrowserExecutable(requestedBrowser);
 
 let browser;
 let client;
@@ -331,6 +189,18 @@ try {
   await client.send('Page.addScriptToEvaluateOnNewDocument', {
     source: `
       window.__JOURNEY_REGRESSION_ERRORS__ = [];
+      window.__JOURNEY_OBJECT_URLS__ = { created: [], revoked: [] };
+      const createObjectURL = URL.createObjectURL.bind(URL);
+      const revokeObjectURL = URL.revokeObjectURL.bind(URL);
+      URL.createObjectURL = (value) => {
+        const url = createObjectURL(value);
+        window.__JOURNEY_OBJECT_URLS__.created.push(url);
+        return url;
+      };
+      URL.revokeObjectURL = (url) => {
+        window.__JOURNEY_OBJECT_URLS__.revoked.push(url);
+        return revokeObjectURL(url);
+      };
       window.addEventListener('error', (event) => {
         window.__JOURNEY_REGRESSION_ERRORS__.push(event.error?.stack || event.message);
       });
@@ -378,6 +248,10 @@ try {
   };
   const closePanel = () =>
     evaluate(`document.querySelector('[aria-label="Close dialog"]')?.click()`);
+  const pressKey = async (key, modifiers = 0) => {
+    await client.send('Input.dispatchKeyEvent', { type: 'keyDown', key, modifiers });
+    await client.send('Input.dispatchKeyEvent', { type: 'keyUp', key, modifiers });
+  };
   const screenshot = async (name) => {
     const result = await client.send('Page.captureScreenshot', {
       format: 'png',
@@ -448,12 +322,51 @@ try {
     () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
     'world inspection probes',
   );
+  check(
+    'Onboarding dialog receives initial focus',
+    await evaluate(`document.activeElement?.textContent?.trim() === 'Enter the world'`),
+  );
+  await pressKey('Tab');
+  check(
+    'Onboarding dialog traps forward Tab focus',
+    await evaluate(`document.activeElement?.textContent?.trim() === 'Enter the world'`),
+  );
   await evaluate(
     `[...document.querySelectorAll('button')].find((button) =>
       button.textContent?.includes('Enter the world'))?.click()`,
     true,
   );
   await wait(500);
+
+  await evaluate(`document.querySelector('[aria-label="Open journey guide"]')?.click()`, true);
+  await waitFor(
+    () => evaluate(`document.activeElement?.textContent?.trim() === 'Enter the world'`),
+    'help dialog focus',
+  );
+  await pressKey('Escape');
+  check(
+    'Escape closes help and restores trigger focus',
+    await waitFor(
+      () => evaluate(`document.activeElement?.getAttribute('aria-label') === 'Open journey guide'`),
+      'help trigger focus restoration',
+    ),
+  );
+  check(
+    'Reduced effects exposes an unpressed state',
+    await evaluate(
+      `document.querySelector('[aria-label="Toggle reduced visual effects"]')?.getAttribute('aria-pressed') === 'false'`,
+    ),
+  );
+  await evaluate(
+    `document.querySelector('[aria-label="Toggle reduced visual effects"]')?.click()`,
+    true,
+  );
+  check(
+    'Reduced effects exposes its pressed state',
+    await evaluate(
+      `document.querySelector('[aria-label="Toggle reduced visual effects"]')?.getAttribute('aria-pressed') === 'true'`,
+    ),
+  );
 
   snapshots.initial = await worldSnapshot();
   check('initial objective is the Listener Guide', snapshots.initial.currentObjectiveId === 'npc-guide');
@@ -499,6 +412,29 @@ try {
     invalidAudioRecovery.recovery === 'Choose another audio file',
     invalidAudioRecovery,
   );
+  await evaluate(
+    `(() => {
+      const input = document.querySelector('input[type="file"][accept="audio/*"]');
+      const transfer = new DataTransfer();
+      transfer.items.add(new File(['corrupt audio'], 'corrupt.wav', { type: 'audio/wav' }));
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`,
+    true,
+  );
+  const decodeFailure = await waitFor(
+    () => evaluate(
+      `document.querySelector('[role="alert"]')?.textContent?.includes('could not decode') ?? false`,
+    ),
+    'audio decode failure recovery',
+  );
+  check('Corrupt audio produces a decode recovery message', decodeFailure === true);
+  check(
+    'Decode failure keeps the replacement-file action available',
+    await evaluate(
+      `document.querySelector('label[for="music-file-input"]')?.textContent?.trim() === 'Choose another audio file'`,
+    ),
+  );
   const audioReady = await evaluate(
     `(async () => {
       const input = document.querySelector('input[type="file"][accept="audio/*"]');
@@ -532,6 +468,7 @@ try {
             return response.blob();
           })
         : new Blob([wav], { type: 'audio/wav' });
+      window.__JOURNEY_AUDIO_FIXTURE__ = blob;
       transfer.items.add(new File(
         [blob],
         useLocalDemo ? "ATHETOSIS - Crywolf.mp3" : 'journey-regression.wav',
@@ -564,6 +501,81 @@ try {
     true,
   );
   check('synthetic journey audio becomes ready', audioReady.duration > 0, audioReady);
+  await evaluate(
+    `document.querySelector('details summary')?.click()`,
+    true,
+  );
+  check(
+    'Audio controls expose labeled music and effects sliders',
+    await evaluate(
+      `Boolean(document.querySelector('[aria-label="Music volume"]') && document.querySelector('[aria-label="Effects volume"]'))`,
+    ),
+  );
+  check(
+    'Subtitles expose their enabled pressed state',
+    await evaluate(
+      `[...document.querySelectorAll('button')].find((button) => button.textContent?.includes('Subtitles'))?.getAttribute('aria-pressed') === 'true'`,
+    ),
+  );
+  await evaluate(
+    `(() => {
+      const button = [...document.querySelectorAll('button')]
+        .find((candidate) => candidate.textContent?.trim() === 'Mute');
+      button?.click();
+    })()`,
+    true,
+  );
+  check(
+    'Mute exposes its pressed state',
+    await waitFor(
+      () => evaluate(
+        `[...document.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Unmute' && button.getAttribute('aria-pressed') === 'true')`,
+      ),
+      'mute pressed state',
+    ),
+  );
+  await evaluate(
+    `[...document.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Unmute')?.click()`,
+    true,
+  );
+  await client.send('Emulation.setDeviceMetricsOverride', {
+    width: 800,
+    height: 600,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  await wait(350);
+  const compactLayout = await evaluate(
+    `(() => {
+      const player = document.querySelector('[aria-label="Music player"]')?.getBoundingClientRect();
+      const objective = document.querySelector('[aria-label="Current journey objective"]')?.getBoundingClientRect();
+      if (!player || !objective) return null;
+      const overlaps = !(
+        player.right <= objective.left ||
+        player.left >= objective.right ||
+        player.bottom <= objective.top ||
+        player.top >= objective.bottom
+      );
+      return {
+        overlaps,
+        playerInside: player.left >= 0 && player.bottom <= innerHeight,
+        objectiveInside: objective.right <= innerWidth && objective.top >= 0,
+      };
+    })()`,
+  );
+  check(
+    'Compact desktop layout keeps primary HUD regions visible and separate',
+    compactLayout && !compactLayout.overlaps && compactLayout.playerInside && compactLayout.objectiveInside,
+    compactLayout,
+  );
+  await screenshot('accessibility-800x600');
+  await client.send('Emulation.setDeviceMetricsOverride', {
+    width: 1440,
+    height: 900,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  await wait(350);
   await setPlayer([0, 0.65, 0]);
   await settleReviewCamera();
   await screenshot('00-spawn');
@@ -601,18 +613,17 @@ try {
   await wait(450);
   await screenshot('01-guide-complete');
 
-  if (localDemoPath) {
-    await evaluate(
+  await evaluate(
     `(async () => {
       const input = document.querySelector('input[type="file"][accept="audio/*"]');
       if (!input) throw new Error('Audio replacement input was not found.');
-      const response = await fetch('/__local_demo_audio__');
-      if (!response.ok) throw new Error('Replacement audio fixture was unavailable.');
+      const blob = window.__JOURNEY_AUDIO_FIXTURE__;
+      if (!blob) throw new Error('Replacement audio fixture was unavailable.');
       const transfer = new DataTransfer();
-      transfer.items.add(new File([await response.blob()], 'ATHETOSIS - Crywolf.mp3', {
-        type: 'audio/mpeg',
+      transfer.items.add(new File([blob], ${localDemoPath ? "'ATHETOSIS - Crywolf.mp3'" : "'journey-regression.wav'"}, {
+        type: ${localDemoPath ? "'audio/mpeg'" : "'audio/wav'"},
       }));
-      Object.defineProperty(input, 'files', { configurable: true, value: transfer.files });
+      input.files = transfer.files;
       input.dispatchEvent(new Event('change', { bubbles: true }));
     })()`,
     true,
@@ -632,6 +643,12 @@ try {
     'Track replacement restores the Guide objective',
     snapshots.afterTrackReplacement.currentObjectiveId === 'npc-guide',
   );
+  const objectUrlLifecycle = await evaluate('window.__JOURNEY_OBJECT_URLS__');
+  check(
+    'Track replacement revokes the previous object URL',
+    objectUrlLifecycle.created.length >= 3 && objectUrlLifecycle.revoked.length >= 2,
+    objectUrlLifecycle,
+  );
   check(
     'Guide interaction still executes after track replacement',
     await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true),
@@ -640,8 +657,7 @@ try {
     const snapshot = await worldSnapshot();
     return snapshot?.currentObjectiveId === 'memory-archive' ? snapshot : null;
   }, 'Guide objective transition after track replacement');
-    await closePanel();
-  }
+  await closePanel();
 
   await setPlayer([-2, 0.65, -11]);
   check(
@@ -705,8 +721,32 @@ try {
   }, 'journey completion state');
   check('Gate completes the journey', snapshots.completed.flags['journey.completed'] === true);
   check('completed journey has no remaining objective', snapshots.completed.currentObjectiveId === null);
+  check(
+    'Completion dialog focuses its Close action',
+    await waitFor(
+      () => evaluate(`document.activeElement?.getAttribute('aria-label') === 'Close dialog'`),
+      'completion dialog focus',
+    ),
+  );
   await screenshot('03-gate-complete');
-  await closePanel();
+  await pressKey('Tab', 8);
+  check(
+    'Completion dialog traps backward Tab focus',
+    await evaluate(`document.activeElement?.textContent?.trim() === 'Stay in the afterglow'`),
+  );
+  await pressKey('Tab');
+  check(
+    'Completion dialog wraps forward Tab focus',
+    await evaluate(`document.activeElement?.getAttribute('aria-label') === 'Close dialog'`),
+  );
+  await pressKey('Escape');
+  check(
+    'Escape closes the completion dialog',
+    await waitFor(
+      () => evaluate(`!document.querySelector('[role="dialog"]')`),
+      'completion dialog close',
+    ),
+  );
 
   let naturalEnd = null;
   if (localDemoPath) {
@@ -720,7 +760,7 @@ try {
         transfer.items.add(new File([await response.blob()], 'ATHETOSIS - Crywolf.mp3', {
           type: 'audio/mpeg',
         }));
-        Object.defineProperty(input, 'files', { configurable: true, value: transfer.files });
+        input.files = transfer.files;
         input.dispatchEvent(new Event('change', { bubbles: true }));
       })()`,
       true,
