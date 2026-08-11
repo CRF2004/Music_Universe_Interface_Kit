@@ -6,19 +6,23 @@ import { access, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'n
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import sharp from 'sharp';
 
 const execFileAsync = promisify(execFile);
+const ffmpegPath = ffmpegInstaller.path;
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = path.join(repositoryRoot, 'assets', 'asset-manifest.json');
 const sourceRoot = path.join(repositoryRoot, 'assets', 'source');
 const licenseRoot = path.join(repositoryRoot, 'assets', 'licenses');
 const outputRoot = path.join(repositoryRoot, 'public', 'assets', 'generated');
-const gltfTransformBin = path.join(
+const gltfTransformCli = path.join(
   repositoryRoot,
   'node_modules',
-  '.bin',
-  process.platform === 'win32' ? 'gltf-transform.cmd' : 'gltf-transform',
+  '@gltf-transform',
+  'cli',
+  'bin',
+  'cli.js',
 );
 
 const typeExtensions = {
@@ -50,16 +54,6 @@ function sourcePathFor(asset) {
 
 async function loadManifest() {
   return JSON.parse(await readFile(manifestPath, 'utf8'));
-}
-
-async function commandExists(command) {
-  const checker = process.platform === 'win32' ? 'where' : 'which';
-  try {
-    await execFileAsync(checker, [command]);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 async function listSourceFiles(directory = sourceRoot) {
@@ -250,12 +244,13 @@ async function buildTexture(asset, sourcePath) {
 }
 
 async function buildModel(asset, sourcePath) {
-  await access(gltfTransformBin);
+  await access(gltfTransformCli);
   const settings = asset.build ?? {};
   const outputPath = path.join(outputRoot, `${asset.id}.glb`);
   await execFileAsync(
-    gltfTransformBin,
+    process.execPath,
     [
+      gltfTransformCli,
       'optimize',
       sourcePath,
       outputPath,
@@ -271,21 +266,22 @@ async function buildModel(asset, sourcePath) {
     { cwd: repositoryRoot, maxBuffer: 10 * 1024 * 1024 },
   );
   await execFileAsync(
-    gltfTransformBin,
-    ['validate', outputPath],
+    process.execPath,
+    [gltfTransformCli, 'validate', outputPath],
     { cwd: repositoryRoot, maxBuffer: 10 * 1024 * 1024 },
   );
   return outputPath;
 }
 
 async function buildAudio(asset, sourcePath) {
-  if (!(await commandExists('ffmpeg'))) {
-    throw new Error(`Audio "${asset.id}" requires ffmpeg on PATH.`);
+  if (!ffmpegPath) {
+    throw new Error(`Audio "${asset.id}" requires a supported ffmpeg binary.`);
   }
+  await access(ffmpegPath);
   const settings = asset.build ?? {};
   const outputPath = path.join(outputRoot, `${asset.id}.ogg`);
   await execFileAsync(
-    'ffmpeg',
+    ffmpegPath,
     [
       '-hide_banner',
       '-loglevel',
