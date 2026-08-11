@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import {
+  access,
   mkdtemp,
   mkdir,
   readFile,
@@ -12,7 +13,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const localDemoPath = process.argv.includes('--local-demo')
-  ? path.join(root, "ATHETOSIS [here's the lullaby you made me promise never to write] - Crywolf.mp3")
+  ? path.join(root, 'assets', 'source', 'audio', 'crywolf-athetosis-demo.mp3')
   : null;
 const outputDir = path.join(root, 'output', 'playwright', 'journey-regression');
 const reportPath = path.join(outputDir, 'report.json');
@@ -52,7 +53,20 @@ async function waitFor(predicate, label, timeoutMs = 15_000) {
 
 async function findChromium() {
   if (process.env.CHROME_BIN) return process.env.CHROME_BIN;
-  const cacheRoot = path.join(homedir(), '.cache', 'ms-playwright');
+  const installedBrowserCandidates =
+    process.platform === 'win32'
+      ? [
+          path.join(process.env.PROGRAMFILES ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+          path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+          path.join(process.env.LOCALAPPDATA ?? '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
+          path.join(process.env.PROGRAMFILES ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+          path.join(process.env['PROGRAMFILES(X86)'] ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+        ]
+      : [];
+  const cacheRoot =
+    process.platform === 'win32' && process.env.LOCALAPPDATA
+      ? path.join(process.env.LOCALAPPDATA, 'ms-playwright')
+      : path.join(homedir(), '.cache', 'ms-playwright');
   const entries = await readdir(cacheRoot, { withFileTypes: true }).catch(() => []);
   const headlessCandidates = entries
     .filter(
@@ -71,15 +85,23 @@ async function findChromium() {
   const chromiumCandidates = entries
     .filter((entry) => entry.isDirectory() && entry.name.startsWith('chromium-'))
     .sort((left, right) => right.name.localeCompare(left.name))
-    .flatMap((entry) => [
-      path.join(cacheRoot, entry.name, 'chrome-linux64', 'chrome'),
-      path.join(cacheRoot, entry.name, 'chrome-linux', 'chrome'),
-    ]);
-  const candidates = [...headlessCandidates, ...chromiumCandidates];
+    .flatMap((entry) =>
+      process.platform === 'win32'
+        ? [path.join(cacheRoot, entry.name, 'chrome-win', 'chrome.exe')]
+        : [
+            path.join(cacheRoot, entry.name, 'chrome-linux64', 'chrome'),
+            path.join(cacheRoot, entry.name, 'chrome-linux', 'chrome'),
+          ],
+    );
+  const candidates = [
+    ...installedBrowserCandidates,
+    ...headlessCandidates,
+    ...chromiumCandidates,
+  ];
 
   for (const candidate of candidates) {
     try {
-      await import('node:fs/promises').then(({ access }) => access(candidate));
+      await access(candidate);
       return candidate;
     } catch {
       // Try the next Playwright-managed Chromium installation.
@@ -505,6 +527,48 @@ try {
   await closePanel();
   await wait(450);
   await screenshot('01-guide-complete');
+
+  if (localDemoPath) {
+    await evaluate(
+    `(async () => {
+      const input = document.querySelector('input[type="file"][accept="audio/*"]');
+      if (!input) throw new Error('Audio replacement input was not found.');
+      const response = await fetch('/__local_demo_audio__');
+      if (!response.ok) throw new Error('Replacement audio fixture was unavailable.');
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([await response.blob()], 'ATHETOSIS - Crywolf.mp3', {
+        type: 'audio/mpeg',
+      }));
+      Object.defineProperty(input, 'files', { configurable: true, value: transfer.files });
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`,
+    true,
+  );
+  snapshots.afterTrackReplacement = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.currentObjectiveId === 'npc-guide' &&
+      snapshot.flags?.['journey.started'] !== true
+      ? snapshot
+      : null;
+  }, 'track replacement reset state');
+  check(
+    'Track replacement resets deliberate journey flags',
+    snapshots.afterTrackReplacement.flags['journey.started'] !== true,
+  );
+  check(
+    'Track replacement restores the Guide objective',
+    snapshots.afterTrackReplacement.currentObjectiveId === 'npc-guide',
+  );
+  check(
+    'Guide interaction still executes after track replacement',
+    await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true),
+  );
+  snapshots.afterGuide = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.currentObjectiveId === 'memory-archive' ? snapshot : null;
+  }, 'Guide objective transition after track replacement');
+    await closePanel();
+  }
 
   await setPlayer([-2, 0.65, -11]);
   check(

@@ -58,7 +58,14 @@ export default function JourneyRuntimeHUD() {
 
   useEffect(() => {
     if (!helpOpen) return;
+    const helpTrigger = document.querySelector<HTMLElement>(
+      '[aria-label="Open journey guide"]',
+    );
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setHelpOpen(false);
+        return;
+      }
       if (event.key !== 'Tab' || !helpDialogRef.current) return;
       const focusable = Array.from(
         helpDialogRef.current.querySelectorAll<HTMLElement>(
@@ -77,8 +84,11 @@ export default function JourneyRuntimeHUD() {
       }
     };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [helpOpen]);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      helpTrigger?.focus();
+    };
+  }, [helpOpen, setHelpOpen]);
 
   const objective =
     flags['journey.started'] !== true
