@@ -1,8 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRuntimeAsset } from '../../assets/runtimeAssetManifest';
 import { useExperienceSettingsStore } from '../../state/useExperienceSettingsStore';
 import { setMusicPlaybackVolume, useAudioPlayerStore } from './useAudioPlayerStore';
 
 export default function MusicPlayerHUD() {
+  const demoTrack = useRuntimeAsset('crywolf-athetosis-demo', 'audio');
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
   const { track, currentTime, duration, playing, status, error, load, play, pause, seek } =
     useAudioPlayerStore();
   const ready = Boolean(track) && duration > 0;
@@ -23,6 +27,26 @@ export default function MusicPlayerHUD() {
     setMusicPlaybackVolume(musicMuted ? 0 : musicVolume);
   }, [musicMuted, musicVolume]);
 
+  const loadDemoTrack = async () => {
+    if (demoTrack.status !== 'ready') return;
+    setDemoLoading(true);
+    setDemoError(null);
+    try {
+      const response = await fetch(demoTrack.asset.url);
+      if (!response.ok) throw new Error(`Demo request failed with ${response.status}.`);
+      const blob = await response.blob();
+      load(
+        new File([blob], 'ATHETOSIS — Crywolf.ogg', {
+          type: blob.type || 'audio/ogg',
+        }),
+      );
+    } catch {
+      setDemoError('The demo track could not load. Retry or choose your own music.');
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   return (
     <section
       aria-label="Music player"
@@ -42,9 +66,21 @@ export default function MusicPlayerHUD() {
         </span>
       </div>
 
+      {!track && (
+        <button
+          className="comic-button mb-2 block w-full bg-comic-yellow text-center text-sm disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={demoTrack.status !== 'ready' || demoLoading}
+          onClick={() => void loadDemoTrack()}
+          type="button"
+        >
+          {demoLoading ? 'Loading demo…' : 'Start the Crywolf demo'}
+        </button>
+      )}
+
       <label className="comic-button block cursor-pointer bg-white text-center text-sm">
         {track ? 'Replace music' : 'Choose music'}
         <input
+          id="music-file-input"
           className="sr-only"
           type="file"
           accept="audio/*"
@@ -149,10 +185,25 @@ export default function MusicPlayerHUD() {
 
       {!track && (
         <p className="mt-2 text-xs text-ink/65">
-          Choose a track, press Play, then follow the world marker.
+          Start the demo or choose your own track, press Play, then follow the world marker.
         </p>
       )}
-      {error && <p role="alert" className="mt-2 text-sm font-bold text-comic-red">{error}</p>}
+      {(demoError || demoTrack.status === 'error') && (
+        <p role="alert" className="mt-2 text-sm font-bold text-comic-red">
+          {demoError ?? 'The built-in demo is unavailable. Choose your own music to continue.'}
+        </p>
+      )}
+      {error && (
+        <div className="mt-2 border-t-2 border-comic-red/30 pt-2">
+          <p role="alert" className="text-sm font-bold text-comic-red">{error}</p>
+          <label
+            className="comic-button mt-2 block cursor-pointer bg-white text-center text-sm"
+            htmlFor="music-file-input"
+          >
+            Choose another audio file
+          </label>
+        </div>
+      )}
     </section>
   );
 }

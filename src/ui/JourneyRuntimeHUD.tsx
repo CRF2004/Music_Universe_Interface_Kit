@@ -19,6 +19,7 @@ function blockedMessage(interactionId: string, flags: Readonly<Record<string, un
 export default function JourneyRuntimeHUD() {
   const [feedback, setFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const flags = useInteractionStore((state) => state.interactionFlags);
+  const activePanelId = useInteractionStore((state) => state.activePanelId);
   const helpOpen = useWorldStore((state) => state.helpOpen);
   const setHelpOpen = useWorldStore((state) => state.setHelpOpen);
   const helpDialogRef = useRef<HTMLElement>(null);
@@ -114,7 +115,7 @@ export default function JourneyRuntimeHUD() {
         aria-live="polite"
         className="pointer-events-none fixed left-1/2 top-24 z-[80] w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2"
       >
-        {feedback && (
+        {feedback && !activePanelId && (
           <div
             className={`rounded-xl border-4 border-ink p-4 text-center font-display font-bold shadow-[6px_6px_0_0_#111] ${
               feedback.success ? 'bg-emerald-300' : 'bg-comic-yellow'

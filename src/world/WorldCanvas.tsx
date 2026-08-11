@@ -1,8 +1,9 @@
 import { Canvas } from '@react-three/fiber';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ContactShadows } from '@react-three/drei';
 import CameraRig from '../camera/CameraRig';
 import { useWorldStore } from '../state/useWorldStore';
+import WorldStartupFallback from '../ui/WorldStartupFallback';
 
 const PhysicsWorld = lazy(() => import('./PhysicsWorld'));
 
@@ -30,9 +31,34 @@ function LoadingWorld() {
 }
 
 export default function WorldCanvas() {
+  const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null);
+  const [contextLost, setContextLost] = useState(false);
   const isPaused = useWorldStore((state) => state.isPaused);
   const isDevMode = useWorldStore((state) => state.isDevMode);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
+  const rememberCanvas = useCallback(
+    ({ gl }: { gl: { domElement: HTMLCanvasElement } }) => setCanvasElement(gl.domElement),
+    [],
+  );
+
+  useEffect(() => {
+    if (!canvasElement) return undefined;
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      setContextLost(true);
+    };
+    canvasElement.addEventListener('webglcontextlost', handleContextLost);
+    return () => canvasElement.removeEventListener('webglcontextlost', handleContextLost);
+  }, [canvasElement]);
+
+  if (contextLost) {
+    return (
+      <WorldStartupFallback
+        kind="context-lost"
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 h-full w-full bg-[#26375d]">
@@ -41,7 +67,7 @@ export default function WorldCanvas() {
           <DebugControls />
         </Suspense>
       )}
-      <Canvas shadows={!reducedEffects} dpr={reducedEffects ? 1 : [1, 1.5]} camera={{ position: [0, 5, 10], fov: 75 }}>
+      <Canvas onCreated={rememberCanvas} shadows={!reducedEffects} dpr={reducedEffects ? 1 : [1, 1.5]} camera={{ position: [0, 5, 10], fov: 75 }}>
         <Suspense fallback={<LoadingWorld />}>
           <PhysicsWorld paused={isPaused} />
         </Suspense>

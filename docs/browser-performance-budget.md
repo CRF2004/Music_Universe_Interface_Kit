@@ -30,13 +30,13 @@ The runtime requires:
 
 ### Mobile
 
-Mobile is not considered supported until touch movement, interaction controls,
-layout, audio unlock, and a target-device performance pass are complete.
+The first release is explicitly desktop-only. Touch-only devices are stopped
+before Canvas initialization with a readable explanation that keyboard and
+pointer controls are required. Hybrid devices with a coarse pointer but hover
+support may continue with their keyboard and pointer.
 
-Until then, narrow/touch-only devices must receive either:
-
-- a usable touch implementation; or
-- an explicit desktop-only message before entering the world.
+Mobile remains deferred until touch movement, interaction controls, layout,
+audio unlock, and a target-device performance pass are complete.
 
 CSS responsiveness alone is not mobile support.
 
@@ -68,6 +68,10 @@ Measured on a clean profile, production build, 20 Mbps downlink, 40 ms RTT:
 
 The repository manifest’s 50 MiB total generated-asset limit remains a hard
 build ceiling, not a target to consume.
+
+The authorized built-in Crywolf demo adds 5.83 MiB of generated Ogg audio. The
+complete generated asset set is 6.07 MiB, inside the vertical-slice transfer
+target; cold-load measurement on minimum/reference hardware is still required.
 
 ## Runtime budgets
 

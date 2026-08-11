@@ -116,3 +116,36 @@ Observed:
 - reduced effects remained independently selectable.
 
 Human observation status: pending recruitment of 3–5 first-time participants.
+
+## Agent preflight
+
+Before recruiting participants, run the read-only black-box protocol in
+[`../crew/agents/first-user-experience.md`](../crew/agents/first-user-experience.md).
+It uses the same first-run thresholds but may not inspect source, semantic
+probes, or the scripted journey answer. Store its versioned JSON and Markdown
+evidence under `crew/reports/`.
+
+The agent preflight catches obvious discoverability, visual hierarchy, flow,
+and recovery failures. It does not replace human evidence about emotion,
+spatial understanding, motion comfort, or musical immersion. After each human
+round, compare agent findings with participant findings before proposing a
+change to the agent protocol; the agent may not rewrite its own thresholds.
+
+### Built-in demo input
+
+The standardized experience input is the built-in 4:38 Crywolf track
+`ATHETOSIS [here's the lullaby you made me promise never to write]`. The project
+owner explicitly authorized its use as a public built-in demo on 2026-08-05;
+rights and provenance are recorded under
+`LicenseRef-Project-Owner-Demo-Authorization` in the asset manifest.
+
+The untouched root MP3 remains ignored as a local source fixture. The licensed
+asset-pipeline copy may be exercised with:
+
+```bash
+npm run journey:demo-regression
+```
+
+Do not send the recording to external agent services. Replace or supplement the
+repository authorization snapshot with the underlying signed agreement, email,
+or rights-holder document before a production distribution audit.

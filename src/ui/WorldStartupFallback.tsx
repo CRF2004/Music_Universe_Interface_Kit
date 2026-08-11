@@ -1,9 +1,15 @@
 interface WorldStartupFallbackProps {
-  kind: 'webgl2-unavailable' | 'runtime-error';
-  onRetry: () => void;
+  kind: 'touch-only' | 'webgl2-unavailable' | 'runtime-error' | 'context-lost';
+  onRetry?: () => void;
 }
 
 const content = {
+  'touch-only': {
+    eyebrow: 'Desktop experience',
+    title: 'Continue on a computer',
+    body:
+      'Music Universe currently requires a keyboard and pointer. Touch controls are planned after the desktop journey is reliable.',
+  },
   'webgl2-unavailable': {
     eyebrow: 'Graphics unavailable',
     title: 'This world needs WebGL 2',
@@ -15,6 +21,12 @@ const content = {
     title: 'The world could not finish loading',
     body:
       'Your music file has not been uploaded to a server. Reload the experience and choose it again.',
+  },
+  'context-lost': {
+    eyebrow: 'Graphics interrupted',
+    title: 'The world lost its graphics connection',
+    body:
+      'Reload the experience to rebuild the world. You will need to choose your local music file again.',
   },
 } as const;
 
@@ -43,13 +55,15 @@ export default function WorldStartupFallback({
         <p className="mt-3 max-w-prose text-sm leading-6 text-ink/75">
           {message.body}
         </p>
-        <button
-          className="comic-button mt-6 bg-comic-yellow"
-          onClick={onRetry}
-          type="button"
-        >
-          Reload world
-        </button>
+        {onRetry && (
+          <button
+            className="comic-button mt-6 bg-comic-yellow"
+            onClick={onRetry}
+            type="button"
+          >
+            Reload world
+          </button>
+        )}
       </section>
     </main>
   );

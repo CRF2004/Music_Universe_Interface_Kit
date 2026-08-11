@@ -16,6 +16,9 @@
     "assets:tripo": "node scripts/tripo-generate.mjs",
     "performance:collect": "node scripts/collect-browser-performance.mjs",
     "journey:regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs",
+    "journey:demo-regression": "npm run assets:build && vite build --base=./ && node scripts/run-journey-regression.mjs --local-demo",
+    "crew:report:validate": "node crew/tools/validate-experience-report.mjs",
+    "crew:report:compare": "node crew/tools/compare-experience-reports.mjs",
     "assets:generate:departure-portal": "node scripts/generate-departure-portal.mjs",
     "assets:preview:departure-portal": "node scripts/render-glb-preview.mjs",
     "assets:generate:memory-tree": "node scripts/generate-memory-tree.mjs"

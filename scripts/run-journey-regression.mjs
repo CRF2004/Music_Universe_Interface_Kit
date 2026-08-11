@@ -11,6 +11,9 @@ import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
+const localDemoPath = process.argv.includes('--local-demo')
+  ? path.join(root, "ATHETOSIS [here's the lullaby you made me promise never to write] - Crywolf.mp3")
+  : null;
 const outputDir = path.join(root, 'output', 'playwright', 'journey-regression');
 const reportPath = path.join(outputDir, 'report.json');
 const pageUrl =
@@ -246,6 +249,19 @@ try {
         const url = new URL(request.url);
         const relativePath =
           decodeURIComponent(url.pathname).replace(/^\/+/, '') || 'index.html';
+        if (relativePath === '__local_demo_audio__' && localDemoPath) {
+          const body = await readFile(localDemoPath);
+          await client.send('Fetch.fulfillRequest', {
+            requestId,
+            responseCode: 200,
+            responseHeaders: [
+              { name: 'Content-Type', value: 'audio/mpeg' },
+              { name: 'Cache-Control', value: 'no-store' },
+            ],
+            body: body.toString('base64'),
+          });
+          return;
+        }
         const absolutePath = path.resolve(root, 'dist', relativePath);
         const distRoot = `${path.resolve(root, 'dist')}${path.sep}`;
         if (!absolutePath.startsWith(distRoot)) {
@@ -363,10 +379,36 @@ try {
     archive.radius > archive.collider.halfExtents[2],
     { radius: archive.radius, halfExtents: archive.collider.halfExtents },
   );
+  const invalidAudioRecovery = await evaluate(
+    `(() => {
+      const input = document.querySelector('input[type="file"][accept="audio/*"]');
+      if (!input) throw new Error('Music file input was not found.');
+      const transfer = new DataTransfer();
+      transfer.items.add(new File(['not audio'], 'invalid.txt', { type: 'text/plain' }));
+      input.files = transfer.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      return {
+        error: document.querySelector('[role="alert"]')?.textContent ?? '',
+        recovery: document.querySelector('label[for="music-file-input"]')?.textContent?.trim() ?? '',
+      };
+    })()`,
+    true,
+  );
+  check(
+    'invalid audio produces a readable error',
+    invalidAudioRecovery.error.includes('audio file'),
+    invalidAudioRecovery,
+  );
+  check(
+    'audio failure offers a replacement-file action',
+    invalidAudioRecovery.recovery === 'Choose another audio file',
+    invalidAudioRecovery,
+  );
   const audioReady = await evaluate(
     `(async () => {
       const input = document.querySelector('input[type="file"][accept="audio/*"]');
       if (!input) throw new Error('Music file input was not found.');
+      const useLocalDemo = ${Boolean(localDemoPath)};
       const sampleRate = 8000;
       const sampleCount = sampleRate * 4;
       const wav = new ArrayBuffer(44 + sampleCount * 2);
@@ -389,8 +431,17 @@ try {
       text(36, 'data');
       view.setUint32(40, sampleCount * 2, true);
       const transfer = new DataTransfer();
-      const blob = new Blob([wav], { type: 'audio/wav' });
-      transfer.items.add(new File([blob], 'journey-regression.wav', { type: 'audio/wav' }));
+      const blob = useLocalDemo
+        ? await fetch('/__local_demo_audio__').then((response) => {
+            if (!response.ok) throw new Error('Local demo audio fixture was unavailable.');
+            return response.blob();
+          })
+        : new Blob([wav], { type: 'audio/wav' });
+      transfer.items.add(new File(
+        [blob],
+        useLocalDemo ? "ATHETOSIS - Crywolf.mp3" : 'journey-regression.wav',
+        { type: useLocalDemo ? 'audio/mpeg' : 'audio/wav' },
+      ));
       input.files = transfer.files;
       input.dispatchEvent(new Event('change', { bubbles: true }));
       const deadline = performance.now() + 20000;
@@ -551,6 +602,28 @@ try {
   await setPlayer([0, 0.65, 0]);
   await settleReviewCamera();
   await screenshot('04-replay-reset');
+
+  const contextLossRecovery = await evaluate(
+    `(() => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) throw new Error('World canvas was not found.');
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+      return true;
+    })()`,
+    true,
+  );
+  check('WebGL context-loss event can be triggered', contextLossRecovery === true);
+  const contextLossPage = await waitFor(
+    () => evaluate(`document.body.innerText.includes('The world lost its graphics connection')`),
+    'context-loss recovery page',
+  );
+  check('WebGL context loss shows a recovery page', contextLossPage === true);
+  check(
+    'context-loss recovery offers reload',
+    await evaluate(
+      `[...document.querySelectorAll('button')].some((button) => button.textContent?.trim() === 'Reload world')`,
+    ),
+  );
 
   const pageErrors = await evaluate('window.__JOURNEY_REGRESSION_ERRORS__ ?? []');
   report.consoleErrors.push(...pageErrors);

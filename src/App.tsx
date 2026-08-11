@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import { detectLaunchSupport } from './runtime/launchSupport';
 import { detectWorldStartupSupport } from './runtime/worldStartup';
 import WorldRuntimeErrorBoundary from './ui/WorldRuntimeErrorBoundary';
 import WorldStartupFallback from './ui/WorldStartupFallback';
@@ -26,12 +27,21 @@ function AppLoadingScreen() {
  * Copyright (c) 2026 Music Universe
  */
 export default function App() {
+  const [launchSupport] = useState(() =>
+    new URLSearchParams(window.location.search).has('e2e')
+      ? { supported: true as const }
+      : detectLaunchSupport(),
+  );
   const [startupSupport] = useState(() =>
     detectWorldStartupSupport(undefined, {
       allowSoftwareRenderer: new URLSearchParams(window.location.search).has('e2e'),
     }),
   );
   const reloadWorld = () => window.location.reload();
+
+  if ('reason' in launchSupport) {
+    return <WorldStartupFallback kind={launchSupport.reason} />;
+  }
 
   if ('reason' in startupSupport) {
     return (

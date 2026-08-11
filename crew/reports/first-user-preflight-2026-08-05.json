@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "memory-journey-first-run",
+  "commit": "c10ccbd",
+  "environment": {
+    "browser": "Chromium via Playwright CLI (headed)",
+    "viewport": "1280x720",
+    "reducedMotion": false
+  },
+  "limits": {
+    "wallClockMinutes": 8,
+    "inputActions": 40,
+    "sameBlockerRetries": 3,
+    "frictionSeconds": 30
+  },
+  "outcome": {
+    "completed": false,
+    "firstObjectiveSeconds": null,
+    "frictionCount": 1,
+    "misactionCount": 0,
+    "backtrackCount": 0,
+    "replayDiscovered": false
+  },
+  "actions": [
+    {
+      "elapsedSeconds": 0,
+      "visibleState": "An alert fills the entry screen: Graphics unavailable; This world needs WebGL 2. The only action is Reload world.",
+      "interpretation": "The experience cannot initialize graphics, and the offered reload is the only visible recovery path.",
+      "input": "No input; inspect the entry state.",
+      "result": "No music chooser, controls, objective, or world is available."
+    },
+    {
+      "elapsedSeconds": 20,
+      "visibleState": "The WebGL 2 alert remains visible with Reload world.",
+      "interpretation": "A reload may recover a transient graphics initialization failure.",
+      "input": "Click Reload world (attempt 1 of 3).",
+      "result": "The page returns to the identical WebGL 2 alert."
+    },
+    {
+      "elapsedSeconds": 47,
+      "visibleState": "The same WebGL 2 alert and reload instruction are visible.",
+      "interpretation": "The first recovery attempt did not change the state; retry within the scenario limit.",
+      "input": "Click Reload world (attempt 2 of 3).",
+      "result": "The page returns to the identical WebGL 2 alert."
+    },
+    {
+      "elapsedSeconds": 72,
+      "visibleState": "The same WebGL 2 alert and reload instruction are visible.",
+      "interpretation": "This is the final permitted repetition of the same blocker.",
+      "input": "Click Reload world (attempt 3 of 3).",
+      "result": "The page returns to the identical WebGL 2 alert; stop under the same-blocker rule."
+    }
+  ],
+  "findings": [
+    {
+      "kind": "observation",
+      "severity": "blocked",
+      "statement": "The production experience never progressed beyond the WebGL 2 unavailable alert across entry and three visible reload attempts.",
+      "evidence": [
+        "output/playwright/first-user-preflight/01-entry.png",
+        "output/playwright/first-user-preflight/02-reload-1.png",
+        "output/playwright/first-user-preflight/03-reload-2.png",
+        "output/playwright/first-user-preflight/04-reload-3.png"
+      ]
+    },
+    {
+      "kind": "inference",
+      "severity": "blocked",
+      "statement": "Because no chooser, world, controls, objective, ending, or replay affordance became visible, none of the five scenario tasks could be completed in this browser environment.",
+      "evidence": [
+        "output/playwright/first-user-preflight/01-entry.png",
+        "output/playwright/first-user-preflight/04-reload-3.png"
+      ]
+    },
+    {
+      "kind": "recommendation",
+      "severity": "severe",
+      "statement": "Provide a working supported-browser path or a recovery/fallback that can progress beyond graphics initialization, then rerun the complete first-user scenario.",
+      "evidence": [
+        "output/playwright/first-user-preflight/04-reload-3.png"
+      ]
+    }
+  ],
+  "evidence": [
+    "output/playwright/first-user-preflight/01-entry.png",
+    "output/playwright/first-user-preflight/02-reload-1.png",
+    "output/playwright/first-user-preflight/03-reload-2.png",
+    "output/playwright/first-user-preflight/04-reload-3.png"
+  ]
+}

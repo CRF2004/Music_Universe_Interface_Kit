@@ -46,7 +46,12 @@ export default function InteractionPoint({ definition }: Props) {
       <Visual definition={definition} onClick={handlePointerClick} />
 
       {/* Label */}
-      <Html position={[0, definition.visual.type === 'building' ? 6 : 2.5, 0]} center distanceFactor={10}>
+      <Html
+        position={[0, definition.visual.type === 'building' ? 6 : 2.5, 0]}
+        center
+        distanceFactor={10}
+        style={{ pointerEvents: 'none' }}
+      >
         <div className={`transition-opacity duration-300 ${isNearest ? 'opacity-100' : 'opacity-0'}`}>
           <div className="bg-ink text-white px-3 py-1 rounded-sm text-sm font-display whitespace-nowrap border-2 border-white shadow-lg">
             {definition.label}

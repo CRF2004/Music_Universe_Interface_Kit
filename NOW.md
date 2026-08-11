@@ -1,6 +1,6 @@
 # NOW — Music Universe baseline and vertical slice
 
-> Last updated: 2026-08-01
+> Last updated: 2026-08-05
 > Baseline commit at audit: `a67004f Establish Memory Journey vertical slice and Pages research deployment (#15)`
 
 ## Current phase
@@ -47,7 +47,7 @@ Run on 2026-08-01:
 ```text
 npm test       51 passing
 npm run lint   passing
-npm run build  passing; 15 assets, 240.60 kB generated total
+npm run build  passing; 16 assets, 6.07 MiB generated total
 npm run journey:regression  passing; 22 checks, 5 screenshots, 0 browser errors
 ```
 
@@ -64,6 +64,22 @@ The former application-chunk warnings are resolved through explicit cache
 boundaries. Rapier remains the dominant compressed transfer. Hardware
 target-device measurement is still required before public release.
 
+Working-state verification on 2026-08-05:
+
+```text
+npm test       58 passing
+npm run lint   passing
+npm run build  passing; 16 assets, 6.07 MiB generated total
+journey regression with synthetic audio  passing; 27 checks, 5 screenshots
+journey regression with private local demo input  passing; 27 checks, 5 screenshots
+```
+
+The black-box first-user agent also verified that the WebGL-unavailable page is
+readable and stable across three reload attempts in a headed software-rendered
+environment. That environment could not enter the world without the explicit
+test-only software-renderer override, so it is recovery evidence rather than a
+completed experience preflight or target-device result.
+
 ## Current priorities
 
 ### P0 — Must finish before feature expansion
@@ -73,12 +89,8 @@ target-device measurement is still required before public release.
 2. Measure and calibrate the provisional hardware device, frame-rate, loading,
    request, GPU-memory, and bundle budgets in
    `docs/browser-performance-budget.md`.
-3. Browser-verify the WebGL/runtime recovery page and add explicit recovery for
-   any remaining audio or context-loss failure.
-4. Decide the first-release touch strategy: implement controls or explicitly
-   ship desktop-only.
-5. Create a legally distributable built-in demonstration track or documented
-   demo input.
+3. Browser-verify the WebGL/runtime, context-loss, and audio replacement
+   recovery paths across the supported matrix.
 
 ### P1 — First vertical slice
 
@@ -128,6 +140,27 @@ Implemented:
   fixed-camera regression flow. The complete asset-build -> production-build ->
   Chromium path passes locally with 22 checks, five screenshots, and no browser
   runtime errors.
+- the first release is explicitly desktop-only; touch-only devices receive a
+  readable keyboard/pointer requirement before Canvas startup;
+- audio decode/load errors expose an immediate replacement-file action, and a
+  lost WebGL context moves to a reloadable non-Canvas recovery page;
+- `crew/agents/first-user-experience.md` defines a bounded, read-only black-box
+  agent preflight before human observation, with a versioned scenario and
+  report schema. It cannot inspect semantic probes or replace human testing.
+- the project owner authorized Crywolf’s 4:38 `ATHETOSIS` recording as the
+  public built-in demo. It is available as a one-click start, processed through
+  the licensed asset pipeline, and recorded as
+  `LicenseRef-Project-Owner-Demo-Authorization`; the underlying written
+  permission should supplement the repository snapshot before distribution audit;
+- the first-user crew now has versioned professional heuristics, frozen
+  calibration cases, a governed improvement protocol, deterministic report
+  validation/comparison tools, and a hardware Chrome black-box driver that
+  exposes only screenshots and visible keyboard/pointer input;
+- hardware black-box testing found and repaired stale local-coordinate
+  proximity detection, focused-button suppression of the `E` key, world-label
+  click interception, subtitle/feedback overlap, and three driver calibration
+  failures. Native Chrome visual evidence now shows the Guide proximity prompt
+  followed by panel opening and Step 2 progression.
 
 Next:
 
@@ -164,6 +197,8 @@ acceptance evidence for this repair pass.
 - no creator save/import/export workflow exists;
 - no public share page or publishing backend exists;
 - keyboard is the only complete movement input;
+- the launch is intentionally desktop-only; mobile/touch controls are deferred
+  until the desktop product is mature;
 - load and runtime performance do not yet have hardware target-device
   measurements;
 
@@ -185,8 +220,8 @@ acceptance evidence for this repair pass.
 - real-browser audio lifecycle passes;
 - target device and performance budgets are recorded;
 - failure states provide a recovery action;
-- touch/desktop-only decision is explicit;
-- vertical-slice brief and legally usable demo audio are ready.
+- desktop-only launch constraint is explicit and enforced;
+- vertical-slice brief and authorized built-in demo audio are ready.
 
 ## Working-tree care
 

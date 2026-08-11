@@ -8,5 +8,6 @@ coverage/
 .playwright-mcp/
 .DS_Store
 *.log
+/ATHETOSIS \[here's the lullaby you made me promise never to write\] - Crywolf.mp3
 .env*
 !.env.example
