@@ -43,12 +43,13 @@ export default function CurvedWorld() {
           return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
         }
         void main() {
-          vec2 grid = abs(fract(vUv * 220.0) - 0.5);
-          float seams = smoothstep(0.485, 0.498, max(grid.x, grid.y));
+          vec2 broadGrid = abs(fract(vUv * 72.0) - 0.5);
+          float seams = smoothstep(0.475, 0.498, max(broadGrid.x, broadGrid.y));
           float grain = hash(floor(vUv * 480.0));
+          float mottling = hash(floor(vUv * 95.0)) * 0.5 + hash(floor(vUv * 31.0)) * 0.5;
           float distanceMix = smoothstep(8.0, 42.0, vDistance);
-          vec3 layered = mix(uColor, uAccent, distanceMix * 0.2 + seams * 0.08);
-          layered *= 0.94 + grain * 0.08;
+          vec3 layered = mix(uColor, uAccent, distanceMix * 0.24 + seams * 0.06);
+          layered *= 0.9 + grain * 0.055 + mottling * 0.085;
           gl_FragColor = vec4(layered, 1.0);
         }
       `,

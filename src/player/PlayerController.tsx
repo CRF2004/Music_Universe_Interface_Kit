@@ -169,24 +169,31 @@ export default function PlayerController() {
         rotation={[0, Math.PI, 0]}
         userData={{ cameraOccluder: false }}
       >
-        <mesh castShadow>
-          <capsuleGeometry args={[0.3, 0.7, 4, 8]} />
-          <meshStandardMaterial color="#ff3b2f" />
+        <mesh castShadow position={[0, 0.08, 0]}>
+          <capsuleGeometry args={[0.3, 0.58, 8, 16]} />
+          <meshStandardMaterial color="#d83c50" roughness={0.48} metalness={0.08} />
         </mesh>
-        <group position={[0, 0.25, 0.29]}>
-          <mesh position={[-0.12, 0, 0]}>
-            <boxGeometry args={[0.18, 0.1, 0.08]} />
-            <meshStandardMaterial color="white" />
-          </mesh>
-          <mesh position={[0.12, 0, 0]}>
-            <boxGeometry args={[0.18, 0.1, 0.08]} />
-            <meshStandardMaterial color="white" />
-          </mesh>
-          <mesh>
-            <boxGeometry args={[0.08, 0.035, 0.08]} />
-            <meshStandardMaterial color="white" />
-          </mesh>
+        <mesh castShadow position={[0, 0.63, 0]}>
+          <sphereGeometry args={[0.31, 16, 12]} />
+          <meshStandardMaterial color="#f0d2bd" roughness={0.72} />
+        </mesh>
+        <mesh castShadow position={[0, 0.69, 0.18]} rotation={[0.12, 0, 0]}>
+          <sphereGeometry args={[0.27, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.48]} />
+          <meshStandardMaterial color="#24243a" roughness={0.38} />
+        </mesh>
+        <mesh castShadow position={[0, 0.22, -0.25]}>
+          <boxGeometry args={[0.42, 0.48, 0.16]} />
+          <meshStandardMaterial color="#37466f" roughness={0.58} metalness={0.18} />
+        </mesh>
+        <group position={[0, 0.62, 0.285]}>
+          {[-0.11, 0.11].map((x) => (
+            <mesh key={x} position={[x, 0, 0]}>
+              <sphereGeometry args={[0.045, 10, 8]} />
+              <meshStandardMaterial color="#17203d" roughness={0.25} />
+            </mesh>
+          ))}
         </group>
+        <pointLight color="#ff5c70" intensity={0.45} distance={2.8} position={[0, 0.18, 0.18]} />
       </group>
     </RigidBody>
   );

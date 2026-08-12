@@ -84,6 +84,31 @@ function SkyOrnaments() {
 
   return (
     <group ref={root} userData={{ cameraOccluder: false }}>
+      <group position={[5, 18, -48]} rotation={[0.18, -0.25, -0.12]}>
+      <mesh>
+        <sphereGeometry args={[9, 48, 32]} />
+        <meshStandardMaterial
+          color="#5d67a5"
+          emissive="#263a72"
+          emissiveIntensity={0.18}
+          roughness={0.92}
+          metalness={0.02}
+        />
+      </mesh>
+        <mesh rotation={[Math.PI / 2.5, 0.2, 0]}>
+          <ringGeometry args={[11.2, 12.1, 96]} />
+          <meshBasicMaterial color="#9e94d4" transparent opacity={0.24} depthWrite={false} side={2} />
+        </mesh>
+      </group>
+      <mesh position={[-24, 26, -62]}>
+        <sphereGeometry args={[4.2, 32, 20]} />
+        <meshStandardMaterial
+          color="#b87fa7"
+          emissive="#5c355f"
+          emissiveIntensity={0.22}
+          roughness={0.88}
+        />
+      </mesh>
       {[-1, 1].map((side) => (
         <group key={side} position={[side * 18, 11, -24]} rotation={[0.25, side * 0.35, 0]}>
           <mesh>

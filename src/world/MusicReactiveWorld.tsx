@@ -8,6 +8,7 @@ import {
   MeshBasicMaterial,
   Object3D,
   PointsMaterial,
+  Color,
 } from 'three';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useWorldStore } from '../state/useWorldStore';
@@ -80,12 +81,18 @@ export default function MusicReactiveWorld() {
     const geometry = new BufferGeometry();
     const positions = createSkyStarPositions(Math.min(stars, 520));
     geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    const colors: number[] = [];
+    for (let index = 0; index < positions.length / 3; index += 1) {
+      const color = new Color(index % 7 === 0 ? '#d8c8ff' : index % 5 === 0 ? '#b8dfff' : '#fff8e8');
+      colors.push(color.r, color.g, color.b);
+    }
+    geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
     const material = new PointsMaterial({
-      color: 'white',
-      size: 0.075,
+      size: 0.11,
       sizeAttenuation: true,
+      vertexColors: true,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.82,
       depthWrite: false,
     });
     return { geometry, material };
