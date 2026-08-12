@@ -1,7 +1,7 @@
 # Memory Journey First-User Observation
 
 > Status: active Phase 1 usability protocol
-> Last updated: 2026-07-28
+> Last updated: 2026-08-12
 
 ## Purpose
 
@@ -74,7 +74,30 @@ Where the participant stopped or backtracked:
 Verbatim confusion (short excerpt only):
 Motion/audio comfort issue:
 Keyboard/focus/accessibility issue:
+First objective identified without help:
+Interaction model understood (E / locked-pointer click):
+Camera direction and pointer lock understood:
+Guide -> Archive -> Gate arc recalled after the run:
 ```
+
+Store one copy of this block per participant under
+`crew/reports/human-observation-YYYY-MM-DD-participant-N.md`. Do not include a
+participant's full name, contact details, recording, or other identifying data.
+
+## Round summary
+
+After 3–5 sessions, add one summary file under
+`crew/reports/human-observation-YYYY-MM-DD-summary.md` with this table:
+
+| Participant | Guide ≤45s | Finished unaided | Arc recalled | Control blocker | Comfort blocker | Repeated failure point |
+|---|---:|---:|---:|---|---|---|
+| P1 |  |  |  |  |  |  |
+
+List failure points using stable names (`enter-world`, `find-guide`,
+`interact-guide`, `find-archive`, `interact-archive`, `wait-for-gate`,
+`enter-gate`, `replay`, `comfort-controls`). If the same failure point appears
+for two or more participants, mark it `P0 usability` in the summary and promote
+it to `NOW.md` before starting unrelated experience work.
 
 After the run, ask only:
 

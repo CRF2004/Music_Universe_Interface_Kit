@@ -62,6 +62,39 @@ function ArchiveAwakening({ awakened, bloom }: { awakened: boolean; bloom: numbe
   );
 }
 
+function GuideIdentity({ active }: { active: boolean }) {
+  const root = useRef<Group>(null);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
+  useFrame(({ clock }) => {
+    if (!root.current || reducedEffects) return;
+    root.current.position.y = 0.08 + Math.sin(clock.elapsedTime * 1.7) * 0.08;
+    root.current.rotation.y = Math.sin(clock.elapsedTime * 0.55) * 0.12;
+  });
+  return (
+    <group ref={root} position={[0, 0.08, 0]} userData={{ cameraOccluder: false }}>
+      <mesh position={[0, 1.05, -0.08]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.72, 0.025, 8, 64]} />
+        <meshBasicMaterial
+          color={active ? '#d8f3ff' : '#75bfff'}
+          transparent
+          opacity={active ? 0.78 : 0.36}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh position={[0, 1.45, 0]} rotation={[0, 0, Math.PI / 4]}>
+        <octahedronGeometry args={[0.14, 0]} />
+        <meshStandardMaterial
+          color="#dff7ff"
+          emissive="#42a5ff"
+          emissiveIntensity={active ? 2 : 0.8}
+          roughness={0.28}
+        />
+      </mesh>
+      <pointLight color="#4ab5ff" intensity={active ? 1.1 : 0.45} distance={7} position={[0, 1.1, 0]} />
+    </group>
+  );
+}
+
 function InteractionCollider({ definition }: Props) {
   const profile = getInteractionVisualProfile(definition.visual.type).collider;
 
@@ -84,6 +117,7 @@ export default function InteractionPoint({ definition }: Props) {
   const isNearest = nearestId === definition.id;
   const bloom = useMusicRuntimeStore((state) => state.environment.bloomIntensity ?? 0.25);
   const isArchive = definition.id === 'memory-archive';
+  const isGuide = definition.id === 'npc-guide';
   const archiveAwakened = useInteractionStore(
     (state) => state.interactionFlags['memory.received'] === true,
   );
@@ -101,6 +135,7 @@ export default function InteractionPoint({ definition }: Props) {
         <InteractionCollider definition={definition} />
       </RigidBody>
       <Visual definition={definition} onClick={handlePointerClick} />
+      {isGuide && <GuideIdentity active={isNearest} />}
       {isArchive && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
 
       {/* Label */}

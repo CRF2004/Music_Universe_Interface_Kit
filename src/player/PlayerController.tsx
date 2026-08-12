@@ -33,6 +33,11 @@ type E2EWindow = Window & {
 export default function PlayerController() {
   const bodyRef = useRef<RapierRigidBody>(null);
   const modelRef = useRef<THREE.Group>(null);
+  const bodyVisualRef = useRef<THREE.Group>(null);
+  const leftArmRef = useRef<THREE.Group>(null);
+  const rightArmRef = useRef<THREE.Group>(null);
+  const leftLegRef = useRef<THREE.Group>(null);
+  const rightLegRef = useRef<THREE.Group>(null);
   const groundedFrames = useRef(0);
   const lastFootstepAt = useRef(0);
   const getControls = useKeyboardControls<keyof MovementControls>()[1];
@@ -126,6 +131,20 @@ export default function PlayerController() {
       }
     }
 
+    const movingSpeed = Math.hypot(velocity.x, velocity.z);
+    const gait = Math.min(1, movingSpeed / 5);
+    const gaitSpeed = controls.run ? 13 : 9;
+    const stride = Math.sin(performance.now() * 0.001 * gaitSpeed) * 0.58 * gait;
+    if (bodyVisualRef.current) {
+      bodyVisualRef.current.position.y = Math.sin(performance.now() * 0.0022) * 0.018 +
+        Math.abs(stride) * 0.035;
+      bodyVisualRef.current.rotation.z = -stride * 0.035;
+    }
+    if (leftArmRef.current) leftArmRef.current.rotation.x = stride;
+    if (rightArmRef.current) rightArmRef.current.rotation.x = -stride;
+    if (leftLegRef.current) leftLegRef.current.rotation.x = -stride * 0.7;
+    if (rightLegRef.current) rightLegRef.current.rotation.x = stride * 0.7;
+
     if (e2eEnabled.current) {
       const position = body.translation();
       (window as E2EWindow).__MUSIC_UNIVERSE_E2E__ = {
@@ -169,7 +188,8 @@ export default function PlayerController() {
         rotation={[0, Math.PI, 0]}
         userData={{ cameraOccluder: false }}
       >
-        <mesh castShadow position={[0, 0.08, 0]}>
+        <group ref={bodyVisualRef}>
+        <mesh castShadow position={[0, 0.14, 0]}>
           <capsuleGeometry args={[0.3, 0.58, 8, 16]} />
           <meshStandardMaterial color="#d83c50" roughness={0.48} metalness={0.08} />
         </mesh>
@@ -185,6 +205,30 @@ export default function PlayerController() {
           <boxGeometry args={[0.42, 0.48, 0.16]} />
           <meshStandardMaterial color="#37466f" roughness={0.58} metalness={0.18} />
         </mesh>
+        {[-1, 1].map((side) => (
+          <group
+            key={`arm-${side}`}
+            ref={side < 0 ? leftArmRef : rightArmRef}
+            position={[side * 0.37, 0.3, 0]}
+          >
+            <mesh castShadow position={[0, -0.21, 0]}>
+              <capsuleGeometry args={[0.085, 0.28, 6, 10]} />
+              <meshStandardMaterial color="#d83c50" roughness={0.5} />
+            </mesh>
+          </group>
+        ))}
+        {[-1, 1].map((side) => (
+          <group
+            key={`leg-${side}`}
+            ref={side < 0 ? leftLegRef : rightLegRef}
+            position={[side * 0.15, -0.18, 0]}
+          >
+            <mesh castShadow position={[0, -0.25, 0]}>
+              <capsuleGeometry args={[0.1, 0.3, 6, 10]} />
+              <meshStandardMaterial color="#283454" roughness={0.6} />
+            </mesh>
+          </group>
+        ))}
         <group position={[0, 0.62, 0.285]}>
           {[-0.11, 0.11].map((x) => (
             <mesh key={x} position={[x, 0, 0]}>
@@ -194,6 +238,7 @@ export default function PlayerController() {
           ))}
         </group>
         <pointLight color="#ff5c70" intensity={0.45} distance={2.8} position={[0, 0.18, 0.18]} />
+        </group>
       </group>
     </RigidBody>
   );
