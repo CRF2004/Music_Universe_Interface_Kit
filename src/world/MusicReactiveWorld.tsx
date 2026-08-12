@@ -17,6 +17,7 @@ import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
 import MemoryTree from './MemoryTree';
 import { createSkyStarPositions, MEMORY_TREE_POSITION } from './environmentLayout';
+import RevealTransition from './RevealTransition';
 
 function RainParticles({ intensity }: { intensity: number }) {
   const mesh = useRef<InstancedMesh>(null);
@@ -107,7 +108,7 @@ export default function MusicReactiveWorld() {
         userData={{ cameraOccluder: false }}
       />
       {!reducedEffects && <RainParticles intensity={rainIntensity} />}
-      {memoryTreeVisible && (
+      <RevealTransition visible={memoryTreeVisible} duration={1.6} name="memory-tree-reveal">
         <group position={MEMORY_TREE_POSITION}>
           <MemoryTree />
           <Html position={[0, 4.7, 0]} center>
@@ -116,7 +117,7 @@ export default function MusicReactiveWorld() {
             </div>
           </Html>
         </group>
-      )}
+      </RevealTransition>
       {lightPathVisible && (
         <group>
           <LightPath />
@@ -127,7 +128,7 @@ export default function MusicReactiveWorld() {
           </Html>
         </group>
       )}
-      {portalOpen && (
+      <RevealTransition visible={portalOpen} duration={1.1} name="departure-gate-reveal">
         <group position={[0, 0, -15]}>
           <DeparturePortal />
           <Html position={[0, 4.75, 0]} center>
@@ -136,7 +137,7 @@ export default function MusicReactiveWorld() {
             </div>
           </Html>
         </group>
-      )}
+      </RevealTransition>
     </group>
   );
 }
