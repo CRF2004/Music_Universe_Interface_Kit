@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { easing } from 'maath';
 import { useWorldStore } from '../state/useWorldStore';
 import { cameraPresets } from './cameraPresets';
+import { applyOrbitMouseDelta } from './thirdPersonCameraInput';
 
 interface MaterialSnapshot {
   transparent: boolean;
@@ -39,6 +40,20 @@ export default function CameraRig() {
   const raycaster = useRef(new THREE.Raycaster());
   const rayDirection = useRef(new THREE.Vector3());
   const occludedMaterials = useRef(new Map<THREE.Material, MaterialSnapshot>());
+  const orbitAngles = useRef({ yaw: Math.PI, pitch: 0.18 });
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (document.pointerLockElement?.tagName !== 'CANVAS') return;
+      orbitAngles.current = applyOrbitMouseDelta(
+        orbitAngles.current,
+        event.movementX,
+        event.movementY,
+      );
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const restoreOccludedMaterials = () => {
     occludedMaterials.current.forEach((snapshot, material) => {
@@ -87,7 +102,9 @@ export default function CameraRig() {
     // Calculate relative offset based on preset rules
     const targetQuat = new THREE.Quaternion();
     
-    if (preset.followRotation) {
+    if (currentMode === 'explore') {
+      targetQuat.setFromEuler(new THREE.Euler(0, orbitAngles.current.yaw, 0));
+    } else if (preset.followRotation) {
       const euler = new THREE.Euler().setFromQuaternion(playerQuat, 'YXZ');
       targetQuat.setFromEuler(new THREE.Euler(0, euler.y, 0));
     } else {
@@ -99,7 +116,13 @@ export default function CameraRig() {
     const rotationSpeed = 10;
     smoothedPlayerQuat.current.slerp(targetQuat, 1 - Math.exp(-rotationSpeed * dt));
     
-    const offset = new THREE.Vector3(preset.shoulderOffset || 0, preset.height, -preset.distance);
+    const orbitHeight = currentMode === 'explore'
+      ? preset.height + Math.sin(orbitAngles.current.pitch) * preset.distance
+      : preset.height;
+    const orbitDistance = currentMode === 'explore'
+      ? Math.cos(orbitAngles.current.pitch) * preset.distance
+      : preset.distance;
+    const offset = new THREE.Vector3(preset.shoulderOffset || 0, orbitHeight, -orbitDistance);
     offset.applyQuaternion(smoothedPlayerQuat.current);
     
     const targetPos = new THREE.Vector3().copy(playerPos).add(offset);

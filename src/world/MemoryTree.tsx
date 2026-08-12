@@ -21,8 +21,9 @@ import {
 } from 'three';
 import { selectAssetLod, type AssetLod } from '../assets/assetLod';
 import { useRuntimeAsset } from '../assets/runtimeAssetManifest';
+import { MEMORY_TREE_POSITION } from './environmentLayout';
 
-const TREE_POSITION = new Vector3(-3, 0, -7);
+const TREE_POSITION = new Vector3(...MEMORY_TREE_POSITION);
 const LOD_THRESHOLDS = { enterNear: 18, exitNear: 22 };
 
 function MemoryTreeFallback() {

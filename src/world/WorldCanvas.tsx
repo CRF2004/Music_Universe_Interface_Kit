@@ -67,7 +67,17 @@ export default function WorldCanvas() {
           <DebugControls />
         </Suspense>
       )}
-      <Canvas onCreated={rememberCanvas} shadows={!reducedEffects} dpr={reducedEffects ? 1 : [1, 1.5]} camera={{ position: [0, 5, 10], fov: 75 }}>
+      <Canvas
+        onCreated={rememberCanvas}
+        onPointerDown={() => {
+          if (!isPaused && !useWorldStore.getState().helpOpen) {
+            void canvasElement?.requestPointerLock();
+          }
+        }}
+        shadows={!reducedEffects}
+        dpr={reducedEffects ? 1 : [1, 1.5]}
+        camera={{ position: [0, 5, 10], fov: 75 }}
+      >
         <Suspense fallback={<LoadingWorld />}>
           <PhysicsWorld paused={isPaused} />
         </Suspense>

@@ -5,6 +5,7 @@ import {
   BufferGeometry,
   Float32BufferAttribute,
   InstancedMesh,
+  MeshBasicMaterial,
   Object3D,
   PointsMaterial,
 } from 'three';
@@ -14,11 +15,13 @@ import DeparturePortal from './DeparturePortal';
 import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
 import MemoryTree from './MemoryTree';
-import { createSkyStarPositions } from './environmentLayout';
+import { createSkyStarPositions, MEMORY_TREE_POSITION } from './environmentLayout';
 
 function RainParticles({ intensity }: { intensity: number }) {
   const mesh = useRef<InstancedMesh>(null);
-  const dropCount = Math.max(1, Math.round(intensity * 80));
+  const material = useRef<MeshBasicMaterial>(null);
+  const currentIntensity = useRef(0);
+  const dropCount = 80;
   const helper = useMemo(() => new Object3D(), []);
   const drops = useMemo(
     () =>
@@ -32,19 +35,22 @@ function RainParticles({ intensity }: { intensity: number }) {
     [dropCount],
   );
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     if (!mesh.current) return;
+    currentIntensity.current +=
+      (intensity - currentIntensity.current) * (1 - Math.exp(-1.7 * Math.min(delta, 0.1)));
     const elapsed = clock.getElapsedTime();
     drops.forEach((drop, index) => {
       const cycleHeight = 13;
       const rawY = drop.phase * cycleHeight - elapsed * drop.speed;
       const y = 1 + ((rawY % cycleHeight) + cycleHeight) % cycleHeight;
       helper.position.set(drop.x, y, drop.z);
-      helper.scale.set(1, drop.length, 1);
+      helper.scale.set(1, drop.length * currentIntensity.current, 1);
       helper.updateMatrix();
       mesh.current.setMatrixAt(index, helper.matrix);
     });
     mesh.current.instanceMatrix.needsUpdate = true;
+    if (material.current) material.current.opacity = 0.48 * currentIntensity.current;
   });
 
   return (
@@ -55,7 +61,7 @@ function RainParticles({ intensity }: { intensity: number }) {
       userData={{ cameraOccluder: false }}
     >
       <boxGeometry args={[0.018, 0.42, 0.018]} />
-      <meshBasicMaterial color="#8ac7ff" transparent opacity={0.48} depthWrite={false} />
+      <meshBasicMaterial ref={material} color="#8ac7ff" transparent opacity={0} depthWrite={false} />
     </instancedMesh>
   );
 }
@@ -93,9 +99,9 @@ export default function MusicReactiveWorld() {
         material={starField.material}
         userData={{ cameraOccluder: false }}
       />
-      {rainIntensity > 0 && <RainParticles intensity={rainIntensity} />}
+      {!reducedEffects && <RainParticles intensity={rainIntensity} />}
       {memoryTreeVisible && (
-        <group position={[-8, 0, -11]}>
+        <group position={MEMORY_TREE_POSITION}>
           <MemoryTree />
           <Html position={[0, 4.7, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">

@@ -352,6 +352,45 @@ try {
   );
   await wait(500);
 
+  if (headedMode) {
+    await rootClient.send('Target.activateTarget', { targetId });
+    await client.send('Page.bringToFront');
+    await wait(250);
+    const canvasCenter = await evaluate(`(() => {
+      const bounds = document.querySelector('canvas')?.getBoundingClientRect();
+      return bounds ? { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 } : null;
+    })()`);
+    await client.send('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      x: canvasCenter.x,
+      y: canvasCenter.y,
+      button: 'left',
+      clickCount: 1,
+    });
+    await client.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      x: canvasCenter.x,
+      y: canvasCenter.y,
+      button: 'left',
+      clickCount: 1,
+    });
+    check(
+      'Clicking the world locks and hides the pointer',
+      await waitFor(
+        () => evaluate(`document.pointerLockElement?.tagName === 'CANVAS'`),
+        'world pointer lock',
+      ),
+    );
+    await evaluate(`document.exitPointerLock()`);
+    check(
+      'The browser releases the world pointer',
+      await waitFor(
+        () => evaluate(`document.pointerLockElement === null`),
+        'pointer lock release',
+      ),
+    );
+  }
+
   await waitFor(
     () => evaluate('Boolean(window.__MUSIC_UNIVERSE_WORLD_E2E__ && window.__MUSIC_UNIVERSE_E2E__)'),
     'world inspection probes',

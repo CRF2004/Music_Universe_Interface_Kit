@@ -11,6 +11,8 @@ export interface MemoryShardPoint {
   lean: number;
 }
 
+export const MEMORY_TREE_POSITION: [number, number, number] = [-16, 0, -12];
+
 function seededUnit(seed: number) {
   const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
   return value - Math.floor(value);
@@ -83,12 +85,14 @@ export function lightPathPhase(index: number, count: number) {
 export function createSkyStarPositions(count: number) {
   const positions: number[] = [];
   for (let index = 0; index < count; index += 1) {
-    const column = index % 29;
-    const layer = Math.floor(index / 29);
+    const azimuth = seededUnit(index + 701) * Math.PI * 2;
+    const elevation = 0.2 + seededUnit(index + 751) * 0.72;
+    const radius = 32 + seededUnit(index + 801) * 34;
+    const horizontalRadius = Math.cos(elevation) * radius;
     positions.push(
-      (column - 14) * 1.9 + (layer % 2) * 0.8,
-      12 + (index % 13) * 1.15,
-      -24 - (index % 19) * 1.8,
+      Math.sin(azimuth) * horizontalRadius,
+      12 + Math.sin(elevation) * radius,
+      Math.cos(azimuth) * horizontalRadius - 10,
     );
   }
   return positions;

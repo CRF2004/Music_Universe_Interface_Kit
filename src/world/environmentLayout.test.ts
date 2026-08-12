@@ -7,6 +7,7 @@ import {
   journeyRoutePoint,
   lightPathPhase,
   lightPathPoint,
+  MEMORY_TREE_POSITION,
 } from './environmentLayout';
 
 test('rock layout is deterministic and stays outside the player clearing', () => {
@@ -27,6 +28,12 @@ test('memory grove forms sparse side clusters and leaves the navigation lane cle
   }
 });
 
+test('Memory Tree stays outside the solid Archive footprint', () => {
+  const archivePosition = [-8, 0, -11] as const;
+  assert.ok(Math.abs(MEMORY_TREE_POSITION[0] - archivePosition[0]) > 6.2);
+  assert.ok(Math.abs(MEMORY_TREE_POSITION[2] - archivePosition[2]) > 0.5);
+});
+
 test('Archive route bends around the front of the solid hangar', () => {
   const midpoint = journeyRoutePoint([0, 0, -5], 'archive', 0.5);
   const end = journeyRoutePoint([0, 0, -5], 'archive', 1);
@@ -45,8 +52,12 @@ test('light path advances into the world with normalized phases', () => {
 
 test('sky stars stay out of the low-altitude playable space', () => {
   const positions = createSkyStarPositions(520);
+  assert.deepEqual(positions, createSkyStarPositions(520));
   for (let index = 0; index < positions.length; index += 3) {
     assert.ok(positions[index + 1] >= 12);
-    assert.ok(positions[index + 2] <= -24);
   }
+  const firstTenXGaps = Array.from({ length: 9 }, (_, index) =>
+    Math.abs(positions[(index + 1) * 3] - positions[index * 3]),
+  );
+  assert.ok(new Set(firstTenXGaps.map((gap) => gap.toFixed(2))).size >= 8);
 });

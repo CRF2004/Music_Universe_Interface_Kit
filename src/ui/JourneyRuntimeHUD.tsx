@@ -157,9 +157,11 @@ export default function JourneyRuntimeHUD() {
             </p>
             <ul className="mt-5 grid gap-2 sm:grid-cols-2">
               <li><strong>Move:</strong> WASD / arrows</li>
+              <li><strong>Look:</strong> Click the world, then move the mouse</li>
               <li><strong>Interact:</strong> E or click</li>
               <li><strong>Jump:</strong> Space</li>
               <li><strong>Run:</strong> Shift</li>
+              <li><strong>Release mouse:</strong> Esc</li>
             </ul>
             <button
               autoFocus

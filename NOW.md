@@ -189,6 +189,16 @@ The immediate priority is therefore experience comprehension and spatial
 reliability, not feature expansion. The next observation round is the
 acceptance evidence for this repair pass.
 
+The second observation round additionally found that the character camera did
+not match established third-person controls, timeline-driven weather and color
+changes cut abruptly, the Memory Tree overlapped the solid Archive, and the
+star field still read as a regular point grid. The immediate repair adds a
+click-to-lock mouse orbit camera with camera-relative movement, smooths the
+environment/rain response, separates the Tree from the Archive footprint, and
+uses a deterministic irregular sky distribution. Higher-fidelity authored
+models remain a focused art-direction follow-up rather than an undirected asset
+expansion.
+
 ## Known gaps
 
 - every uploaded track currently uses the same default normalized timeline;
