@@ -1,6 +1,8 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
 import { Component, type ErrorInfo, type ReactNode, Suspense, useEffect, useMemo, useRef } from 'react';
-import type { Group, Mesh } from 'three';
+import { AdditiveBlending, type Group, type Mesh } from 'three';
+import { useFrame } from '@react-three/fiber';
+import { useWorldStore } from '../state/useWorldStore';
 import { useRuntimeAsset } from '../assets/runtimeAssetManifest';
 
 function DeparturePortalFallback() {
@@ -78,6 +80,15 @@ class PortalAssetBoundary extends Component<
 
 export default function DeparturePortal() {
   const state = useRuntimeAsset('departure-portal', 'model');
+  const effects = useRef<Group>(null);
+  const reducedEffects = useWorldStore((world) => world.reducedEffects);
+
+  useFrame(({ clock }, delta) => {
+    if (!effects.current || reducedEffects) return;
+    effects.current.rotation.z += delta * 0.34;
+    const pulse = 1 + Math.sin(clock.elapsedTime * 2.4) * 0.055;
+    effects.current.scale.setScalar(pulse);
+  });
 
   useEffect(() => {
     if (state.status === 'error') {
@@ -85,13 +96,52 @@ export default function DeparturePortal() {
     }
   }, [state]);
 
-  if (state.status !== 'ready') return <DeparturePortalFallback />;
-
   return (
-    <PortalAssetBoundary>
-      <Suspense fallback={<DeparturePortalFallback />}>
-        <DeparturePortalModel url={state.asset.url} />
-      </Suspense>
-    </PortalAssetBoundary>
+    <group>
+      {state.status !== 'ready' ? (
+        <DeparturePortalFallback />
+      ) : (
+        <PortalAssetBoundary>
+          <Suspense fallback={<DeparturePortalFallback />}>
+            <DeparturePortalModel url={state.asset.url} />
+          </Suspense>
+        </PortalAssetBoundary>
+      )}
+      <group ref={effects} position={[0, 2.05, 0.08]} userData={{ cameraOccluder: false }}>
+        {[0, Math.PI / 3, -Math.PI / 3].map((rotation, index) => (
+          <mesh key={rotation} rotation={[0, 0, rotation]}>
+            <torusGeometry args={[1.86 + index * 0.2, 0.025, 8, 72, Math.PI * 1.35]} />
+            <meshBasicMaterial
+              color={index === 0 ? '#efffe9' : '#8dffd0'}
+              transparent
+              opacity={0.34 - index * 0.07}
+              depthWrite={false}
+              blending={AdditiveBlending}
+            />
+          </mesh>
+        ))}
+        <mesh position={[0, 0, -0.03]}>
+          <circleGeometry args={[1.48, 64]} />
+          <meshBasicMaterial
+            color="#79e8c1"
+            transparent
+            opacity={0.22}
+            depthWrite={false}
+            blending={AdditiveBlending}
+          />
+        </mesh>
+      </group>
+      <mesh position={[0, 0.025, 0.4]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[3.4, 64]} />
+        <meshBasicMaterial
+          color="#6fffc3"
+          transparent
+          opacity={0.11}
+          depthWrite={false}
+          blending={AdditiveBlending}
+        />
+      </mesh>
+      <pointLight color="#72ffca" intensity={2.1} distance={18} position={[0, 2.3, 1]} />
+    </group>
   );
 }
