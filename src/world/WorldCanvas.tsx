@@ -3,6 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ContactShadows } from '@react-three/drei';
 import CameraRig from '../camera/CameraRig';
 import { useWorldStore } from '../state/useWorldStore';
+import { useInteractionStore } from '../state/useInteractionStore';
 import WorldStartupFallback from '../ui/WorldStartupFallback';
 
 const PhysicsWorld = lazy(() => import('./PhysicsWorld'));
@@ -36,6 +37,7 @@ export default function WorldCanvas() {
   const isPaused = useWorldStore((state) => state.isPaused);
   const isDevMode = useWorldStore((state) => state.isDevMode);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
+  const activePanelId = useInteractionStore((state) => state.activePanelId);
   const rememberCanvas = useCallback(
     ({ gl }: { gl: { domElement: HTMLCanvasElement } }) => setCanvasElement(gl.domElement),
     [],
@@ -50,6 +52,12 @@ export default function WorldCanvas() {
     canvasElement.addEventListener('webglcontextlost', handleContextLost);
     return () => canvasElement.removeEventListener('webglcontextlost', handleContextLost);
   }, [canvasElement]);
+
+  useEffect(() => {
+    if ((activePanelId || isPaused) && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  }, [activePanelId, isPaused]);
 
   if (contextLost) {
     return (

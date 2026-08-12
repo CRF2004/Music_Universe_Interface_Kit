@@ -30,6 +30,18 @@ export default function InteractionSystem() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nearestId]);
 
+  useEffect(() => {
+    const handlePointerInteraction = (event: MouseEvent) => {
+      if (event.button !== 0 || document.pointerLockElement?.tagName !== 'CANVAS') return;
+      const currentNearestId = useInteractionStore.getState().nearestInteractionId;
+      if (!currentNearestId) return;
+      event.preventDefault();
+      InteractionDispatcher.executeInteraction(currentNearestId, 'click');
+    };
+    window.addEventListener('mousedown', handlePointerInteraction);
+    return () => window.removeEventListener('mousedown', handlePointerInteraction);
+  }, []);
+
   useFrame(() => {
     const player = scene.getObjectByName('player');
     if (!player) return;

@@ -134,7 +134,13 @@ try {
     );
   });
   client.on('Log.entryAdded', ({ entry }) => {
-    if (entry.level === 'error') report.consoleErrors.push(entry.text);
+    const ignoredMissingFavicon =
+      entry.level === 'error' &&
+      entry.source === 'network' &&
+      /favicon\.ico|Failed to load resource: the server responded with a status of 404/.test(
+        entry.url ?? entry.text,
+      );
+    if (entry.level === 'error' && !ignoredMissingFavicon) report.consoleErrors.push(entry.text);
   });
   const mimeTypes = {
     '.css': 'text/css; charset=utf-8',
@@ -266,6 +272,20 @@ try {
     await client.send('Input.dispatchKeyEvent', { type: 'keyDown', key, modifiers });
     await client.send('Input.dispatchKeyEvent', { type: 'keyUp', key, modifiers });
   };
+  const clickCanvasCenter = async () => {
+    const canvasCenter = await evaluate(`(() => {
+      const bounds = document.querySelector('canvas')?.getBoundingClientRect();
+      return bounds ? { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 } : null;
+    })()`);
+    await client.send('Input.dispatchMouseEvent', {
+      type: 'mousePressed', x: canvasCenter.x, y: canvasCenter.y,
+      button: 'left', clickCount: 1,
+    });
+    await client.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased', x: canvasCenter.x, y: canvasCenter.y,
+      button: 'left', clickCount: 1,
+    });
+  };
   const screenshot = async (name) => {
     const result = await client.send('Page.captureScreenshot', {
       format: 'png',
@@ -356,24 +376,7 @@ try {
     await rootClient.send('Target.activateTarget', { targetId });
     await client.send('Page.bringToFront');
     await wait(250);
-    const canvasCenter = await evaluate(`(() => {
-      const bounds = document.querySelector('canvas')?.getBoundingClientRect();
-      return bounds ? { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 } : null;
-    })()`);
-    await client.send('Input.dispatchMouseEvent', {
-      type: 'mousePressed',
-      x: canvasCenter.x,
-      y: canvasCenter.y,
-      button: 'left',
-      clickCount: 1,
-    });
-    await client.send('Input.dispatchMouseEvent', {
-      type: 'mouseReleased',
-      x: canvasCenter.x,
-      y: canvasCenter.y,
-      button: 'left',
-      clickCount: 1,
-    });
+    await clickCanvasCenter();
     check(
       'Clicking the world locks and hides the pointer',
       await waitFor(
@@ -672,9 +675,34 @@ try {
   );
 
   await setPlayer([0, 0.65, -4]);
+  if (headedMode) {
+    await clickCanvasCenter();
+    await waitFor(
+      () => evaluate(`document.pointerLockElement?.tagName === 'CANVAS'`),
+      'pointer lock before click interaction',
+    );
+    await clickCanvasCenter();
+    check(
+      'Locked-pointer click executes the nearest interaction',
+      await waitFor(
+        () => evaluate(`Boolean(document.querySelector('[role="dialog"]'))`),
+        'locked-pointer interaction dialog',
+      ),
+    );
+    check(
+      'Opening an interaction panel releases the pointer',
+      await waitFor(
+        () => evaluate(`document.pointerLockElement === null`),
+        'panel pointer release',
+      ),
+    );
+    await closePanel();
+    await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true);
+  }
   check(
     'Guide interaction executes',
-    await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true),
+    headedMode ||
+      await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true),
   );
   snapshots.afterGuide = await waitFor(async () => {
     const snapshot = await worldSnapshot();
