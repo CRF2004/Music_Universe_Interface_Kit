@@ -12,9 +12,46 @@ import {
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { createMemoryGroveLayout, createRockLayout } from './environmentLayout';
+import { createTerrainReliefLayout } from './environmentLayout';
+import { useWorldStore } from '../state/useWorldStore';
 
 const ROCK_COUNT = 42;
 const MEMORY_SHARD_COUNT = 20;
+const TERRAIN_RELIEF_COUNT = 14;
+
+function TerrainRelief() {
+  const curvature = useWorldStore((state) => state.activeWorld?.terrain.curvature ?? 0.002);
+  const layout = useMemo(() => createTerrainReliefLayout(TERRAIN_RELIEF_COUNT), []);
+
+  return (
+    <group name="terrain-relief" userData={{ cameraOccluder: true }}>
+      {layout.map((relief, index) => {
+        const radius = Math.hypot(relief.position[0], relief.position[2]);
+        const bend = Math.max(0, radius - 15);
+        return (
+          <mesh
+            key={index}
+            position={[
+              relief.position[0],
+              -bend * bend * curvature - 0.38,
+              relief.position[2],
+            ]}
+            rotation={[0, relief.rotation, 0]}
+            scale={relief.scale}
+            receiveShadow
+          >
+            <icosahedronGeometry args={[1, 1]} />
+            <meshStandardMaterial
+              color={index % 3 === 0 ? '#625775' : index % 3 === 1 ? '#71647e' : '#514b67'}
+              roughness={0.96}
+              metalness={0.01}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
 
 function InstancedRocks() {
   const mesh = useRef<InstancedMesh>(null);
@@ -198,6 +235,7 @@ function MemoryGrove() {
 export default function EnvironmentScenery() {
   return (
     <group>
+      <TerrainRelief />
       <InstancedRocks />
       <MemoryGrove />
       <SkyOrnaments />

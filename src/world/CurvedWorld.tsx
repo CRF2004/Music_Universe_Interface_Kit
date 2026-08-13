@@ -16,10 +16,14 @@ export default function CurvedWorld() {
         uColor: { value: new THREE.Color('#f7ead7') }, // paper color
         uCurvature: { value: curvature },
         uAccent: { value: new THREE.Color('#81709d') },
+        uArrival: { value: new THREE.Color('#d9b98c') },
+        uArchive: { value: new THREE.Color('#75618f') },
+        uGate: { value: new THREE.Color('#394963') },
       },
       vertexShader: `
         varying vec2 vUv;
         varying float vDistance;
+        varying vec2 vWorldXZ;
         uniform float uCurvature;
         void main() {
           vUv = uv;
@@ -27,6 +31,7 @@ export default function CurvedWorld() {
           
           float dist = length(worldPosition.xz);
           vDistance = dist;
+          vWorldXZ = worldPosition.xz;
           // Route A: Only curve after a certain radius to maintain physical alignment near character
           float bendFactor = max(0.0, dist - 15.0); 
           worldPosition.y -= pow(bendFactor, 2.0) * uCurvature;
@@ -37,8 +42,12 @@ export default function CurvedWorld() {
       fragmentShader: `
         varying vec2 vUv;
         varying float vDistance;
+        varying vec2 vWorldXZ;
         uniform vec3 uColor;
         uniform vec3 uAccent;
+        uniform vec3 uArrival;
+        uniform vec3 uArchive;
+        uniform vec3 uGate;
         float hash(vec2 value) {
           return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
         }
@@ -49,6 +58,14 @@ export default function CurvedWorld() {
           float mottling = hash(floor(vUv * 95.0)) * 0.5 + hash(floor(vUv * 31.0)) * 0.5;
           float distanceMix = smoothstep(8.0, 42.0, vDistance);
           vec3 layered = mix(uColor, uAccent, distanceMix * 0.24 + seams * 0.06);
+          float arrivalZone = 1.0 - smoothstep(3.0, 13.0, length(vWorldXZ - vec2(0.0, 1.0)));
+          float archiveZone = 1.0 - smoothstep(4.0, 14.0, length(vWorldXZ - vec2(-8.0, -11.0)));
+          float gateZone = 1.0 - smoothstep(3.0, 13.0, length(vWorldXZ - vec2(0.0, -18.0)));
+          layered = mix(layered, uArrival, arrivalZone * 0.22);
+          layered = mix(layered, uArchive, archiveZone * 0.3);
+          layered = mix(layered, uGate, gateZone * 0.28);
+          float contour = sin(vDistance * 1.7 + mottling * 2.4) * 0.5 + 0.5;
+          layered *= 0.96 + contour * 0.055;
           layered *= 0.9 + grain * 0.055 + mottling * 0.085;
           gl_FragColor = vec4(layered, 1.0);
         }
@@ -65,6 +82,15 @@ export default function CurvedWorld() {
     material.uniforms.uAccent.value
       .set(groundColor ?? '#f7ead7')
       .offsetHSL(0.04, 0.08, -0.09);
+    material.uniforms.uArrival.value
+      .set(groundColor ?? '#f7ead7')
+      .offsetHSL(-0.035, 0.13, -0.035);
+    material.uniforms.uArchive.value
+      .set(groundColor ?? '#f7ead7')
+      .offsetHSL(0.075, 0.16, -0.15);
+    material.uniforms.uGate.value
+      .set(groundColor ?? '#f7ead7')
+      .offsetHSL(0.12, 0.1, -0.2);
   }, [groundColor, material]);
 
   return (

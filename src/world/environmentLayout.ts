@@ -11,6 +11,12 @@ export interface MemoryShardPoint {
   lean: number;
 }
 
+export interface TerrainReliefPoint {
+  position: [number, number, number];
+  scale: [number, number, number];
+  rotation: number;
+}
+
 export const MEMORY_TREE_POSITION: [number, number, number] = [-16, 0, -12];
 export const DEPARTURE_GATE_POSITION: [number, number, number] = [0, 0, -15];
 
@@ -19,16 +25,40 @@ function seededUnit(seed: number) {
   return value - Math.floor(value);
 }
 
+export function isRockClearOfJourney(position: [number, number, number]) {
+  const [x, , z] = position;
+  const distanceTo = (targetX: number, targetZ: number) =>
+    Math.hypot(x - targetX, z - targetZ);
+  const mainRouteClear = Math.abs(x) > 4.2 || z > 2 || z < -20;
+  const archiveFootprintClear = x < -14.5 || x > -1.5 || z < -19 || z > -2.8;
+  return mainRouteClear &&
+    archiveFootprintClear &&
+    distanceTo(0, -5) > 4.5 &&
+    distanceTo(-8, -3.8) > 5 &&
+    distanceTo(0, -15) > 5.2;
+}
+
 export function createRockLayout(count: number, innerRadius = 7, outerRadius = 38) {
-  return Array.from({ length: count }, (_, index): EnvironmentPoint => {
-    const radius = innerRadius + (outerRadius - innerRadius) * seededUnit(index + 1);
-    const angle = seededUnit(index + 91) * Math.PI * 2;
-    return {
-      position: [Math.cos(angle) * radius, -0.02, Math.sin(angle) * radius],
-      scale: 0.38 + seededUnit(index + 181) * 1.25,
-      rotation: seededUnit(index + 271) * Math.PI * 2,
-    };
-  });
+  const layout: EnvironmentPoint[] = [];
+  let candidate = 0;
+  while (layout.length < count) {
+    const radius = innerRadius + (outerRadius - innerRadius) * seededUnit(candidate + 1);
+    const angle = seededUnit(candidate + 91) * Math.PI * 2;
+    const position: [number, number, number] = [
+      Math.cos(angle) * radius,
+      -0.02,
+      Math.sin(angle) * radius,
+    ];
+    if (isRockClearOfJourney(position)) {
+      layout.push({
+        position,
+        scale: 0.38 + seededUnit(candidate + 181) * 1.25,
+        rotation: seededUnit(candidate + 271) * Math.PI * 2,
+      });
+    }
+    candidate += 1;
+  }
+  return layout;
 }
 
 export function createMemoryGroveLayout(count: number): MemoryShardPoint[] {
@@ -46,6 +76,22 @@ export function createMemoryGroveLayout(count: number): MemoryShardPoint[] {
       scale: 0.42 + seededUnit(index + 501) * 0.52,
       phase: seededUnit(index + 551) * Math.PI * 2,
       lean: (seededUnit(index + 601) - 0.5) * 0.34,
+    };
+  });
+}
+
+export function createTerrainReliefLayout(count: number): TerrainReliefPoint[] {
+  return Array.from({ length: count }, (_, index) => {
+    const angle = seededUnit(index + 911) * Math.PI * 2;
+    const radius = 23 + seededUnit(index + 961) * 19;
+    return {
+      position: [Math.cos(angle) * radius, 0, Math.sin(angle) * radius - 7],
+      scale: [
+        3.8 + seededUnit(index + 1011) * 5.5,
+        0.7 + seededUnit(index + 1061) * 1.4,
+        3.2 + seededUnit(index + 1111) * 5,
+      ],
+      rotation: seededUnit(index + 1161) * Math.PI * 2,
     };
   });
 }

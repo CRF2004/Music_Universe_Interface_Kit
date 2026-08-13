@@ -4,10 +4,12 @@ import {
   createRockLayout,
   createMemoryGroveLayout,
   createSkyStarPositions,
+  createTerrainReliefLayout,
   journeyRoutePoint,
   lightPathPhase,
   lightPathPoint,
   MEMORY_TREE_POSITION,
+  isRockClearOfJourney,
 } from './environmentLayout';
 
 test('rock layout is deterministic and stays outside the player clearing', () => {
@@ -16,7 +18,15 @@ test('rock layout is deterministic and stays outside the player clearing', () =>
   for (const rock of first) {
     const radius = Math.hypot(rock.position[0], rock.position[2]);
     assert.ok(radius >= 7 && radius <= 38);
+    assert.ok(isRockClearOfJourney(rock.position));
   }
+});
+
+test('rock exclusion zones keep landmark entrances and the main route readable', () => {
+  assert.equal(isRockClearOfJourney([0, 0, -5]), false);
+  assert.equal(isRockClearOfJourney([-8, 0, -3.8]), false);
+  assert.equal(isRockClearOfJourney([0, 0, -15]), false);
+  assert.equal(isRockClearOfJourney([18, 0, -9]), true);
 });
 
 test('memory grove forms sparse side clusters and leaves the navigation lane clear', () => {
@@ -25,6 +35,17 @@ test('memory grove forms sparse side clusters and leaves the navigation lane cle
   for (const shard of layout) {
     assert.ok(Math.abs(shard.position[0]) >= 5.8);
     assert.ok(shard.position[2] <= -5.2);
+  }
+});
+
+test('terrain relief is deterministic and stays outside the authored journey route', () => {
+  const layout = createTerrainReliefLayout(14);
+  assert.deepEqual(layout, createTerrainReliefLayout(14));
+  for (const relief of layout) {
+    const distanceFromRoute = Math.abs(relief.position[0]);
+    const radialDistance = Math.hypot(relief.position[0], relief.position[2] + 7);
+    assert.ok(radialDistance >= 23 && radialDistance <= 42);
+    assert.ok(distanceFromRoute > 8 || relief.position[2] > 4 || relief.position[2] < -24);
   }
 });
 
