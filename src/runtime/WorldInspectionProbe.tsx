@@ -1,5 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 import { InteractionDispatcher } from '../interaction/InteractionDispatcher';
 import { getInteractionVisualProfile } from '../interaction/visualProfiles';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
@@ -13,8 +14,22 @@ interface WorldInspectionSnapshot {
   nearestInteractionId: string | null;
   flags: Readonly<Record<string, unknown>>;
   environment: {
+    skyColor: string | null;
+    fogDensity: number;
+    bloomIntensity: number;
     rainIntensity: number;
     stars: number;
+    rendered: {
+      skyColor: string | null;
+      fogDensity: number;
+      bloomIntensity: number;
+      rainIntensity: number;
+      stars: number;
+    };
+  };
+  visuals: {
+    memoryTree: RevealVisualSnapshot | null;
+    departureGate: RevealVisualSnapshot | null;
   };
   interactions: Array<{
     id: string;
@@ -25,8 +40,33 @@ interface WorldInspectionSnapshot {
   }>;
 }
 
+interface RevealVisualSnapshot {
+  mounted: boolean;
+  scale: number;
+  position: [number, number, number];
+}
+
+function revealSnapshot(
+  scene: THREE.Scene,
+  revealName: string,
+  landmarkName: string,
+): RevealVisualSnapshot | null {
+  const reveal = scene.getObjectByName(revealName);
+  const landmark = scene.getObjectByName(landmarkName);
+  if (!reveal || !landmark) return null;
+  const worldPosition = landmark.getWorldPosition(new THREE.Vector3());
+  return reveal
+    ? {
+        mounted: true,
+        scale: reveal.scale.x,
+        position: [worldPosition.x, worldPosition.y, worldPosition.z],
+      }
+    : null;
+}
+
 interface WorldInspectionApi {
   snapshot: WorldInspectionSnapshot;
+  getSnapshot: () => WorldInspectionSnapshot;
   triggerInteraction: (id: string) => boolean;
 }
 
@@ -60,33 +100,56 @@ export default function WorldInspectionProbe() {
   );
   const lastUpdateAt = useRef(0);
 
+  const createSnapshot = (): WorldInspectionSnapshot => {
+    const worldState = useWorldStore.getState();
+    const interactionState = useInteractionStore.getState();
+    const runtimeEnvironment = useMusicRuntimeStore.getState().environment;
+    const player = scene.getObjectByName('player');
+    const currentFlags = interactionState.interactionFlags;
+    return {
+      worldId: worldState.activeWorld?.id ?? null,
+      playerPosition: player
+        ? [player.position.x, player.position.y, player.position.z]
+        : null,
+      currentObjectiveId: currentObjectiveId(currentFlags),
+      nearestInteractionId: interactionState.nearestInteractionId,
+      flags: currentFlags,
+      environment: {
+        skyColor: runtimeEnvironment.skyColor ?? null,
+        fogDensity: runtimeEnvironment.fogDensity ?? 0,
+        bloomIntensity: runtimeEnvironment.bloomIntensity ?? 0,
+        rainIntensity: runtimeEnvironment.rainIntensity ?? 0,
+        stars: runtimeEnvironment.stars ?? 0,
+        rendered: scene.userData.renderedEnvironment ?? {
+          skyColor: null,
+          fogDensity: 0,
+          bloomIntensity: 0,
+          rainIntensity: 0,
+          stars: 0,
+        },
+      },
+      visuals: {
+        memoryTree: revealSnapshot(scene, 'memory-tree-reveal', 'memory-tree-landmark'),
+        departureGate: revealSnapshot(scene, 'departure-gate-reveal', 'departure-gate-landmark'),
+      },
+      interactions:
+        worldState.activeWorld?.interactions.map((interaction) => ({
+          id: interaction.id,
+          label: interaction.label,
+          position: interaction.position,
+          radius: interaction.radius ?? 3,
+          collider: getInteractionVisualProfile(interaction.visual.type).collider,
+        })) ?? [],
+    };
+  };
+
   useFrame(() => {
     if (!enabled.current || performance.now() - lastUpdateAt.current < 100) return;
     lastUpdateAt.current = performance.now();
-    const player = scene.getObjectByName('player');
-
+    const snapshot = createSnapshot();
     (window as InspectionWindow).__MUSIC_UNIVERSE_WORLD_E2E__ = {
-      snapshot: {
-        worldId: activeWorld?.id ?? null,
-        playerPosition: player
-          ? [player.position.x, player.position.y, player.position.z]
-          : null,
-        currentObjectiveId: currentObjectiveId(flags),
-        nearestInteractionId,
-        flags,
-        environment: {
-          rainIntensity: environment.rainIntensity ?? 0,
-          stars: environment.stars ?? 0,
-        },
-        interactions:
-          activeWorld?.interactions.map((interaction) => ({
-            id: interaction.id,
-            label: interaction.label,
-            position: interaction.position,
-            radius: interaction.radius ?? 3,
-            collider: getInteractionVisualProfile(interaction.visual.type).collider,
-          })) ?? [],
-      },
+      snapshot,
+      getSnapshot: createSnapshot,
       triggerInteraction: (id) =>
         InteractionDispatcher.executeInteraction(id, 'proximity'),
     };

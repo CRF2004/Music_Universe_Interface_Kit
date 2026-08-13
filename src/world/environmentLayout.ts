@@ -12,6 +12,7 @@ export interface MemoryShardPoint {
 }
 
 export const MEMORY_TREE_POSITION: [number, number, number] = [-16, 0, -12];
+export const DEPARTURE_GATE_POSITION: [number, number, number] = [0, 0, -15];
 
 function seededUnit(seed: number) {
   const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;

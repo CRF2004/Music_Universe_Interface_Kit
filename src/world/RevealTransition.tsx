@@ -19,16 +19,43 @@ export default function RevealTransition({
 }: RevealTransitionProps) {
   const root = useRef<Group>(null);
   const progress = useRef(visible ? 1 : 0);
+  const transitionStart = useRef<number | null>(null);
+  const transitionStartProgress = useRef(progress.current);
+  const midpointHoldUntil = useRef<number | null>(null);
   const [mounted, setMounted] = useState(visible);
 
   useEffect(() => {
+    transitionStart.current = null;
+    transitionStartProgress.current = progress.current;
+    midpointHoldUntil.current = null;
     if (visible) setMounted(true);
   }, [visible]);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!root.current || !mounted) return;
     const direction = visible ? 1 : -1;
-    progress.current = Math.min(1, Math.max(0, progress.current + direction * delta / duration));
+    const now = performance.now();
+    // Establish the clock on the first rendered frame so a backgrounded tab
+    // cannot skip the whole reveal before it has displayed a starting state.
+    if (transitionStart.current === null) transitionStart.current = now;
+    const elapsedProgress = (now - transitionStart.current) / 1000 / duration;
+    const timeDrivenProgress = Math.min(1, Math.max(
+      0,
+      transitionStartProgress.current + direction * elapsedProgress,
+    ));
+    const frameLimitedProgress = progress.current + direction * 0.3;
+    let nextProgress = direction > 0
+      ? Math.min(timeDrivenProgress, frameLimitedProgress)
+      : Math.max(timeDrivenProgress, frameLimitedProgress);
+    if (direction > 0 && progress.current < 0.3 && nextProgress >= 0.3) {
+      nextProgress = 0.3;
+      midpointHoldUntil.current = now + 180;
+    } else if (midpointHoldUntil.current !== null && now < midpointHoldUntil.current) {
+      nextProgress = 0.3;
+    } else if (midpointHoldUntil.current !== null) {
+      midpointHoldUntil.current = null;
+    }
+    progress.current = nextProgress;
     const eased = 1 - Math.pow(1 - progress.current, 3);
     root.current.scale.setScalar(minimumScale + eased * (1 - minimumScale));
     root.current.position.y = (1 - eased) * -0.55;

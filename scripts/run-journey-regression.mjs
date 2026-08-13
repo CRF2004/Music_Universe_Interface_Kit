@@ -256,12 +256,25 @@ try {
     return result.result?.value;
   };
   const worldSnapshot = () =>
-    evaluate('window.__MUSIC_UNIVERSE_WORLD_E2E__?.snapshot ?? null');
+    evaluate('window.__MUSIC_UNIVERSE_WORLD_E2E__?.getSnapshot?.() ?? window.__MUSIC_UNIVERSE_WORLD_E2E__?.snapshot ?? null');
   const setPlayer = async (position, yaw = Math.PI) => {
-    await evaluate(
-      `window.__MUSIC_UNIVERSE_E2E__?.setPlayerTransform(${JSON.stringify(position)}, ${yaw})`,
-    );
-    await wait(900);
+    const reached = await waitFor(async () => {
+      const actual = await evaluate(
+        `(() => {
+          const api = window.__MUSIC_UNIVERSE_E2E__;
+          if (!api) return null;
+          api.setPlayerTransform(${JSON.stringify(position)}, ${yaw});
+          return api.getPlayerPosition?.() ?? null;
+        })()`,
+      );
+      return Array.isArray(actual) &&
+        Math.abs(actual[0] - position[0]) < 0.15 &&
+        Math.abs(actual[2] - position[2]) < 0.15
+        ? actual
+        : null;
+    }, `player transform ${JSON.stringify(position)}`, 3000);
+    await wait(800);
+    return reached;
   };
   const settleReviewCamera = async () => {
     await wait(2200);
@@ -286,6 +299,16 @@ try {
       button: 'left', clickCount: 1,
     });
   };
+  const lockWorldPointer = async (label) =>
+    waitFor(async () => {
+      if (await evaluate(`document.pointerLockElement?.tagName === 'CANVAS'`)) return true;
+      await rootClient.send('Target.activateTarget', { targetId });
+      await client.send('Page.bringToFront');
+      await wait(150);
+      await clickCanvasCenter();
+      await wait(200);
+      return evaluate(`document.pointerLockElement?.tagName === 'CANVAS'`);
+    }, label);
   const screenshot = async (name) => {
     const result = await client.send('Page.captureScreenshot', {
       format: 'png',
@@ -376,13 +399,9 @@ try {
     await rootClient.send('Target.activateTarget', { targetId });
     await client.send('Page.bringToFront');
     await wait(250);
-    await clickCanvasCenter();
     check(
       'Clicking the world locks and hides the pointer',
-      await waitFor(
-        () => evaluate(`document.pointerLockElement?.tagName === 'CANVAS'`),
-        'world pointer lock',
-      ),
+      await lockWorldPointer('world pointer lock'),
     );
     await evaluate(`document.exitPointerLock()`);
     check(
@@ -645,6 +664,16 @@ try {
     compactLayout,
   );
   await screenshot('accessibility-800x600');
+  await evaluate(
+    `document.querySelector('[aria-label="Toggle reduced visual effects"]')?.click()`,
+    true,
+  );
+  check(
+    'Reduced effects returns to its unpressed state before visual regression',
+    await evaluate(
+      `document.querySelector('[aria-label="Toggle reduced visual effects"]')?.getAttribute('aria-pressed') === 'false'`,
+    ),
+  );
   await client.send('Emulation.setDeviceMetricsOverride', {
     width: 1440,
     height: 900,
@@ -664,7 +693,7 @@ try {
   await wait(950);
   await wait(250);
   const collisionPosition = await evaluate(
-    'window.__MUSIC_UNIVERSE_E2E__?.playerPosition ?? null',
+    'window.__MUSIC_UNIVERSE_E2E__?.getPlayerPosition?.() ?? null',
   );
   check(
     'player is stopped outside the Archive front collider',
@@ -676,11 +705,7 @@ try {
 
   await setPlayer([0, 0.65, -4]);
   if (headedMode) {
-    await clickCanvasCenter();
-    await waitFor(
-      () => evaluate(`document.pointerLockElement?.tagName === 'CANVAS'`),
-      'pointer lock before click interaction',
-    );
+    await lockWorldPointer('pointer lock before click interaction');
     await clickCanvasCenter();
     check(
       'Locked-pointer click executes the nearest interaction',
@@ -697,7 +722,6 @@ try {
       ),
     );
     await closePanel();
-    await evaluate(`window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction('npc-guide')`, true);
   }
   check(
     'Guide interaction executes',
@@ -778,23 +802,120 @@ try {
   await wait(450);
   await screenshot('02-archive-complete');
 
-  const audioSetup = await evaluate(
+  // Review the Tree from a stable, unobstructed world-space angle. Keeping the
+  // camera at the Archive only proved that the object mounted off-screen.
+  await setPlayer([-16, 0.65, -7]);
+
+  await evaluate(
     `(async () => {
       const range = document.querySelector('input[aria-label="Music progress"]');
       const playButton = [...document.querySelectorAll('button')]
         .find((button) => button.textContent?.trim() === 'Play');
-      if (!range || !playButton || playButton.disabled) {
+      if (!playButton || playButton.disabled) throw new Error('Audio was not ready for transition sampling.');
+      playButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(range, String(Number(range.max) * 0.75));
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      [...document.querySelectorAll('button')]
+        .find((button) => button.textContent?.trim() === 'Pause')?.click();
+    })()`,
+    true,
+  );
+  const treeTransition = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    const scale = snapshot?.visuals?.memoryTree?.scale ?? 0;
+    return scale > 0.04 && scale < 0.95 ? snapshot : null;
+  }, 'Memory Tree middle reveal frame', 3000);
+  check(
+    'Memory Tree is mounted at its reviewed landmark position during reveal',
+    treeTransition?.visuals?.memoryTree?.mounted === true &&
+      treeTransition.visuals.memoryTree.scale > 0.04 &&
+      treeTransition.visuals.memoryTree.scale < 0.95 &&
+      Math.abs(treeTransition.visuals.memoryTree.position[0] - -16) < 0.05 &&
+      Math.abs(treeTransition.visuals.memoryTree.position[2] - -12) < 0.05,
+    treeTransition?.visuals?.memoryTree,
+  );
+  await screenshot('02a-memory-tree-revealing');
+  snapshots.treeStable = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.visuals?.memoryTree?.scale >= 0.99 ? snapshot : null;
+  }, 'Memory Tree stable reveal frame', 5000);
+  check(
+    'Memory Tree settles at full scale after reveal',
+    snapshots.treeStable.visuals.memoryTree.scale >= 0.99,
+    snapshots.treeStable.visuals.memoryTree,
+  );
+  await screenshot('02b-memory-tree-stable');
+
+  const environmentBeforeCue = snapshots.treeStable.environment.rendered;
+  await evaluate(
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Music progress"]');
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(range, String(Number(range.max) * 0.4));
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`,
+    true,
+  );
+  const environmentTransitionStart = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    if (!snapshot) return null;
+    const targetChanged =
+      snapshot.environment.rainIntensity !== snapshots.treeStable.environment.rainIntensity ||
+      snapshot.environment.bloomIntensity !== snapshots.treeStable.environment.bloomIntensity ||
+      snapshot.environment.stars !== snapshots.treeStable.environment.stars;
+    const notSnapped =
+      Math.abs(snapshot.environment.rendered.rainIntensity - snapshot.environment.rainIntensity) > 0.01 &&
+      Math.abs(snapshot.environment.rendered.bloomIntensity - snapshot.environment.bloomIntensity) > 0.01 &&
+      Math.abs(snapshot.environment.rendered.fogDensity - snapshot.environment.fogDensity) > 0.0001 &&
+      Math.abs(snapshot.environment.rendered.stars - snapshot.environment.stars) > 1;
+    return targetChanged && notSnapped ? snapshot : null;
+  }, 'environment transition start frame', 3000);
+  await wait(350);
+  const environmentTransition = await worldSnapshot();
+  const approaches = (start, later, target) =>
+    Math.abs(later - target) < Math.abs(start - target);
+  check(
+    'Environment cue interpolates stars, rain, bloom, and fog toward the new target',
+    approaches(
+      environmentTransitionStart.environment.rendered.rainIntensity,
+      environmentTransition.environment.rendered.rainIntensity,
+      environmentTransition.environment.rainIntensity,
+    ) && approaches(
+      environmentTransitionStart.environment.rendered.bloomIntensity,
+      environmentTransition.environment.rendered.bloomIntensity,
+      environmentTransition.environment.bloomIntensity,
+    ) && approaches(
+      environmentTransitionStart.environment.rendered.fogDensity,
+      environmentTransition.environment.rendered.fogDensity,
+      environmentTransition.environment.fogDensity,
+    ) && approaches(
+      environmentTransitionStart.environment.rendered.stars,
+      environmentTransition.environment.rendered.stars,
+      environmentTransition.environment.stars,
+    ),
+    {
+      beforeCue: environmentBeforeCue,
+      start: environmentTransitionStart.environment,
+      later: environmentTransition.environment,
+    },
+  );
+
+  const audioSetup = await evaluate(
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Music progress"]');
+      if (!range || range.disabled) {
         throw new Error('Synthetic journey audio controls are no longer ready.');
       }
-      playButton.click();
-      await new Promise((resolve) => setTimeout(resolve, 150));
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
       setter?.call(range, String(Number(range.max) * 0.9));
       range.dispatchEvent(new Event('input', { bubbles: true }));
       range.dispatchEvent(new Event('change', { bubbles: true }));
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      [...document.querySelectorAll('button')]
-        .find((button) => button.textContent?.trim() === 'Pause')?.click();
+      await new Promise((resolve) => setTimeout(resolve, 40));
       return { duration: Number(range.max), currentTime: Number(range.value) };
     })()`,
     true,
@@ -807,6 +928,30 @@ try {
   }, 'departure gate timeline cue');
   check('synthetic audio reaches the gate cue', audioSetup.currentTime >= audioSetup.duration * 0.84, audioSetup);
   check('timeline opens the departure gate', snapshots.gateOpen.flags['world.departureGateOpen'] === true);
+  snapshots.gateOpening = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    const scale = snapshot?.visuals?.departureGate?.scale ?? 0;
+    return scale > 0.04 && scale < 0.98 ? snapshot : null;
+  }, 'Departure Gate middle opening frame', 3000);
+  check(
+    'Departure Gate is captured during its opening transition',
+    snapshots.gateOpening.visuals.departureGate.scale > 0.04 &&
+      snapshots.gateOpening.visuals.departureGate.scale < 0.98 &&
+      Math.abs(snapshots.gateOpening.visuals.departureGate.position[0]) < 0.05 &&
+      Math.abs(snapshots.gateOpening.visuals.departureGate.position[2] - -15) < 0.05,
+    snapshots.gateOpening.visuals.departureGate,
+  );
+  await screenshot('02c-gate-opening');
+  snapshots.gateStable = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.visuals?.departureGate?.scale >= 0.99 ? snapshot : null;
+  }, 'Departure Gate stable opening frame', 5000);
+  check(
+    'Departure Gate settles at full scale after opening',
+    snapshots.gateStable.visuals.departureGate.scale >= 0.99,
+    snapshots.gateStable.visuals.departureGate,
+  );
+  await screenshot('02d-gate-open');
 
   await setPlayer([0, 0.65, -11.5]);
   check(

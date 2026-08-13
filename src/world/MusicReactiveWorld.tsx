@@ -1,12 +1,13 @@
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   BufferGeometry,
   Float32BufferAttribute,
   InstancedMesh,
   MeshBasicMaterial,
   Object3D,
+  Points,
   PointsMaterial,
   Color,
 } from 'three';
@@ -16,8 +17,70 @@ import DeparturePortal from './DeparturePortal';
 import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
 import MemoryTree from './MemoryTree';
-import { createSkyStarPositions, MEMORY_TREE_POSITION } from './environmentLayout';
+import {
+  createSkyStarPositions,
+  DEPARTURE_GATE_POSITION,
+  MEMORY_TREE_POSITION,
+} from './environmentLayout';
 import RevealTransition from './RevealTransition';
+
+const MAX_STAR_COUNT = 520;
+
+function StarField({ count }: { count: number }) {
+  const points = useRef<Points>(null);
+  const currentCount = useRef(0);
+  const starField = useMemo(() => {
+    const geometry = new BufferGeometry();
+    const positions = createSkyStarPositions(MAX_STAR_COUNT);
+    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    const colors: number[] = [];
+    for (let index = 0; index < MAX_STAR_COUNT; index += 1) {
+      const color = new Color(index % 7 === 0 ? '#d8c8ff' : index % 5 === 0 ? '#b8dfff' : '#fff8e8');
+      colors.push(color.r, color.g, color.b);
+    }
+    geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+    geometry.setDrawRange(0, 0);
+    const material = new PointsMaterial({
+      size: 0.11,
+      sizeAttenuation: true,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.82,
+      depthWrite: false,
+    });
+    return { geometry, material };
+  }, []);
+
+  useEffect(
+    () => () => {
+      starField.geometry.dispose();
+      starField.material.dispose();
+    },
+    [starField],
+  );
+
+  useFrame(({ scene }, delta) => {
+    if (!points.current) return;
+    const target = Math.min(MAX_STAR_COUNT, Math.max(0, count));
+    const blend = 1 - Math.exp(-1.35 * Math.min(delta, 0.1));
+    currentCount.current += (target - currentCount.current) * blend;
+    const renderedCount = Math.round(currentCount.current);
+    points.current.geometry.setDrawRange(0, renderedCount);
+    scene.userData.renderedEnvironment = {
+      ...scene.userData.renderedEnvironment,
+      stars: renderedCount,
+    };
+  });
+
+  return (
+    <points
+      ref={points}
+      geometry={starField.geometry}
+      material={starField.material}
+      userData={{ cameraOccluder: false }}
+    />
+  );
+}
 
 function RainParticles({ intensity }: { intensity: number }) {
   const mesh = useRef<InstancedMesh>(null);
@@ -78,46 +141,21 @@ export default function MusicReactiveWorld() {
   const memoryTreeVisible = useMusicRuntimeStore((state) => state.landmarks['memory-tree'] ?? false);
   const lightPathVisible = useMusicRuntimeStore((state) => state.landmarks['light-path'] ?? false);
 
-  const starField = useMemo(() => {
-    const geometry = new BufferGeometry();
-    const positions = createSkyStarPositions(Math.min(stars, 520));
-    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
-    const colors: number[] = [];
-    for (let index = 0; index < positions.length / 3; index += 1) {
-      const color = new Color(index % 7 === 0 ? '#d8c8ff' : index % 5 === 0 ? '#b8dfff' : '#fff8e8');
-      colors.push(color.r, color.g, color.b);
-    }
-    geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
-    const material = new PointsMaterial({
-      size: 0.11,
-      sizeAttenuation: true,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.82,
-      depthWrite: false,
-    });
-    return { geometry, material };
-  }, [stars]);
-
   return (
     <group>
       <EnvironmentScenery />
-      <points
-        geometry={starField.geometry}
-        material={starField.material}
-        userData={{ cameraOccluder: false }}
-      />
+      <StarField count={stars} />
       {!reducedEffects && <RainParticles intensity={rainIntensity} />}
-      <RevealTransition visible={memoryTreeVisible} duration={1.6} name="memory-tree-reveal">
-        <group position={MEMORY_TREE_POSITION}>
+      <group name="memory-tree-landmark" position={MEMORY_TREE_POSITION}>
+        <RevealTransition visible={memoryTreeVisible} duration={1.6} name="memory-tree-reveal">
           <MemoryTree />
           <Html position={[0, 4.7, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Memory Tree
             </div>
           </Html>
-        </group>
-      </RevealTransition>
+        </RevealTransition>
+      </group>
       {lightPathVisible && (
         <group>
           <LightPath />
@@ -128,16 +166,16 @@ export default function MusicReactiveWorld() {
           </Html>
         </group>
       )}
-      <RevealTransition visible={portalOpen} duration={1.1} name="departure-gate-reveal">
-        <group position={[0, 0, -15]}>
+      <group name="departure-gate-landmark" position={DEPARTURE_GATE_POSITION}>
+        <RevealTransition visible={portalOpen} duration={1.1} name="departure-gate-reveal">
           <DeparturePortal />
           <Html position={[0, 4.75, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Departure Gate
             </div>
           </Html>
-        </group>
-      </RevealTransition>
+        </RevealTransition>
+      </group>
     </group>
   );
 }

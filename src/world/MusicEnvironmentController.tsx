@@ -42,6 +42,13 @@ export default function MusicEnvironmentController() {
     }
     const bloom = currentBloom.current;
     const rain = currentRain.current;
+    scene.userData.renderedEnvironment = {
+      ...scene.userData.renderedEnvironment,
+      skyColor: scene.background instanceof THREE.Color ? `#${scene.background.getHexString()}` : null,
+      fogDensity: scene.fog instanceof THREE.FogExp2 ? scene.fog.density : 0,
+      bloomIntensity: bloom,
+      rainIntensity: rain,
+    };
     scene.traverse((object) => {
       if (object instanceof THREE.AmbientLight) object.intensity = 0.55 + bloom * 0.25;
       if (object instanceof THREE.DirectionalLight) {
