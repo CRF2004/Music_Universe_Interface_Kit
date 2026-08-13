@@ -798,8 +798,18 @@ try {
   }, 'Archive objective transition');
   check('Archive advances objective to Gate', snapshots.afterArchive.currentObjectiveId === 'departure-gate');
   check('Archive sets memory.received', snapshots.afterArchive.flags['memory.received'] === true);
+  snapshots.archiveAwakened = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.visuals?.archiveAwakening >= 0.92 ? snapshot : null;
+  }, 'Archive building body awakening', 5000);
+  check(
+    'Archive interaction awakens the building body',
+    snapshots.archiveAwakened.visuals.archiveAwakening >= 0.92,
+    snapshots.archiveAwakened.visuals.archiveAwakening,
+  );
   await closePanel();
-  await wait(450);
+  await setPlayer([-8, 0.65, -2.8]);
+  await settleReviewCamera();
   await screenshot('02-archive-complete');
 
   // Review the Tree from a stable, unobstructed world-space angle. Keeping the
@@ -855,7 +865,7 @@ try {
     `(async () => {
       const range = document.querySelector('input[aria-label="Music progress"]');
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-      setter?.call(range, String(Number(range.max) * 0.4));
+      setter?.call(range, String(Number(range.max) * 0.9));
       range.dispatchEvent(new Event('input', { bubbles: true }));
       range.dispatchEvent(new Event('change', { bubbles: true }));
     })()`,
@@ -905,6 +915,34 @@ try {
     },
   );
 
+  await setPlayer([0, 0.65, -11.5]);
+  await settleReviewCamera();
+
+  await evaluate(
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Music progress"]');
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(range, String(Number(range.max) * 0.72));
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`,
+    true,
+  );
+  snapshots.gateCharging = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.visuals?.departureGateCharge?.scale >= 0.99 &&
+      snapshot?.visuals?.departureGate === null
+      ? snapshot
+      : null;
+  }, 'Departure Gate charging phase', 5000);
+  check(
+    'Light Path cue charges the Gate before it opens',
+    snapshots.gateCharging.visuals.departureGateCharge.scale >= 0.99 &&
+      snapshots.gateCharging.flags['world.departureGateOpen'] !== true,
+    snapshots.gateCharging.visuals,
+  );
+  await screenshot('02c-gate-charging');
+
   const audioSetup = await evaluate(
     `(async () => {
       const range = document.querySelector('input[aria-label="Music progress"]');
@@ -941,7 +979,7 @@ try {
       Math.abs(snapshots.gateOpening.visuals.departureGate.position[2] - -15) < 0.05,
     snapshots.gateOpening.visuals.departureGate,
   );
-  await screenshot('02c-gate-opening');
+  await screenshot('02d-gate-opening');
   snapshots.gateStable = await waitFor(async () => {
     const snapshot = await worldSnapshot();
     return snapshot?.visuals?.departureGate?.scale >= 0.99 ? snapshot : null;
@@ -951,7 +989,28 @@ try {
     snapshots.gateStable.visuals.departureGate.scale >= 0.99,
     snapshots.gateStable.visuals.departureGate,
   );
-  await screenshot('02d-gate-open');
+  await screenshot('02e-gate-open');
+
+  await evaluate(
+    `(async () => {
+      const range = document.querySelector('input[aria-label="Music progress"]');
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(range, String(Number(range.max) * 0.98));
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`,
+    true,
+  );
+  snapshots.gateAfterglow = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.visuals?.departureGateAfterglow?.scale >= 0.99 ? snapshot : null;
+  }, 'Departure Gate afterglow phase', 5000);
+  check(
+    'Afterglow cue adds a stable Gate afterglow',
+    snapshots.gateAfterglow.visuals.departureGateAfterglow.scale >= 0.99,
+    snapshots.gateAfterglow.visuals.departureGateAfterglow,
+  );
+  await screenshot('02f-gate-afterglow');
 
   await setPlayer([0, 0.65, -11.5]);
   check(
@@ -1078,6 +1137,20 @@ try {
       ? 'Final track replacement reconstructs the closed gate state'
       : 'Replay reconstructs the closed gate state',
     snapshots.replay.flags['world.departureGateOpen'] !== true,
+  );
+  snapshots.replayVisualsSettled = await waitFor(async () => {
+    const snapshot = await worldSnapshot();
+    return snapshot?.visuals?.archiveAwakening < 0.08 &&
+      snapshot.visuals.departureGateCharge === null &&
+      snapshot.visuals.departureGate === null &&
+      snapshot.visuals.departureGateAfterglow === null
+      ? snapshot
+      : null;
+  }, 'replay visual state reconstruction', 6000);
+  check(
+    'Replay returns Archive to rest and removes every Gate phase',
+    snapshots.replayVisualsSettled.visuals.archiveAwakening < 0.08,
+    snapshots.replayVisualsSettled.visuals,
   );
   await setPlayer([0, 0.65, 0]);
   await settleReviewCamera();

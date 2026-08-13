@@ -28,8 +28,11 @@ interface WorldInspectionSnapshot {
     };
   };
   visuals: {
+    archiveAwakening: number;
     memoryTree: RevealVisualSnapshot | null;
+    departureGateCharge: RevealVisualSnapshot | null;
     departureGate: RevealVisualSnapshot | null;
+    departureGateAfterglow: RevealVisualSnapshot | null;
   };
   interactions: Array<{
     id: string;
@@ -129,8 +132,20 @@ export default function WorldInspectionProbe() {
         },
       },
       visuals: {
+        archiveAwakening:
+          scene.getObjectByName('archive-building-body')?.userData.awakeningProgress ?? 0,
         memoryTree: revealSnapshot(scene, 'memory-tree-reveal', 'memory-tree-landmark'),
+        departureGateCharge: revealSnapshot(
+          scene,
+          'departure-gate-charge-reveal',
+          'departure-gate-landmark',
+        ),
         departureGate: revealSnapshot(scene, 'departure-gate-reveal', 'departure-gate-landmark'),
+        departureGateAfterglow: revealSnapshot(
+          scene,
+          'departure-gate-afterglow-reveal',
+          'departure-gate-landmark',
+        ),
       },
       interactions:
         worldState.activeWorld?.interactions.map((interaction) => ({
