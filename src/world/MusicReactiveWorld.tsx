@@ -13,7 +13,7 @@ import {
 } from 'three';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useWorldStore } from '../state/useWorldStore';
-import DeparturePortal from './DeparturePortal';
+import DepartureGateSequence from './DepartureGateSequence';
 import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
 import MemoryTree from './MemoryTree';
@@ -140,6 +140,9 @@ export default function MusicReactiveWorld() {
   const portalOpen = useMusicRuntimeStore((state) => state.portals.departure ?? false);
   const memoryTreeVisible = useMusicRuntimeStore((state) => state.landmarks['memory-tree'] ?? false);
   const lightPathVisible = useMusicRuntimeStore((state) => state.landmarks['light-path'] ?? false);
+  const gateAfterglow = useMusicRuntimeStore(
+    (state) => state.landmarks['departure-afterglow'] ?? false,
+  );
 
   return (
     <group>
@@ -167,14 +170,18 @@ export default function MusicReactiveWorld() {
         </group>
       )}
       <group name="departure-gate-landmark" position={DEPARTURE_GATE_POSITION}>
-        <RevealTransition visible={portalOpen} duration={1.1} name="departure-gate-reveal">
-          <DeparturePortal />
+        <DepartureGateSequence
+          charging={lightPathVisible}
+          open={portalOpen}
+          afterglow={gateAfterglow}
+        />
+        {(lightPathVisible || portalOpen) && (
           <Html position={[0, 4.75, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Departure Gate
             </div>
           </Html>
-        </RevealTransition>
+        )}
       </group>
     </group>
   );

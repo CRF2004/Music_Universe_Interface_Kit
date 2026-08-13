@@ -9,8 +9,8 @@ import { getInteractionVisualProfile } from './visualProfiles';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useWorldStore } from '../state/useWorldStore';
 import { useFrame } from '@react-three/fiber';
-import { useRef } from 'react';
-import type { Group } from 'three';
+import { useEffect, useRef } from 'react';
+import { Color, Mesh, MeshStandardMaterial, type Group } from 'three';
 
 interface Props {
   definition: InteractionPointDefinition;
@@ -61,6 +61,55 @@ function ArchiveAwakening({ awakened, bloom }: { awakened: boolean; bloom: numbe
       />
     </group>
   );
+}
+
+function ArchiveBuildingResponse({
+  awakened,
+  children,
+}: {
+  awakened: boolean;
+  children: React.ReactNode;
+}) {
+  const root = useRef<Group>(null);
+  const progress = useRef(awakened ? 1 : 0);
+  const accent = useRef(new Color('#9d78ff'));
+  const transitionStart = useRef(performance.now());
+  const transitionStartProgress = useRef(progress.current);
+
+  useEffect(() => {
+    transitionStart.current = performance.now();
+    transitionStartProgress.current = progress.current;
+  }, [awakened]);
+
+  useFrame(({ clock }) => {
+    if (!root.current) return;
+    const elapsed = (performance.now() - transitionStart.current) / 1000;
+    const blend = 1 - Math.exp(-2.8 * elapsed);
+    const target = awakened ? 1 : 0;
+    progress.current = transitionStartProgress.current +
+      (target - transitionStartProgress.current) * blend;
+    const pulse = awakened ? 0.86 + Math.sin(clock.elapsedTime * 2.1) * 0.14 : 0;
+    root.current.position.y = progress.current * 0.045;
+    root.current.scale.y = 1 + progress.current * 0.012;
+    root.current.userData.awakeningProgress = progress.current;
+    root.current.traverse((object) => {
+      if (!(object instanceof Mesh)) return;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach((material) => {
+        if (!(material instanceof MeshStandardMaterial)) return;
+        if (material.userData.archiveBaseEmissive === undefined) {
+          material.userData.archiveBaseEmissive = material.emissive.getHex();
+          material.userData.archiveBaseIntensity = material.emissiveIntensity;
+        }
+        const baseEmissive = new Color(Number(material.userData.archiveBaseEmissive));
+        material.emissive.copy(baseEmissive).lerp(accent.current, progress.current * 0.78);
+        material.emissiveIntensity =
+          Number(material.userData.archiveBaseIntensity) + progress.current * pulse;
+      });
+    });
+  });
+
+  return <group ref={root} name="archive-building-body">{children}</group>;
 }
 
 function GuideIdentity({ active }: { active: boolean }) {
@@ -136,7 +185,13 @@ export default function InteractionPoint({ definition }: Props) {
       <RigidBody type="fixed" colliders={false} name={`${definition.id}-collider`}>
         <InteractionCollider definition={definition} />
       </RigidBody>
-      <Visual definition={definition} onClick={handlePointerClick} />
+      {isArchive ? (
+        <ArchiveBuildingResponse awakened={archiveAwakened}>
+          <Visual definition={definition} onClick={handlePointerClick} />
+        </ArchiveBuildingResponse>
+      ) : (
+        <Visual definition={definition} onClick={handlePointerClick} />
+      )}
       {isGuide && <GuideIdentity active={isNearest} />}
       {isArchive && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
 

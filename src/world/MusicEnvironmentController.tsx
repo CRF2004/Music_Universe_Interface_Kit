@@ -19,11 +19,15 @@ export default function MusicEnvironmentController() {
     targetFog.current.set(environment.fogColor ?? environment.skyColor ?? '#26375d');
     if (!(scene.background instanceof THREE.Color)) scene.background = targetSky.current.clone();
     if (!(scene.fog instanceof THREE.FogExp2)) scene.fog = new THREE.FogExp2(targetFog.current, 0);
-
-    return () => {
-      scene.fog = null;
-    };
   }, [environment.fogColor, environment.skyColor, scene]);
+
+  useEffect(
+    () => () => {
+      scene.fog = null;
+      delete scene.userData.renderedEnvironment;
+    },
+    [scene],
+  );
 
   useFrame((_, delta) => {
     const blend = reducedEffects ? 1 : 1 - Math.exp(-1.35 * Math.min(delta, 0.1));
