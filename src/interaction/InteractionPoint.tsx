@@ -4,6 +4,7 @@ import { CapsuleCollider, CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useInteractionStore } from '../state/useInteractionStore';
 import { visualRegistry } from './visualRegistry';
 import { InteractionDispatcher } from './InteractionDispatcher';
+import { consumePointerLockAcquisitionClick } from './interactionInput';
 import { getInteractionVisualProfile } from './visualProfiles';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useWorldStore } from '../state/useWorldStore';
@@ -124,6 +125,7 @@ export default function InteractionPoint({ definition }: Props) {
 
   const handlePointerClick = (e: any) => {
     e.stopPropagation();
+    if (consumePointerLockAcquisitionClick()) return;
     InteractionDispatcher.executeInteraction(definition.id, 'click');
   };
 

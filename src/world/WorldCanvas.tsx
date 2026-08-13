@@ -79,7 +79,19 @@ export default function WorldCanvas() {
         onCreated={rememberCanvas}
         onPointerDown={() => {
           if (!isPaused && !useWorldStore.getState().helpOpen) {
-            void canvasElement?.requestPointerLock();
+            const activeCanvas = document.querySelector('canvas');
+            if (
+              activeCanvas instanceof HTMLCanvasElement &&
+              activeCanvas.isConnected &&
+              activeCanvas.ownerDocument === document
+            ) {
+              if (document.pointerLockElement !== activeCanvas) {
+                activeCanvas.dataset.pointerLockAcquisitionClick = 'true';
+                void activeCanvas.requestPointerLock();
+              } else {
+                delete activeCanvas.dataset.pointerLockAcquisitionClick;
+              }
+            }
           }
         }}
         shadows={!reducedEffects}

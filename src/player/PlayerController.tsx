@@ -16,12 +16,14 @@ interface MovementControls {
 }
 
 interface PlayerE2ETelemetry {
+  owner: symbol;
   playerPosition: [number, number, number];
   playerQuaternion: [number, number, number, number];
   cameraPosition: [number, number, number];
   cameraQuaternion: [number, number, number, number];
   velocity: [number, number, number];
   cameraOccludedMaterials?: number;
+  getPlayerPosition: () => [number, number, number];
   setPlayerTransform: (position: [number, number, number], yaw: number) => void;
   drivePlayer: (velocity: [number, number, number], durationMs: number) => void;
 }
@@ -52,13 +54,17 @@ export default function PlayerController() {
   const e2eEnabled = useRef(
     typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('e2e'),
   );
+  const e2eOwner = useRef(Symbol('player-e2e-owner'));
 
-  useEffect(
-    () => () => {
-      if (e2eEnabled.current) delete (window as E2EWindow).__MUSIC_UNIVERSE_E2E__;
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!e2eEnabled.current) return undefined;
+    return () => {
+      const e2eWindow = window as E2EWindow;
+      if (e2eWindow.__MUSIC_UNIVERSE_E2E__?.owner === e2eOwner.current) {
+        delete e2eWindow.__MUSIC_UNIVERSE_E2E__;
+      }
+    };
+  }, []);
 
   useFrame((_, delta) => {
     const body = bodyRef.current;
@@ -148,6 +154,7 @@ export default function PlayerController() {
     if (e2eEnabled.current) {
       const position = body.translation();
       (window as E2EWindow).__MUSIC_UNIVERSE_E2E__ = {
+        owner: e2eOwner.current,
         playerPosition: [position.x, position.y, position.z],
         playerQuaternion: model.quaternion.toArray(),
         cameraPosition: camera.position.toArray(),
@@ -155,6 +162,10 @@ export default function PlayerController() {
         velocity: [velocity.x, velocity.y, velocity.z],
         cameraOccludedMaterials: (window as E2EWindow).__MUSIC_UNIVERSE_E2E__
           ?.cameraOccludedMaterials,
+        getPlayerPosition() {
+          const current = body.translation();
+          return [current.x, current.y, current.z];
+        },
         setPlayerTransform(position, yaw) {
           body.setTranslation({ x: position[0], y: position[1], z: position[2] }, true);
           body.setLinvel({ x: 0, y: 0, z: 0 }, true);

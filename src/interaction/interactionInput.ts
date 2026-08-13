@@ -17,3 +17,10 @@ export function horizontalInteractionDistance(
 ): number {
   return Math.hypot(player[0] - target[0], player[2] - target[2]);
 }
+
+export function consumePointerLockAcquisitionClick(): boolean {
+  if (typeof document === 'undefined') return false;
+  const canvas = document.querySelector('canvas');
+  if (canvas?.dataset.pointerLockAcquisitionClick !== 'true') return false;
+  return true;
+}

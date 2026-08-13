@@ -4,6 +4,15 @@ import { LocalAudioPlayer } from './LocalAudioPlayer';
 import type { AudioLoadStatus, LocalAudioTrack } from './audioUploadTypes';
 
 const player = new LocalAudioPlayer();
+const AUDIO_LOAD_TIMEOUT_MS = 10_000;
+let loadTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearLoadTimeout() {
+  if (loadTimeout !== null) {
+    clearTimeout(loadTimeout);
+    loadTimeout = null;
+  }
+}
 
 interface AudioStore {
   track: LocalAudioTrack | null;
@@ -60,6 +69,16 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
         status: 'loading',
         error: null,
       });
+      clearLoadTimeout();
+      loadTimeout = setTimeout(() => {
+        const state = useAudioPlayerStore.getState();
+        if (state.track?.id !== track.id || state.status !== 'loading') return;
+        useAudioPlayerStore.setState({
+          playing: false,
+          status: 'error',
+          error: 'The browser could not decode this audio file.',
+        });
+      }, AUDIO_LOAD_TIMEOUT_MS);
     } catch (error) {
       set({
         ...initialState,
@@ -98,6 +117,7 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
   },
 
   clear() {
+    clearLoadTimeout();
     player.clear();
     useInteractionStore.getState().resetInteractionRuntime('track-replaced');
     set(initialState);
@@ -124,8 +144,14 @@ export function setMusicPlaybackVolume(volume: number): void {
   player.setVolume(volume);
 }
 
-player.element.addEventListener('loadedmetadata', () => useAudioPlayerStore.getState().sync());
-player.element.addEventListener('durationchange', () => useAudioPlayerStore.getState().sync());
+player.element.addEventListener('loadedmetadata', () => {
+  clearLoadTimeout();
+  useAudioPlayerStore.getState().sync();
+});
+player.element.addEventListener('durationchange', () => {
+  if (player.duration > 0) clearLoadTimeout();
+  useAudioPlayerStore.getState().sync();
+});
 player.element.addEventListener('timeupdate', () => useAudioPlayerStore.getState().sync());
 player.element.addEventListener('play', () =>
   useAudioPlayerStore.setState({ playing: true, started: true, ended: false }),
@@ -136,6 +162,7 @@ player.element.addEventListener('ended', () => {
   useAudioPlayerStore.setState({ playing: false, ended: true });
 });
 player.element.addEventListener('error', () => {
+  clearLoadTimeout();
   useAudioPlayerStore.setState({
     playing: false,
     status: 'error',

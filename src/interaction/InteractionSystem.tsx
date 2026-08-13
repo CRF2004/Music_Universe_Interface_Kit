@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { InteractionDispatcher } from './InteractionDispatcher';
 import {
   blocksWorldInteractionKey,
+  consumePointerLockAcquisitionClick,
   horizontalInteractionDistance,
 } from './interactionInput';
 
@@ -32,14 +33,15 @@ export default function InteractionSystem() {
 
   useEffect(() => {
     const handlePointerInteraction = (event: MouseEvent) => {
+      if (consumePointerLockAcquisitionClick()) return;
       if (event.button !== 0 || document.pointerLockElement?.tagName !== 'CANVAS') return;
       const currentNearestId = useInteractionStore.getState().nearestInteractionId;
       if (!currentNearestId) return;
       event.preventDefault();
       InteractionDispatcher.executeInteraction(currentNearestId, 'click');
     };
-    window.addEventListener('mousedown', handlePointerInteraction);
-    return () => window.removeEventListener('mousedown', handlePointerInteraction);
+    window.addEventListener('mousedown', handlePointerInteraction, true);
+    return () => window.removeEventListener('mousedown', handlePointerInteraction, true);
   }, []);
 
   useFrame(() => {
