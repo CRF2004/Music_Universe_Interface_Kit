@@ -800,12 +800,20 @@ try {
   check('Archive sets memory.received', snapshots.afterArchive.flags['memory.received'] === true);
   snapshots.archiveAwakened = await waitFor(async () => {
     const snapshot = await worldSnapshot();
-    return snapshot?.visuals?.archiveAwakening >= 0.92 ? snapshot : null;
+    return snapshot?.visuals?.archiveAwakening >= 0.92 &&
+      snapshot.visuals.archiveFacadeAwakening >= 0.92
+      ? snapshot
+      : null;
   }, 'Archive building body awakening', 5000);
   check(
     'Archive interaction awakens the building body',
     snapshots.archiveAwakened.visuals.archiveAwakening >= 0.92,
     snapshots.archiveAwakened.visuals.archiveAwakening,
+  );
+  check(
+    'Archive interaction illuminates the readable entrance facade',
+    snapshots.archiveAwakened.visuals.archiveFacadeAwakening >= 0.92,
+    snapshots.archiveAwakened.visuals.archiveFacadeAwakening,
   );
   await closePanel();
   await setPlayer([-8, 0.65, -2.8]);
@@ -1141,6 +1149,7 @@ try {
   snapshots.replayVisualsSettled = await waitFor(async () => {
     const snapshot = await worldSnapshot();
     return snapshot?.visuals?.archiveAwakening < 0.08 &&
+      snapshot.visuals.archiveFacadeAwakening < 0.08 &&
       snapshot.visuals.departureGateCharge === null &&
       snapshot.visuals.departureGate === null &&
       snapshot.visuals.departureGateAfterglow === null
@@ -1149,7 +1158,8 @@ try {
   }, 'replay visual state reconstruction', 6000);
   check(
     'Replay returns Archive to rest and removes every Gate phase',
-    snapshots.replayVisualsSettled.visuals.archiveAwakening < 0.08,
+    snapshots.replayVisualsSettled.visuals.archiveAwakening < 0.08 &&
+      snapshots.replayVisualsSettled.visuals.archiveFacadeAwakening < 0.08,
     snapshots.replayVisualsSettled.visuals,
   );
   await setPlayer([0, 0.65, 0]);

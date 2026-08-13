@@ -29,6 +29,7 @@ interface WorldInspectionSnapshot {
   };
   visuals: {
     archiveAwakening: number;
+    archiveFacadeAwakening: number;
     memoryTree: RevealVisualSnapshot | null;
     departureGateCharge: RevealVisualSnapshot | null;
     departureGate: RevealVisualSnapshot | null;
@@ -134,6 +135,8 @@ export default function WorldInspectionProbe() {
       visuals: {
         archiveAwakening:
           scene.getObjectByName('archive-building-body')?.userData.awakeningProgress ?? 0,
+        archiveFacadeAwakening:
+          scene.getObjectByName('archive-facade-detail')?.userData.awakeningProgress ?? 0,
         memoryTree: revealSnapshot(scene, 'memory-tree-reveal', 'memory-tree-landmark'),
         departureGateCharge: revealSnapshot(
           scene,

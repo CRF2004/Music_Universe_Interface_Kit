@@ -63,6 +63,97 @@ function ArchiveAwakening({ awakened, bloom }: { awakened: boolean; bloom: numbe
   );
 }
 
+function ArchiveFacadeDetail({ awakened }: { awakened: boolean }) {
+  const root = useRef<Group>(null);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
+
+  useFrame(({ clock }, delta) => {
+    if (!root.current) return;
+    const target = awakened ? 1 : 0;
+    const progress = Number(root.current.userData.awakeningProgress ?? 0);
+    const next = progress + (target - progress) * (1 - Math.exp(-3.4 * delta));
+    root.current.userData.awakeningProgress = next;
+    root.current.traverse((object) => {
+      if (!(object instanceof Mesh) || !(object.material instanceof MeshStandardMaterial)) return;
+      if (object.userData.archiveLight !== true) return;
+      object.material.emissiveIntensity = 0.18 + next *
+        (reducedEffects ? 0.8 : 1.35 + Math.sin(clock.elapsedTime * 1.8) * 0.16);
+    });
+  });
+
+  const frameMaterial = (
+    <meshStandardMaterial color="#433a59" roughness={0.58} metalness={0.2} />
+  );
+  const lightMaterial = (
+    <meshStandardMaterial
+      color="#c8b4ef"
+      emissive="#9d78ff"
+      emissiveIntensity={0.18}
+      roughness={0.34}
+      metalness={0.12}
+    />
+  );
+
+  return (
+    <group
+      ref={root}
+      name="archive-facade-detail"
+      position={[0, 0, 7.18]}
+      userData={{ awakeningProgress: awakened ? 1 : 0, cameraOccluder: false }}
+    >
+      <mesh position={[0, 1.72, 0.035]}>
+        <boxGeometry args={[3.15, 3.42, 0.18]} />
+        <meshStandardMaterial color="#201c2d" roughness={0.9} metalness={0.05} />
+      </mesh>
+      {[-1, 1].map((side) => (
+        <group key={side}>
+          <mesh position={[side * 1.78, 1.82, 0]} scale={[0.54, 4.05, 0.34]}>
+            <boxGeometry args={[1, 1, 1]} />
+            {frameMaterial}
+          </mesh>
+          <mesh
+            position={[side * 1.46, 1.82, 0.2]}
+            scale={[0.09, 3.36, 0.09]}
+            userData={{ archiveLight: true }}
+          >
+            <boxGeometry args={[1, 1, 1]} />
+            {lightMaterial}
+          </mesh>
+          {[2.72, 3.72].map((height) => (
+            <mesh
+              key={height}
+              position={[side * 3.42, height, -0.02]}
+              scale={[2.2, 0.18, 0.22]}
+            >
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#65577c" roughness={0.7} metalness={0.12} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      <mesh position={[0, 3.66, 0]} scale={[3.92, 0.55, 0.45]}>
+        <boxGeometry args={[1, 1, 1]} />
+        {frameMaterial}
+      </mesh>
+      <mesh position={[0, 3.45, 0.23]} scale={[2.82, 0.09, 0.09]} userData={{ archiveLight: true }}>
+        <boxGeometry args={[1, 1, 1]} />
+        {lightMaterial}
+      </mesh>
+      <mesh position={[0, 0.035, 1.12]} scale={[2.8, 0.07, 2.35]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial color="#574a70" roughness={0.82} metalness={0.08} />
+      </mesh>
+      {[0.38, 0.92, 1.46, 2].map((offset) => (
+        <mesh key={offset} position={[0, 0.085, offset]} scale={[2.42, 0.035, 0.055]} userData={{ archiveLight: true }}>
+          <boxGeometry args={[1, 1, 1]} />
+          {lightMaterial}
+        </mesh>
+      ))}
+      <pointLight color="#a98aff" intensity={awakened ? 1.15 : 0.18} distance={9} position={[0, 2, 2]} />
+    </group>
+  );
+}
+
 function ArchiveBuildingResponse({
   awakened,
   children,
@@ -193,6 +284,7 @@ export default function InteractionPoint({ definition }: Props) {
         <Visual definition={definition} onClick={handlePointerClick} />
       )}
       {isGuide && <GuideIdentity active={isNearest} />}
+      {isArchive && <ArchiveFacadeDetail awakened={archiveAwakened} />}
       {isArchive && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
 
       {/* Label */}
