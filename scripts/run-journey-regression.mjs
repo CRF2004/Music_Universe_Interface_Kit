@@ -465,6 +465,12 @@ try {
 
   snapshots.initial = await worldSnapshot();
   check('initial objective is the Listener Guide', snapshots.initial.currentObjectiveId === 'npc-guide');
+  check(
+    'Listener Guide identity rig faces the arrival point',
+    snapshots.initial.visuals.listenerGuide?.mounted === true &&
+      Math.abs(snapshots.initial.visuals.listenerGuide.facingYaw - Math.PI) < 0.01,
+    snapshots.initial.visuals.listenerGuide,
+  );
   check('initial journey flags are clear', Object.keys(snapshots.initial.flags).length === 0);
   const archive = snapshots.initial.interactions.find(
     (interaction) => interaction.id === 'memory-archive',

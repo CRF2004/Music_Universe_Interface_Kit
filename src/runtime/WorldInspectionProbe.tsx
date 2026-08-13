@@ -28,6 +28,11 @@ interface WorldInspectionSnapshot {
     };
   };
   visuals: {
+    listenerGuide: {
+      mounted: boolean;
+      facingYaw: number;
+      responseIntensity: number;
+    } | null;
     archiveAwakening: number;
     archiveFacadeAwakening: number;
     memoryTree: RevealVisualSnapshot | null;
@@ -133,6 +138,17 @@ export default function WorldInspectionProbe() {
         },
       },
       visuals: {
+        listenerGuide: (() => {
+          const character = scene.getObjectByName('listener-guide-character');
+          const identity = scene.getObjectByName('listener-guide-identity');
+          return character && identity
+            ? {
+                mounted: true,
+                facingYaw: character.rotation.y,
+                responseIntensity: Number(identity.userData.responseIntensity ?? 0),
+              }
+            : null;
+        })(),
         archiveAwakening:
           scene.getObjectByName('archive-building-body')?.userData.awakeningProgress ?? 0,
         archiveFacadeAwakening:

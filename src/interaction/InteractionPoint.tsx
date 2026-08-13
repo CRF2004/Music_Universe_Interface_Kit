@@ -207,12 +207,19 @@ function GuideIdentity({ active }: { active: boolean }) {
   const root = useRef<Group>(null);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   useFrame(({ clock }) => {
-    if (!root.current || reducedEffects) return;
-    root.current.position.y = 0.08 + Math.sin(clock.elapsedTime * 1.7) * 0.08;
-    root.current.rotation.y = Math.sin(clock.elapsedTime * 0.55) * 0.12;
+    if (!root.current) return;
+    root.current.userData.responseIntensity = active ? 1 : 0;
+    if (reducedEffects) return;
+    root.current.position.y = 0.04 + Math.sin(clock.elapsedTime * 1.7) * 0.045;
+    root.current.rotation.y = Math.sin(clock.elapsedTime * 0.55) * 0.08;
   });
   return (
-    <group ref={root} position={[0, 0.08, 0]} userData={{ cameraOccluder: false }}>
+    <group
+      ref={root}
+      name="listener-guide-identity"
+      position={[0, 0.04, 0]}
+      userData={{ cameraOccluder: false, responseIntensity: active ? 1 : 0 }}
+    >
       <mesh position={[0, 1.05, -0.08]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.72, 0.025, 8, 64]} />
         <meshBasicMaterial
@@ -231,7 +238,85 @@ function GuideIdentity({ active }: { active: boolean }) {
           roughness={0.28}
         />
       </mesh>
+      <group position={[0, 1.39, -0.02]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.3, 0.035, 8, 48, Math.PI * 1.42]} />
+          <meshStandardMaterial
+            color="#dff7ff"
+            emissive="#42a5ff"
+            emissiveIntensity={active ? 1.8 : 0.65}
+            roughness={0.28}
+            metalness={0.2}
+          />
+        </mesh>
+        {[-1, 1].map((side) => (
+          <group key={side} position={[side * 0.32, 0, 0]}>
+            <mesh scale={[0.08, 0.14, 0.08]}>
+              <sphereGeometry args={[1, 12, 8]} />
+              <meshStandardMaterial
+                color="#334e75"
+                emissive="#42a5ff"
+                emissiveIntensity={active ? 1.3 : 0.35}
+                roughness={0.4}
+              />
+            </mesh>
+            <mesh position={[side * 0.075, 0.04, 0]} rotation={[0, 0, side * -0.45]}>
+              <capsuleGeometry args={[0.018, 0.16, 4, 8]} />
+              <meshStandardMaterial color="#bceeff" emissive="#42a5ff" emissiveIntensity={0.8} />
+            </mesh>
+          </group>
+        ))}
+        <mesh position={[0, -0.01, -0.275]} scale={[0.23, 0.12, 0.025]}>
+          <sphereGeometry args={[1, 20, 12]} />
+          <meshStandardMaterial
+            color="#17314f"
+            emissive="#4ab5ff"
+            emissiveIntensity={active ? 1.15 : 0.38}
+            transparent
+            opacity={0.88}
+            roughness={0.16}
+            metalness={0.46}
+          />
+        </mesh>
+      </group>
+      <mesh position={[0, 0.98, -0.28]} rotation={[0, 0, Math.PI / 4]}>
+        <boxGeometry args={[0.19, 0.19, 0.04]} />
+        <meshStandardMaterial
+          color="#dff7ff"
+          emissive="#42a5ff"
+          emissiveIntensity={active ? 1.6 : 0.55}
+          roughness={0.3}
+        />
+      </mesh>
       <pointLight color="#4ab5ff" intensity={active ? 1.1 : 0.45} distance={7} position={[0, 1.1, 0]} />
+    </group>
+  );
+}
+
+function GuideCharacterResponse({
+  active,
+  children,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  const root = useRef<Group>(null);
+  const reducedEffects = useWorldStore((state) => state.reducedEffects);
+
+  useFrame(({ clock }, delta) => {
+    if (!root.current) return;
+    const targetTilt = active ? -0.055 : 0;
+    root.current.rotation.x +=
+      (targetTilt - root.current.rotation.x) * (1 - Math.exp(-5 * delta));
+    root.current.position.y = reducedEffects
+      ? 0
+      : Math.sin(clock.elapsedTime * 1.35) * (active ? 0.025 : 0.014);
+  });
+
+  return (
+    <group ref={root} name="listener-guide-character" rotation={[0, Math.PI, 0]}>
+      {children}
+      <GuideIdentity active={active} />
     </group>
   );
 }
@@ -280,10 +365,13 @@ export default function InteractionPoint({ definition }: Props) {
         <ArchiveBuildingResponse awakened={archiveAwakened}>
           <Visual definition={definition} onClick={handlePointerClick} />
         </ArchiveBuildingResponse>
+      ) : isGuide ? (
+        <GuideCharacterResponse active={isNearest}>
+          <Visual definition={definition} onClick={handlePointerClick} />
+        </GuideCharacterResponse>
       ) : (
         <Visual definition={definition} onClick={handlePointerClick} />
       )}
-      {isGuide && <GuideIdentity active={isNearest} />}
       {isArchive && <ArchiveFacadeDetail awakened={archiveAwakened} />}
       {isArchive && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
 
