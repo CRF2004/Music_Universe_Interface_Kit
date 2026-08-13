@@ -95,6 +95,10 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
       if (get().ended) {
         useInteractionStore.getState().resetInteractionRuntime('replay');
         player.seek(0);
+        // Reconstruct the world at the replay origin immediately. Waiting for
+        // the browser's next timeupdate leaves a short race where interaction
+        // flags are reset but timeline visuals still represent the track end.
+        set({ currentTime: 0, ended: false });
       }
       await player.play();
       set({ playing: true, started: true, ended: false, error: null });
