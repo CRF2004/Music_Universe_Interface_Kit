@@ -690,6 +690,24 @@ try {
   await setPlayer([0, 0.65, 0]);
   await settleReviewCamera();
   await screenshot('00-spawn');
+  check(
+    'Player settles into the idle animation state',
+    await evaluate(`window.__MUSIC_UNIVERSE_E2E__?.animationState === 'idle'`),
+  );
+  await evaluate(`window.__MUSIC_UNIVERSE_E2E__?.drivePlayer([0, 0, -5], 320)`);
+  await wait(140);
+  check(
+    'Player enters the walk animation state at normal movement speed',
+    await evaluate(`window.__MUSIC_UNIVERSE_E2E__?.animationState === 'walk'`),
+  );
+  await setPlayer([0, 0.65, 0]);
+  await evaluate(`window.__MUSIC_UNIVERSE_E2E__?.drivePlayer([0, 0, -7.5], 320)`);
+  await wait(140);
+  check(
+    'Player enters the run animation state at sprint speed',
+    await evaluate(`window.__MUSIC_UNIVERSE_E2E__?.animationState === 'run'`),
+  );
+  await setPlayer([0, 0.65, 0]);
 
   // Walk forward into the front face of the Archive and assert Rapier stops the capsule.
   await setPlayer([-8, 0.65, -2.8]);
