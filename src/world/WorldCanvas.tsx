@@ -5,6 +5,7 @@ import CameraRig from '../camera/CameraRig';
 import { useWorldStore } from '../state/useWorldStore';
 import { useInteractionStore } from '../state/useInteractionStore';
 import WorldStartupFallback from '../ui/WorldStartupFallback';
+import { useProjectStore } from '../state/useProjectStore';
 
 const PhysicsWorld = lazy(() => import('./PhysicsWorld'));
 
@@ -35,6 +36,7 @@ export default function WorldCanvas() {
   const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null);
   const [contextLost, setContextLost] = useState(false);
   const isPaused = useWorldStore((state) => state.isPaused);
+  const editorMode = useProjectStore((state) => state.editorMode);
   const isDevMode = useWorldStore((state) => state.isDevMode);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const activePanelId = useInteractionStore((state) => state.activePanelId);
@@ -78,7 +80,7 @@ export default function WorldCanvas() {
       <Canvas
         onCreated={rememberCanvas}
         onPointerDown={() => {
-          if (!isPaused && !useWorldStore.getState().helpOpen) {
+          if (!isPaused && !useWorldStore.getState().helpOpen && useProjectStore.getState().editorMode === null) {
             const activeCanvas = document.querySelector('canvas');
             if (
               activeCanvas instanceof HTMLCanvasElement &&
@@ -99,7 +101,7 @@ export default function WorldCanvas() {
         camera={{ position: [0, 5, 10], fov: 75 }}
       >
         <Suspense fallback={<LoadingWorld />}>
-          <PhysicsWorld paused={isPaused} />
+          <PhysicsWorld paused={isPaused || editorMode === 'drag'} />
         </Suspense>
         <ambientLight intensity={0.85} />
         <directionalLight position={[10, 10, 5]} intensity={1.15} castShadow />

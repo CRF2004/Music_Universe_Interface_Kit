@@ -2,17 +2,16 @@ import { create } from 'zustand';
 import { useInteractionStore } from '../../state/useInteractionStore';
 import { LocalAudioPlayer } from './LocalAudioPlayer';
 import type { AudioLoadStatus, LocalAudioTrack } from './audioUploadTypes';
+import { useProjectStore } from '../../state/useProjectStore';
+import type { MusicWorldProjectTrack } from '../../project/musicWorldProject';
+import { assertMatchingAudio, identifyAudioFile, localTrackRecord } from './projectAudioIdentity';
 
-const player = new LocalAudioPlayer();
+let player = new LocalAudioPlayer();
+let requestVersion = 0;
+let pendingLoad: AbortController | null = null;
+let bindingTrack = false;
+let playbackVolume = 1;
 const AUDIO_LOAD_TIMEOUT_MS = 10_000;
-let loadTimeout: ReturnType<typeof setTimeout> | null = null;
-
-function clearLoadTimeout() {
-  if (loadTimeout !== null) {
-    clearTimeout(loadTimeout);
-    loadTimeout = null;
-  }
-}
 
 interface AudioStore {
   track: LocalAudioTrack | null;
@@ -23,7 +22,7 @@ interface AudioStore {
   ended: boolean;
   status: AudioLoadStatus;
   error: string | null;
-  load: (file: File) => void;
+  load: (file: File, options?: { assetTrack?: MusicWorldProjectTrack; reattach?: boolean }) => Promise<void>;
   play: () => Promise<void>;
   pause: () => void;
   seek: (seconds: number) => void;
@@ -45,15 +44,61 @@ const initialState = {
 export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
   ...initialState,
 
-  load(file) {
+  async load(file, options = {}) {
+    const request = ++requestVersion;
+    pendingLoad?.abort();
+    const abort = new AbortController();
+    pendingLoad = abort;
+    const projectId = useProjectStore.getState().activeProjectId;
+    const expected = structuredClone(useProjectStore.getState().project.track);
     if (!file.type.startsWith('audio/') && !file.name.toLowerCase().endsWith('.mp3')) {
+      pendingLoad = null;
       set({ error: 'Please choose an audio file.', status: 'error' });
       return;
     }
-
+    const candidate = new LocalAudioPlayer();
     try {
+      set({ status: 'loading', error: null });
+      const identity = options.assetTrack ? null : await identifyAudioFile(file);
+      if (abort.signal.aborted) return;
+      const track = await new Promise<LocalAudioTrack>((resolve, reject) => {
+        let candidateTrack: LocalAudioTrack;
+        const cleanup = () => {
+          clearTimeout(timeout);
+          candidate.element.removeEventListener('loadedmetadata', ready);
+          candidate.element.removeEventListener('error', failed);
+          abort.signal.removeEventListener('abort', canceled);
+        };
+        const ready = () => {
+          if (candidate.duration <= 0) return;
+          cleanup();
+          resolve({ ...candidateTrack, duration: candidate.duration });
+        };
+        const failed = () => { cleanup(); reject(new Error('The browser could not decode this audio file.')); };
+        const canceled = () => { cleanup(); reject(new Error('Song loading was canceled.')); };
+        const timeout = setTimeout(failed, AUDIO_LOAD_TIMEOUT_MS);
+        candidate.element.addEventListener('loadedmetadata', ready);
+        candidate.element.addEventListener('error', failed);
+        abort.signal.addEventListener('abort', canceled);
+        try { candidateTrack = candidate.load(file); } catch (error) { cleanup(); reject(error); }
+      });
+      if (request !== requestVersion || abort.signal.aborted || useProjectStore.getState().activeProjectId !== projectId) return;
+      if (options.reattach && identity) assertMatchingAudio(expected, identity, track.duration);
+      const projectTrack = options.assetTrack
+        ? { ...options.assetTrack, expectedDurationSeconds: track.duration }
+        : identity ? localTrackRecord(identity, track.duration) : null;
+      if (!projectTrack) throw new Error('The song identity could not be read.');
+      if (!options.reattach) {
+        bindingTrack = true;
+        let bound: boolean;
+        try { bound = useProjectStore.getState().bindTrack(projectId, projectTrack); } finally { bindingTrack = false; }
+        if (!bound) throw new Error('The song could not be linked to the current project.');
+      }
       const replacingTrack = Boolean(get().track);
-      const track = player.load(file);
+      player.destroy();
+      player = candidate;
+      player.setVolume(playbackVolume);
+      attachPlayerEvents(player);
       useInteractionStore
         .getState()
         .resetInteractionRuntime(
@@ -62,34 +107,25 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
       set({
         track,
         currentTime: 0,
-        duration: 0,
+        duration: track.duration,
         playing: false,
         started: false,
         ended: false,
-        status: 'loading',
+        status: 'ready',
         error: null,
       });
-      clearLoadTimeout();
-      loadTimeout = setTimeout(() => {
-        const state = useAudioPlayerStore.getState();
-        if (state.track?.id !== track.id || state.status !== 'loading') return;
-        useAudioPlayerStore.setState({
-          playing: false,
-          status: 'error',
-          error: 'The browser could not decode this audio file.',
-        });
-      }, AUDIO_LOAD_TIMEOUT_MS);
     } catch (error) {
-      set({
-        ...initialState,
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Unable to load this audio file.',
-      });
+      if (request === requestVersion && !abort.signal.aborted) set({ status: 'error', error: error instanceof Error ? error.message : 'Unable to load this audio file.' });
+    } finally {
+      if (candidate !== player) candidate.destroy();
+      if (pendingLoad === abort) pendingLoad = null;
     }
   },
 
   async play() {
     if (!get().track) return;
+    const observed = player;
+    const request = requestVersion;
 
     try {
       if (get().ended) {
@@ -101,8 +137,10 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
         set({ currentTime: 0, ended: false });
       }
       await player.play();
+      if (player !== observed || request !== requestVersion) return;
       set({ playing: true, started: true, ended: false, error: null });
     } catch (error) {
+      if (player !== observed || request !== requestVersion) return;
       set({
         playing: false,
         error: error instanceof Error ? error.message : 'Playback could not start.',
@@ -121,8 +159,14 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
   },
 
   clear() {
-    clearLoadTimeout();
-    player.clear();
+    requestVersion += 1;
+    pendingLoad?.abort();
+    pendingLoad = null;
+    const previousPlayer = player;
+    player = new LocalAudioPlayer();
+    player.setVolume(playbackVolume);
+    attachPlayerEvents(player);
+    previousPlayer.destroy();
     useInteractionStore.getState().resetInteractionRuntime('track-replaced');
     set(initialState);
   },
@@ -134,7 +178,7 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
       duration,
       playing: !player.paused,
       ended: player.ended,
-      status: state.track && duration > 0 ? 'ready' : state.status,
+      status: state.status === 'loading' ? 'loading' : state.track && duration > 0 ? 'ready' : state.status,
       track: state.track ? { ...state.track, duration } : null,
     }));
   },
@@ -145,31 +189,38 @@ export function getAuthoritativeAudioTime(): number {
 }
 
 export function setMusicPlaybackVolume(volume: number): void {
+  playbackVolume = volume;
   player.setVolume(volume);
 }
 
-player.element.addEventListener('loadedmetadata', () => {
-  clearLoadTimeout();
+function attachPlayerEvents(observed: LocalAudioPlayer) {
+const listen = (name: string, action: () => void) => observed.element.addEventListener(name, () => { if (player === observed) action(); });
+listen('loadedmetadata', () => {
   useAudioPlayerStore.getState().sync();
 });
-player.element.addEventListener('durationchange', () => {
-  if (player.duration > 0) clearLoadTimeout();
+listen('durationchange', () => {
   useAudioPlayerStore.getState().sync();
 });
-player.element.addEventListener('timeupdate', () => useAudioPlayerStore.getState().sync());
-player.element.addEventListener('play', () =>
+listen('timeupdate', () => useAudioPlayerStore.getState().sync());
+listen('play', () =>
   useAudioPlayerStore.setState({ playing: true, started: true, ended: false }),
 );
-player.element.addEventListener('pause', () => useAudioPlayerStore.setState({ playing: false }));
-player.element.addEventListener('ended', () => {
+listen('pause', () => useAudioPlayerStore.setState({ playing: false }));
+listen('ended', () => {
   useAudioPlayerStore.getState().sync();
   useAudioPlayerStore.setState({ playing: false, ended: true });
 });
-player.element.addEventListener('error', () => {
-  clearLoadTimeout();
+listen('error', () => {
   useAudioPlayerStore.setState({
     playing: false,
     status: 'error',
     error: 'The browser could not decode this audio file.',
   });
+});
+}
+attachPlayerEvents(player);
+useProjectStore.subscribe((state, previous) => {
+  if (state.activeProjectId !== previous.activeProjectId || (!bindingTrack && JSON.stringify(state.project.track) !== JSON.stringify(previous.project.track))) {
+    useAudioPlayerStore.getState().clear();
+  }
 });

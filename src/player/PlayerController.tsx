@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { resolvePlayerMovement } from './playerMovement';
 import { FOOTSTEP_EVENT } from '../audio/audioEvents';
+import { useProjectStore } from '../state/useProjectStore';
 
 interface MovementControls {
   forward: boolean;
@@ -73,11 +74,14 @@ export default function PlayerController() {
     const model = modelRef.current;
     if (!body || !model) return;
 
-    const controls = getControls();
+    const editing = useProjectStore.getState().editorMode !== null;
+    const controls = editing
+      ? { forward: false, backward: false, leftward: false, rightward: false, jump: false, run: false }
+      : getControls();
     const velocity = body.linvel();
     const drive = e2eDrive.current;
     const driveActive =
-      e2eEnabled.current && drive !== null && performance.now() < drive.until;
+      !editing && e2eEnabled.current && drive !== null && performance.now() < drive.until;
     if (drive && !driveActive) e2eDrive.current = null;
 
     camera.getWorldDirection(cameraForward.current);
@@ -139,7 +143,11 @@ export default function PlayerController() {
       }
     }
 
-    const movingSpeed = Math.hypot(velocity.x, velocity.z);
+    // Rapier's velocity snapshot above predates this frame's movement command.
+    // Read it again so gait and the E2E probe reflect the velocity we applied
+    // instead of lagging one render frame behind.
+    const animationVelocity = body.linvel();
+    const movingSpeed = Math.hypot(animationVelocity.x, animationVelocity.z);
     const moving = movingSpeed > 0.15;
     const running = moving && (controls.run || movingSpeed > 6.2);
     const animationState = moving ? (running ? 'run' : 'walk') : 'idle';
@@ -172,7 +180,7 @@ export default function PlayerController() {
         playerQuaternion: model.quaternion.toArray(),
         cameraPosition: camera.position.toArray(),
         cameraQuaternion: camera.quaternion.toArray(),
-        velocity: [velocity.x, velocity.y, velocity.z],
+        velocity: [animationVelocity.x, animationVelocity.y, animationVelocity.z],
         animationState,
         cameraOccludedMaterials: (window as E2EWindow).__MUSIC_UNIVERSE_E2E__
           ?.cameraOccludedMaterials,

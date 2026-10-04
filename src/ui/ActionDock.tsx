@@ -1,5 +1,6 @@
 import { useWorldStore } from '../state/useWorldStore';
 import { Accessibility, CircleHelp, Monitor } from 'lucide-react';
+import ProjectEditorPanel from './ProjectEditorPanel';
 
 export default function ActionDock() {
   const toggleDevMode = useWorldStore((state) => state.toggleDevMode);
@@ -24,6 +25,7 @@ export default function ActionDock() {
       )}
       
       <div className="flex gap-3">
+        <ProjectEditorPanel />
         <button
           aria-pressed={reducedEffects}
           aria-label="Toggle reduced visual effects"

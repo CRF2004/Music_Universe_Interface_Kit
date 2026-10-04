@@ -5,6 +5,7 @@ import { easing } from 'maath';
 import { useWorldStore } from '../state/useWorldStore';
 import { cameraPresets } from './cameraPresets';
 import { applyOrbitMouseDelta } from './thirdPersonCameraInput';
+import { useProjectStore } from '../state/useProjectStore';
 
 interface MaterialSnapshot {
   transparent: boolean;
@@ -68,6 +69,10 @@ export default function CameraRig() {
   useEffect(() => restoreOccludedMaterials, []);
 
   useFrame((_, delta) => {
+    if (useProjectStore.getState().editorMode === 'drag') {
+      restoreOccludedMaterials();
+      return;
+    }
     // Cap delta to prevent massive jumps after tab focus or initial load
     const dt = Math.min(delta, 0.1);
 

@@ -11,6 +11,8 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { Color, Mesh, MeshStandardMaterial, type Group } from 'three';
+import { useProjectStore } from '../state/useProjectStore';
+import type { ThreeEvent } from '@react-three/fiber';
 
 interface Props {
   definition: InteractionPointDefinition;
@@ -339,6 +341,7 @@ function InteractionCollider({ definition }: Props) {
 }
 
 export default function InteractionPoint({ definition }: Props) {
+  const preview = useProjectStore((state) => definition.id === 'memory-archive' ? state.archivePreview : null);
   const nearestId = useInteractionStore((state) => state.nearestInteractionId);
   const isNearest = nearestId === definition.id;
   const bloom = useMusicRuntimeStore((state) => state.environment.bloomIntensity ?? 0.25);
@@ -348,8 +351,9 @@ export default function InteractionPoint({ definition }: Props) {
     (state) => state.interactionFlags['memory.received'] === true,
   );
 
-  const handlePointerClick = (e: any) => {
+  const handlePointerClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
+    if (useProjectStore.getState().editorMode !== null) return;
     if (consumePointerLockAcquisitionClick()) return;
     InteractionDispatcher.executeInteraction(definition.id, 'click');
   };
@@ -357,10 +361,13 @@ export default function InteractionPoint({ definition }: Props) {
   const Visual = visualRegistry[definition.visual.type] || visualRegistry['crate'];
 
   return (
-    <group position={definition.position} rotation={definition.rotation} scale={definition.scale}>
+    <>
+      <group position={definition.position} rotation={definition.rotation} scale={definition.scale}>
       <RigidBody type="fixed" colliders={false} name={`${definition.id}-collider`}>
         <InteractionCollider definition={definition} />
       </RigidBody>
+      </group>
+      <group name={`${definition.id}-visual`} position={preview ? [preview[0], definition.position[1], preview[1]] : definition.position} rotation={definition.rotation} scale={definition.scale}>
       {isArchive ? (
         <ArchiveBuildingResponse awakened={archiveAwakened}>
           <Visual definition={definition} onClick={handlePointerClick} />
@@ -388,6 +395,7 @@ export default function InteractionPoint({ definition }: Props) {
           </div>
         </div>
       </Html>
-    </group>
+      </group>
+    </>
   );
 }

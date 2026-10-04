@@ -6,8 +6,19 @@ import { getInteractionVisualProfile } from '../interaction/visualProfiles';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { useWorldStore } from '../state/useWorldStore';
+import { useProjectStore } from '../state/useProjectStore';
 
 interface WorldInspectionSnapshot {
+  editor: {
+    mode: 'panel' | 'drag' | null;
+    undoCount: number;
+    redoCount: number;
+    dragging: boolean;
+    preview: [number, number] | null;
+    handles: Array<{ x: number; y: number }>;
+    archiveVisualPosition: number[] | null;
+    archiveColliderPosition: number[] | null;
+  };
   worldId: string | null;
   playerPosition: [number, number, number] | null;
   currentObjectiveId: string | null;
@@ -97,6 +108,8 @@ function currentObjectiveId(flags: Readonly<Record<string, unknown>>) {
  */
 export default function WorldInspectionProbe() {
   const scene = useThree((state) => state.scene);
+  const camera = useThree((state) => state.camera);
+  const gl = useThree((state) => state.gl);
   const activeWorld = useWorldStore((state) => state.activeWorld);
   const flags = useInteractionStore((state) => state.interactionFlags);
   const nearestInteractionId = useInteractionStore(
@@ -116,6 +129,22 @@ export default function WorldInspectionProbe() {
     const player = scene.getObjectByName('player');
     const currentFlags = interactionState.interactionFlags;
     return {
+      editor: (() => {
+        const state = useProjectStore.getState();
+        const handles: Array<{ x: number; y: number }> = [];
+        const bounds = gl.domElement.getBoundingClientRect();
+        scene.getObjectByName('archive-edit-handle')?.traverse((object) => {
+          if (!(object instanceof THREE.Mesh) || object.visible || object.geometry.type !== 'CylinderGeometry') return;
+          const point = object.getWorldPosition(new THREE.Vector3()).project(camera);
+          handles.push({ x: bounds.left + (point.x + 1) * bounds.width / 2, y: bounds.top + (1 - point.y) * bounds.height / 2 });
+        });
+        return {
+          mode: state.editorMode, undoCount: state.undoStack.length, redoCount: state.redoStack.length,
+          dragging: state.draggingArchive, preview: state.archivePreview, handles,
+          archiveVisualPosition: scene.getObjectByName('memory-archive-visual')?.getWorldPosition(new THREE.Vector3()).toArray() ?? null,
+          archiveColliderPosition: scene.getObjectByName('memory-archive-collider')?.getWorldPosition(new THREE.Vector3()).toArray() ?? null,
+        };
+      })(),
       worldId: worldState.activeWorld?.id ?? null,
       playerPosition: player
         ? [player.position.x, player.position.y, player.position.z]
