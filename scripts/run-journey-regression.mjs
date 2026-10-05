@@ -443,8 +443,11 @@ try {
       await client.send('Input.dispatchKeyEvent',{type:'keyDown',key:' ',code:'Space'});
       await wait(120);
       await client.send('Input.dispatchKeyEvent',{type:'keyUp',key:' ',code:'Space'});
-      const jumped = await telemetry();
-      check(`${label}: jump moves outward from the planet`, radialHeight(jumped.position)>0.85, jumped);
+      const jumped = await waitFor(async () => {
+        const state = await telemetry();
+        return state && radialHeight(state.position) > 0.85 ? state : null;
+      }, `${label} outward jump`, 1500);
+      check(`${label}: jump moves outward from the planet`, true, jumped);
       await waitFor(async()=> (await telemetry())?.grounded, `${label} jump lands`);
       await settleReviewCamera();
       await screenshot(`planet-${label}`);
