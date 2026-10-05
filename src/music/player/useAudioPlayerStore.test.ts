@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
 import { defaultMusicWorldProject } from '../../content/defaultMusicWorldProject';
 import { exportMusicWorldProject, importMusicWorldProject } from '../../project';
-import { useProjectStore } from '../../state/useProjectStore';
+import { projectTrackKey, useProjectStore } from '../../state/useProjectStore';
+import { analyzeSamples } from '../analysis/musicAnalysis';
 
 const elements: FakeAudio[] = [];
 class FakeAudio extends EventTarget {
@@ -100,5 +101,22 @@ describe('project audio loading transactions', () => {
     useProjectStore.getState().createProject();
     assert.equal(useAudioPlayerStore.getState().track, null);
     assert.equal(original.src, '');
+  });
+  it('analysis edits and undo keep audio playing; replacement removes the old analysis', async () => {
+    const player = await loadReady(new File(['first'], 'First.wav', { type: 'audio/wav' }));
+    await useAudioPlayerStore.getState().play();
+    useAudioPlayerStore.getState().seek(7);
+    const state = useProjectStore.getState();
+    state.updateMusicAnalysis(state.activeProjectId, projectTrackKey(state.project.track), analyzeSamples([new Float32Array(2000).fill(.5)], 100));
+    assert.equal(useAudioPlayerStore.getState().playing, true);
+    assert.equal(useAudioPlayerStore.getState().currentTime, 7);
+    assert.ok(player.src);
+    state.undo();
+    assert.equal(useAudioPlayerStore.getState().playing, true);
+    state.redo();
+    assert.ok(useProjectStore.getState().project.track.analysis);
+    await loadReady(new File(['second'], 'Second.wav', { type: 'audio/wav' }));
+    assert.equal(useProjectStore.getState().project.track.analysis, undefined);
+    assert.equal(useAudioPlayerStore.getState().playing, false);
   });
 });

@@ -5,12 +5,15 @@
 
 ## Current phase
 
-Roadmap Phase 2: versioned project schema and creator workflow.
+Roadmap Phase 2: the current Memory Journey project/schema and creator workflow
+slice is accepted and closed by the owner on 2026-10-05. Phase 3 starts with
+the owner-authorized local waveform/RMS analysis and editable section slice.
+See [the closeout decision](docs/validation/creator-workflow-closeout-2026-10-05.md).
 
 The project owner accepted the Phase 0 reliability baseline and Phase 1 Memory
-Journey vertical slice on 2026-08-19. The next product outcome is a reproducible,
-editable project that can be saved, reopened, changed, and exported without
-editing TypeScript source. AI generation, creator publishing, and community
+Journey vertical slice on 2026-08-19. The accepted creator slice delivers a
+reproducible, editable project that can be saved, reopened, changed, and exported
+without editing TypeScript source. AI generation, creator publishing, and community
 features remain later phases.
 
 ## Completed baseline
@@ -148,12 +151,19 @@ immersive HUD and shorter camera damping. v1 drafts migrate to v2 on open/import
 recovery and spherical-world checks. The owner accepted the planet, Archive drag,
 immersive HUD and final 68-degree camera on 2026-10-05. Evidence: [repair acceptance](docs/validation/spherical-planet-2026-10-04.md).
 
-1. Observe a human creator completing the saved-project workflow and record
-   remaining usability issues; retain target-device performance calibration.
-   The owner accepted the deployed experience on 2026-10-05; this decision does
-   not supply measured creator-session timings. B2 recovery feedback now passes
-   engineering acceptance with 100 unit tests, 132 creator checks and 8 recovery
-   checks per supported browser. Evidence: [B2 acceptance](docs/validation/memory-recovery-feedback-2026-10-05.md).
+1. Local waveform/RMS analysis and editable candidate sections are implemented
+   through optional validated `track.analysis`: rename, boundary adjustment,
+   split/merge, undo/redo, autosave/export/reopen and explicit existing-cue
+   placement. See [scope and contract](docs/local-music-analysis.md). Owner visual
+   acceptance is next; BPM accuracy/bundle evaluation is the following candidate.
+2. Retain independent creator-session observation and target-device/network
+   calibration as follow-up validation. Owner closeout supplies a product
+   acceptance decision; participant timing thresholds remain unmeasured.
+
+The owner closed the current creator slice, including B2, on 2026-10-05.
+Last behavior checks: 100 unit tests, lint/build, 132 creator checks and 8
+recovery checks per supported browser. Evidence: [closeout](docs/validation/creator-workflow-closeout-2026-10-05.md).
+
 B1 same-image DMX Tripo P1 / Hyper3D (Rodin) / Meshy comparison is closed.
    The owner authorized one generation per DMX provider, total at most CNY 10;
    published standard-image estimates total CNY 5.30. The first DMX token
@@ -194,8 +204,8 @@ Environment-action validation and the current browser limitation are recorded in
 Full creator acceptance and its audio fixes were completed on 2026-10-02.
 Checks recorded on 2026-10-02: 93 unit tests, lint and production build pass. Chrome and Edge
 each pass 125 real-song creator checks and 8 recovery checks with zero runtime
-errors. A4 engineering acceptance passes; human creator observation remains
-part of overall Phase 2 acceptance. See
+errors. A4 engineering acceptance passes; the owner closed the current creator slice
+on 2026-10-05. Independent creator-session observation remains follow-up validation. See
 [the audio recovery acceptance record](docs/validation/project-audio-recovery-2026-10-02.md).
 The accepted spherical-ground repair introduces the first validated v1-to-v2 migration.
 

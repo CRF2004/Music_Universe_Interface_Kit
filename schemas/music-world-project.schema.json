@@ -34,6 +34,7 @@
         "title": { "$ref": "#/$defs/nonEmptyString" },
         "artist": { "type": "string" },
         "expectedDurationSeconds": { "type": "number", "exclusiveMinimum": 0 },
+        "analysis": { "$ref": "#/$defs/musicAnalysis" },
         "file": {
           "type": "object", "additionalProperties": false,
           "required": ["name", "sizeBytes", "sha256"],
@@ -137,6 +138,29 @@
     "extensions": { "type": "object" }
   },
   "$defs": {
+    "musicAnalysis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "method", "durationSeconds", "peaks", "rmsDb", "sections"],
+      "description": "Runtime validation additionally checks equal array lengths, song duration and ordered unique section starts beginning at zero.",
+      "properties": {
+        "version": { "const": 1 },
+        "method": { "const": "local-peak-rms-v1" },
+        "durationSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 600 },
+        "peaks": { "type": "array", "minItems": 1, "maxItems": 512, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+        "rmsDb": { "type": "array", "minItems": 1, "maxItems": 512, "items": { "type": "number", "minimum": -96, "maximum": 0 } },
+        "sections": {
+          "type": "array", "minItems": 1, "maxItems": 32,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["id", "label", "start"],
+            "properties": {
+              "id": { "$ref": "#/$defs/nonEmptyString" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+              "start": { "type": "number", "minimum": 0, "exclusiveMaximum": 1 }
+            }
+          }
+        }
+      }
+    },
     "hexColor": { "type": "string", "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$" },
     "environmentPayload": {
       "type": "object",

@@ -2,6 +2,7 @@ import { Copy, Download, FilePenLine, FolderOpen, Plus, RotateCcw, Trash2, Uploa
 import { useEffect, useRef, useState } from 'react';
 import { useProjectStore } from '../state/useProjectStore';
 import CueEnvironmentEditor from './CueEnvironmentEditor';
+import MusicAnalysisEditor from './MusicAnalysisEditor';
 
 function downloadProject(json: string, projectId: string) {
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
@@ -342,6 +343,8 @@ export default function ProjectEditorPanel() {
               </button>
               {selectedCue && <CueEnvironmentEditor key={`${activeProjectId}:${selectedCue.id}`} cue={selectedCue} />}
             </section>
+
+            <MusicAnalysisEditor key={activeProjectId} cueId={selectedCue?.id ?? ''} />
 
             <section className="mt-6 border-t-2 border-ink/15 pt-5">
               <h3 className="font-display text-lg font-bold">Project file</h3>

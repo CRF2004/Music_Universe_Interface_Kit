@@ -1,6 +1,6 @@
 # B2：取回记忆的视觉反馈
 
-日期：2026-10-05。状态：工程验收通过，等待用户体验反馈。
+日期：2026-10-05。状态：工程验收通过，用户已于本轮收口接受。
 
 - 用户结果：完成 Archive 互动后，门口出现可辨认的金色记忆晶体，24 个小光点缓慢上升；完成状态更容易看见。
 - 当前阶段门槛：Phase 2 完整作品预览；按已接受 3D 工具计划 B2，处理一种现有互动反馈。
@@ -31,3 +31,7 @@
 RTX 4050 Laptop、1440×900、DPR 1，完成反馈场景 180 次浏览器帧间隔采样：Chrome 中位 144.93 FPS、1% low 138.89；Edge 144.93 / 136.99。仅作为本机短时场景采样，未测弱显卡或公网冷加载；不能直接与不同场景的旧采样比较。
 
 报告位于 output/playwright/memory-feedback-{chrome,edge}-final 及相应 recovery 目录；构建日志为 output/deployment/memory-feedback-build.txt。Wawa 源码核对版本为 b280ce85c02edc13b833aa7247abb45e3d9ef836，选择依据为本轮重建需求与维护成本。
+
+## 线上验收
+
+提交 `481fd019a7b7f0a21271afa3eb21cff14e0d7923`，Actions run `37258129562` 发布成功。线上加载 `index-Mdox1Y3I.js`；内置 Crywolf 歌曲加载播放成功，Guide 与 Archive 互动成功，实际渲染反馈 visible=true / fragmentCount=24，暂停后 500ms 前后粒子矩阵完全一致。已查看线上截图 `output/playwright/memory-feedback-online.png`；运行错误为零。用户随后确认可以收口；体验反馈纳入本轮接受决定。独立人类观察数据另行记录。

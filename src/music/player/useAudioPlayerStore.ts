@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { useInteractionStore } from '../../state/useInteractionStore';
 import { LocalAudioPlayer } from './LocalAudioPlayer';
 import type { AudioLoadStatus, LocalAudioTrack } from './audioUploadTypes';
-import { useProjectStore } from '../../state/useProjectStore';
+import { projectTrackKey, useProjectStore } from '../../state/useProjectStore';
 import type { MusicWorldProjectTrack } from '../../project/musicWorldProject';
 import { assertMatchingAudio, identifyAudioFile, localTrackRecord } from './projectAudioIdentity';
 
@@ -11,6 +11,8 @@ let requestVersion = 0;
 let pendingLoad: AbortController | null = null;
 let bindingTrack = false;
 let playbackVolume = 1;
+let loadedFile: File | null = null;
+let pendingAnalysis: AbortController | null = null;
 const AUDIO_LOAD_TIMEOUT_MS = 10_000;
 
 interface AudioStore {
@@ -22,6 +24,10 @@ interface AudioStore {
   ended: boolean;
   status: AudioLoadStatus;
   error: string | null;
+  analysisStatus: 'idle' | 'analyzing' | 'error';
+  analysisError: string | null;
+  analyze: () => Promise<void>;
+  cancelAnalysis: () => void;
   load: (file: File, options?: { assetTrack?: MusicWorldProjectTrack; reattach?: boolean }) => Promise<void>;
   play: () => Promise<void>;
   pause: () => void;
@@ -39,6 +45,8 @@ const initialState = {
   ended: false,
   status: 'idle' as AudioLoadStatus,
   error: null,
+  analysisStatus: 'idle' as const,
+  analysisError: null,
 };
 
 export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
@@ -95,6 +103,8 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
         if (!bound) throw new Error('The song could not be linked to the current project.');
       }
       const replacingTrack = Boolean(get().track);
+      get().cancelAnalysis();
+      loadedFile = file;
       player.destroy();
       player = candidate;
       player.setVolume(playbackVolume);
@@ -148,6 +158,31 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
     }
   },
 
+  async analyze() {
+    if (!loadedFile || get().analysisStatus === 'analyzing') return;
+    const file = loadedFile;
+    const projectId = useProjectStore.getState().activeProjectId;
+    const key = projectTrackKey(useProjectStore.getState().project.track);
+    const abort = new AbortController();
+    pendingAnalysis = abort;
+    set({ analysisStatus: 'analyzing', analysisError: null });
+    try {
+      const { analyzeAudioFile } = await import('../analysis/analyzeAudioFile');
+      const analysis = await analyzeAudioFile(file, get().duration, abort.signal);
+      if (abort.signal.aborted || loadedFile !== file) return;
+      if (!useProjectStore.getState().updateMusicAnalysis(projectId, key, analysis)) throw new Error('The song or project changed. Analyze the current song again.');
+      set({ analysisStatus: 'idle', analysisError: null });
+    } catch (error) {
+      if (!abort.signal.aborted) set({ analysisStatus: 'error', analysisError: error instanceof Error ? error.message : 'Analysis failed.' });
+    } finally { if (pendingAnalysis === abort) pendingAnalysis = null; }
+  },
+
+  cancelAnalysis() {
+    pendingAnalysis?.abort();
+    pendingAnalysis = null;
+    set({ analysisStatus: 'idle', analysisError: null });
+  },
+
   pause() {
     player.pause();
     set({ playing: false });
@@ -159,6 +194,8 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
   },
 
   clear() {
+    get().cancelAnalysis();
+    loadedFile = null;
     requestVersion += 1;
     pendingLoad?.abort();
     pendingLoad = null;
@@ -220,7 +257,7 @@ listen('error', () => {
 }
 attachPlayerEvents(player);
 useProjectStore.subscribe((state, previous) => {
-  if (state.activeProjectId !== previous.activeProjectId || (!bindingTrack && JSON.stringify(state.project.track) !== JSON.stringify(previous.project.track))) {
+  if (state.activeProjectId !== previous.activeProjectId || (!bindingTrack && projectTrackKey(state.project.track) !== projectTrackKey(previous.project.track))) {
     useAudioPlayerStore.getState().clear();
   }
 });

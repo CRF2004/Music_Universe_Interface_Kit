@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { MusicAnalysis } from '../music/analysis/musicAnalysis';
 import { defaultMusicWorldProject } from '../content/defaultMusicWorldProject';
 import { editableEnvironmentKeys, environmentPayloadIssues, type EditableEnvironment } from '../project/environmentEditing';
 import {
@@ -16,6 +17,7 @@ export type ProjectDraftStatus = 'loading' | 'ready' | 'saving' | 'error';
 export type ProjectDraftEntry = StoredProjectDraft;
 
 type ProjectEdit =
+  | { kind: 'analysis'; trackKey: string; before: MusicAnalysis | undefined; after: MusicAnalysis }
   | { kind: 'archive'; before: [number, number]; after: [number, number] }
   | { kind: 'environment'; cueId: string; actionIndex: number; before: EditableEnvironment; after: EditableEnvironment }
   | { kind: 'cue'; cueId: string; before: number; after: number };
@@ -59,6 +61,7 @@ interface ProjectState {
   updateCuePosition: (cueId: string, position: number) => void;
   updateCueEnvironment: (cueId: string, actionIndex: number, values: EditableEnvironment) => void;
   bindTrack: (projectId: string, track: MusicWorldProject['track']) => boolean;
+  updateMusicAnalysis: (projectId: string, trackKey: string, analysis: MusicAnalysis) => boolean;
   importJson: (json: string) => { ok: true } | { ok: false; error: string };
   exportJson: () => string;
   resetToDefault: () => void;
@@ -70,6 +73,11 @@ interface ProjectState {
 
 function cloneProject(project: MusicWorldProject): MusicWorldProject {
   return importMusicWorldProject(exportMusicWorldProject(project));
+}
+
+export function projectTrackKey(track: MusicWorldProject['track']): string {
+  const { analysis: _analysis, ...identity } = track;
+  return JSON.stringify(identity);
 }
 
 function cloneDefaultProject(): MusicWorldProject {
@@ -114,7 +122,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
   const applyEdit = (edit: ProjectEdit, direction: 'before' | 'after', history: boolean) => {
     const state = get();
     const project = cloneProject(state.project);
-    if (edit.kind === 'archive') {
+    if (edit.kind === 'analysis') {
+      if (projectTrackKey(project.track) !== edit.trackKey) return;
+      if (edit[direction]) project.track.analysis = structuredClone(edit[direction]);
+      else delete project.track.analysis;
+    } else if (edit.kind === 'archive') {
       const archive = project.scene.objects.find(({ id }) => id === 'memory-archive');
       if (!archive) return;
       const [x, z] = edit[direction];
@@ -388,12 +400,21 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const project = changedProject(state.project);
         project.track = structuredClone(track);
         const validated = cloneProject(project);
-        set({ project: validated, drafts: replaceDraftProject(state.drafts, validated), revision: state.revision + 1, status: 'ready', error: null });
+        const keepHistory = (edit: ProjectEdit) => edit.kind !== 'analysis';
+        set({ project: validated, drafts: replaceDraftProject(state.drafts, validated), revision: state.revision + 1, status: 'ready', error: null, undoStack: state.undoStack.filter(keepHistory), redoStack: state.redoStack.filter(keepHistory) });
         return true;
       } catch (error) {
         set({ status: 'error', error: errorMessage(error) });
         return false;
       }
+    },
+
+    updateMusicAnalysis: (projectId, trackKey, analysis) => {
+      const state = get();
+      if (state.activeProjectId !== projectId || projectTrackKey(state.project.track) !== trackKey) return false;
+      if (JSON.stringify(state.project.track.analysis) === JSON.stringify(analysis)) return true;
+      applyEdit({ kind: 'analysis', trackKey, before: state.project.track.analysis, after: structuredClone(analysis) }, 'after', true);
+      return get().project !== state.project;
     },
 
     importJson: (json) => {

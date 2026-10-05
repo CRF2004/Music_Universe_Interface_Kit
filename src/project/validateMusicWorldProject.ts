@@ -1,5 +1,6 @@
 import { validateSpatialScene } from '../schema';
 import { environmentPayloadIssues } from './environmentEditing';
+import { analysisIssues } from '../music/analysis/musicAnalysis';
 import {
   MUSIC_WORLD_PROJECT_SCHEMA_VERSION,
   type MusicWorldProject,
@@ -91,7 +92,8 @@ export function validateMusicWorldProject(input: unknown, schemaVersion: 1 | 2 =
   if (!isRecord(input.track)) {
     issues.push({ path: '$.track', message: 'must be an object' });
   } else {
-    rejectUnknownKeys(input.track, ['source', 'assetId', 'title', 'artist', 'expectedDurationSeconds', 'file', 'rights'], '$.track', issues);
+    rejectUnknownKeys(input.track, ['source', 'assetId', 'title', 'artist', 'expectedDurationSeconds', 'file', 'rights', ...(schemaVersion === 2 ? ['analysis'] : [])], '$.track', issues);
+    if (input.track.analysis !== undefined) analysisIssues(input.track.analysis, typeof input.track.expectedDurationSeconds === 'number' ? input.track.expectedDurationSeconds : undefined).forEach(message => issues.push({ path: '$.track.analysis', message }));
     if (input.track.source !== 'asset' && input.track.source !== 'local-file') {
       issues.push({ path: '$.track.source', message: 'must be asset or local-file' });
     }

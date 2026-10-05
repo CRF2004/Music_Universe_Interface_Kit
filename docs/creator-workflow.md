@@ -14,6 +14,18 @@ produce separate incompatible formats.
 
 ## Current capability
 
+The first Phase 3 local analysis slice adds waveform peaks, relative RMS level,
+and editable candidate sections in the Project Editor. Load a song, choose
+Analyze, rename/adjust/split/merge sections, then explicitly place an existing
+selected cue at a section start. Saved summaries/sections survive refresh and
+JSON export; reattach the original song to audition. See
+[local analysis scope](local-music-analysis.md). BPM and external metadata are
+researched follow-ups in [tool selection](research/music-analysis-tools-2026-10-05.md).
+
+The owner accepted and closed the current Memory Journey creator workflow on
+2026-10-05. Scope, latest validation, release and deferred limits are recorded in
+[the closeout decision](validation/creator-workflow-closeout-2026-10-05.md).
+
 The accepted spherical-ground repair introduces MusicWorldProject v2. The Memory planet has a
 60m radius. Archive X/Z coordinates describe surface distances from arrival;
 Y describes height above the ground. Visuals and collision follow the same
