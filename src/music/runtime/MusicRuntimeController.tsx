@@ -1,12 +1,12 @@
 import { useEffect, useMemo } from 'react';
 import { useAudioPlayerStore } from '../player/useAudioPlayerStore';
 import { compileNormalizedMusicTimeline } from '../musicTimeline';
-import { defaultNormalizedMusicTimeline } from './defaultMusicTimeline';
 import { replayMusicTimeline } from './musicExperienceRuntime';
 import { useMusicRuntimeStore } from './useMusicRuntimeStore';
 import { useWorldStore } from '../../state/useWorldStore';
 import { isCameraMode } from './runtimeCamera';
 import { useInteractionStore } from '../../state/useInteractionStore';
+import { useProjectStore } from '../../state/useProjectStore';
 
 export default function MusicRuntimeController() {
   const track = useAudioPlayerStore((state) => state.track);
@@ -17,13 +17,14 @@ export default function MusicRuntimeController() {
   const setCameraMode = useWorldStore((state) => state.setCameraMode);
   const experienceStarted = Boolean(track) && started;
   const departureGateOpen = useMusicRuntimeStore((state) => state.portals.departure ?? false);
+  const projectCues = useProjectStore((state) => state.project.timeline.cues);
 
   const cues = useMemo(
     () =>
       experienceStarted && duration > 0
-        ? compileNormalizedMusicTimeline(defaultNormalizedMusicTimeline, duration)
+        ? compileNormalizedMusicTimeline(projectCues, duration)
         : [],
-    [duration, experienceStarted],
+    [duration, experienceStarted, projectCues],
   );
 
   useEffect(() => {

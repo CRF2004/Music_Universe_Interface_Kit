@@ -9,6 +9,7 @@ import MusicNarrationHUD from '../music/runtime/MusicNarrationHUD';
 import MusicRuntimeController from '../music/runtime/MusicRuntimeController';
 import JourneyRuntimeHUD from './JourneyRuntimeHUD';
 import { useEffect, useRef } from 'react';
+import ProjectDraftController from '../project/ProjectDraftController';
 
 export default function OverlayRoot() {
   const activePanelId = useInteractionStore((state) => state.activePanelId);
@@ -58,6 +59,7 @@ export default function OverlayRoot() {
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       <Prompt />
+      <ProjectDraftController />
       <ActionDock />
       <MusicRuntimeController />
       <MusicPlayerHUD />

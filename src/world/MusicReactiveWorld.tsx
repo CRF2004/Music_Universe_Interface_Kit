@@ -23,6 +23,9 @@ import {
   MEMORY_TREE_POSITION,
 } from './environmentLayout';
 import RevealTransition from './RevealTransition';
+import SurfaceGroup from './SurfaceGroup';
+import { useProjectStore } from '../state/useProjectStore';
+import { planetRadius, surfacePosition, surfaceQuaternion } from './planetSurface';
 
 const MAX_STAR_COUNT = 520;
 
@@ -83,6 +86,8 @@ function StarField({ count }: { count: number }) {
 }
 
 function RainParticles({ intensity }: { intensity: number }) {
+  const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
+  const radius = planetRadius(terrain);
   const mesh = useRef<InstancedMesh>(null);
   const material = useRef<MeshBasicMaterial>(null);
   const currentIntensity = useRef(0);
@@ -109,7 +114,8 @@ function RainParticles({ intensity }: { intensity: number }) {
       const cycleHeight = 13;
       const rawY = drop.phase * cycleHeight - elapsed * drop.speed;
       const y = 1 + ((rawY % cycleHeight) + cycleHeight) % cycleHeight;
-      helper.position.set(drop.x, y, drop.z);
+      helper.position.set(...surfacePosition([drop.x, y, drop.z], radius));
+      helper.quaternion.copy(surfaceQuaternion(helper.position.toArray(), radius));
       helper.scale.set(1, drop.length * currentIntensity.current, 1);
       helper.updateMatrix();
       mesh.current.setMatrixAt(index, helper.matrix);
@@ -149,7 +155,7 @@ export default function MusicReactiveWorld() {
       <EnvironmentScenery />
       <StarField count={stars} />
       {!reducedEffects && <RainParticles intensity={rainIntensity} />}
-      <group name="memory-tree-landmark" position={MEMORY_TREE_POSITION}>
+      <SurfaceGroup name="memory-tree-landmark" position={MEMORY_TREE_POSITION}>
         <RevealTransition visible={memoryTreeVisible} duration={1.6} name="memory-tree-reveal">
           <MemoryTree />
           <Html position={[0, 4.7, 0]} center>
@@ -158,7 +164,7 @@ export default function MusicReactiveWorld() {
             </div>
           </Html>
         </RevealTransition>
-      </group>
+      </SurfaceGroup>
       {lightPathVisible && (
         <group>
           <LightPath />
@@ -169,7 +175,7 @@ export default function MusicReactiveWorld() {
           </Html>
         </group>
       )}
-      <group name="departure-gate-landmark" position={DEPARTURE_GATE_POSITION}>
+      <SurfaceGroup name="departure-gate-landmark" position={DEPARTURE_GATE_POSITION}>
         <DepartureGateSequence
           charging={lightPathVisible}
           open={portalOpen}
@@ -182,7 +188,7 @@ export default function MusicReactiveWorld() {
             </div>
           </Html>
         )}
-      </group>
+      </SurfaceGroup>
     </group>
   );
 }

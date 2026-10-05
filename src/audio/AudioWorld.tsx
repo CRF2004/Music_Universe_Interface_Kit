@@ -8,6 +8,7 @@ import {
 import { useRuntimeAsset } from '../assets/runtimeAssetManifest';
 import { FOOTSTEP_EVENT } from './audioEvents';
 import { useExperienceSettingsStore } from '../state/useExperienceSettingsStore';
+import SurfaceGroup from '../world/SurfaceGroup';
 
 interface AudioE2ETelemetry {
   spatialLoopsPlaying: number;
@@ -92,7 +93,7 @@ function SpatialLoop({
     };
   }, [buffer, distance, listener, volume]);
 
-  return <positionalAudio ref={audio} args={[listener]} position={position} />;
+  return <SurfaceGroup position={position}><positionalAudio ref={audio} args={[listener]} /></SurfaceGroup>;
 }
 
 function UiAndFootstepAudio({

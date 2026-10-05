@@ -1,13 +1,17 @@
-import { RigidBody, CuboidCollider } from '@react-three/rapier';
+import { RigidBody, CuboidCollider, BallCollider } from '@react-three/rapier';
 import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useWorldStore } from '../state/useWorldStore';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
+import { useProjectStore } from '../state/useProjectStore';
+import { planetRadius } from './planetSurface';
 
 export default function CurvedWorld() {
   const activeWorld = useWorldStore((state) => state.activeWorld);
   const curvature = activeWorld?.terrain.curvature ?? 0.002;
   const groundColor = useMusicRuntimeStore((state) => state.environment.groundColor);
+  const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
+  const radius = planetRadius(terrain);
 
   // Custom shader to bend the world
   const material = useMemo(() => {
@@ -15,6 +19,7 @@ export default function CurvedWorld() {
       uniforms: {
         uColor: { value: new THREE.Color('#f7ead7') }, // paper color
         uCurvature: { value: curvature },
+        uSphere: { value: radius === null ? 0 : 1 },
         uAccent: { value: new THREE.Color('#81709d') },
         uArrival: { value: new THREE.Color('#d9b98c') },
         uArchive: { value: new THREE.Color('#75618f') },
@@ -25,6 +30,7 @@ export default function CurvedWorld() {
         varying float vDistance;
         varying vec2 vWorldXZ;
         uniform float uCurvature;
+        uniform float uSphere;
         void main() {
           vUv = uv;
           vec4 worldPosition = modelMatrix * vec4(position, 1.0);
@@ -34,7 +40,7 @@ export default function CurvedWorld() {
           vWorldXZ = worldPosition.xz;
           // Route A: Only curve after a certain radius to maintain physical alignment near character
           float bendFactor = max(0.0, dist - 15.0); 
-          worldPosition.y -= pow(bendFactor, 2.0) * uCurvature;
+          worldPosition.y -= pow(bendFactor, 2.0) * uCurvature * (1.0 - uSphere);
           
           gl_Position = projectionMatrix * viewMatrix * worldPosition;
         }
@@ -71,7 +77,9 @@ export default function CurvedWorld() {
         }
       `,
     });
-  }, [curvature]);
+  }, [curvature, radius]);
+
+  useEffect(() => () => material.dispose(), [material]);
 
   useEffect(() => {
     material.uniforms.uCurvature.value = curvature;
@@ -98,18 +106,18 @@ export default function CurvedWorld() {
       {/* Visual Mesh (Non-Physical) */}
       <mesh
         name="world-ground"
-        rotation={[-Math.PI / 2, 0, 0]}
+        rotation={radius === null ? [-Math.PI / 2, 0, 0] : [0, 0, 0]}
         receiveShadow
-        position={[0, -0.01, 0]}
+        position={[0, radius === null ? -0.01 : -radius, 0]}
         userData={{ cameraOccluder: false }}
       >
-        <planeGeometry args={[1000, 1000, 100, 100]} />
+        {radius === null ? <planeGeometry args={[1000, 1000, 100, 100]} /> : <sphereGeometry args={[radius, 192, 128]} />}
         <primitive object={material} attach="material" />
       </mesh>
 
       {/* Stable Physics Floor - Fixed at Y=0, 1km wide, 10m thick to prevent tunneling */}
-      <RigidBody type="fixed" colliders={false} position={[0, -5, 0]}>
-        <CuboidCollider args={[500, 5, 500]} />
+      <RigidBody type="fixed" colliders={false} position={[0, radius === null ? -5 : -radius, 0]}>
+        {radius === null ? <CuboidCollider args={[500, 5, 500]} /> : <BallCollider args={[radius]} />}
       </RigidBody>
     </group>
   );

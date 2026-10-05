@@ -22,11 +22,17 @@ For this repository, that confirmation is recorded as authorization to:
 - use the recording in commercial and non-commercial builds of that
   demonstration.
 
+On 2026-08-19, the project owner gave an additional written repository
+instruction to complete and retain this authorization record before Phase 2
+work. This snapshot, the asset-manifest entry, and the source recording together
+form the repository's current authorization audit bundle.
+
 The recording may not be extracted and redistributed as a standalone music
 download or represented as CC0/openly licensed. Copyright and artist credit
 remain with their respective owners.
 
-This repository record should be replaced or supplemented with the underlying
-signed agreement, license email, or rights-holder authorization before a public
-production launch or third-party distribution audit.
-
+This project-owner record does not independently prove the owner's chain of
+title or replace a rights-holder-signed agreement. If an underlying signed
+agreement, license email, or rights-holder authorization exists, retain it with
+the distribution audit materials; do not commit private contact details or
+confidential terms to the public repository.

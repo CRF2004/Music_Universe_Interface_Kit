@@ -1,4 +1,7 @@
 import { compileSpatialScene } from '../schema';
-import { demoScene } from './demoScene';
+import { assertMusicWorldProject } from '../project';
+import { defaultMusicWorldProject } from './defaultMusicWorldProject';
 
-export const demoWorld = compileSpatialScene(demoScene);
+assertMusicWorldProject(defaultMusicWorldProject);
+
+export const demoWorld = compileSpatialScene(defaultMusicWorldProject.scene);
