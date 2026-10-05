@@ -14,6 +14,7 @@ import { Color, Mesh, MeshStandardMaterial, type Group } from 'three';
 import { useProjectStore } from '../state/useProjectStore';
 import type { ThreeEvent } from '@react-three/fiber';
 import { planetRadius, surfacePosition, surfaceRotation } from '../world/planetSurface';
+import MemoryRecoveryFeedback from '../world/MemoryRecoveryFeedback';
 
 interface Props {
   definition: InteractionPointDefinition;
@@ -389,6 +390,7 @@ export default function InteractionPoint({ definition }: Props) {
       )}
       {isArchive && <ArchiveFacadeDetail awakened={archiveAwakened} />}
       {isArchive && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
+      {isArchive && <MemoryRecoveryFeedback />}
 
       {/* Label */}
       <Html

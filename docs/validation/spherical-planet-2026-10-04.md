@@ -44,3 +44,9 @@ GitHub Pages 发布成功：提交 `6b722c02ffbc92f606366003b821cc6ff9e7bbf2`，
 - 性能／可访问性／权利：无新资源或依赖；保留短余动、减少效果与 Esc 操作。
 
 镜头微调验证：98 项单元测试、类型检查及生产构建通过；起点画面对比见 `output/playwright/camera-before.png` 与 `camera-after.png`。跳跃回归原先在固定 120ms 取样，发现实际已起跳但帧更新晚于取样，改成等待径向高度实际升起，保留原高度门槛。
+
+Chrome 与 Edge 的镜头微调球面回归各 23 项通过、各 6 张截图，运行错误为零。报告位于 `output/playwright/camera-soft-planet-recheck` 和 `camera-soft-edge`。赤道与底面画面已目视检查。此次产品代码仅修改探索镜头和默认场景的视角；原有球面功能保持原验收状态。
+
+镜头调整已发布：提交 `471aa25139676f77dcfe91d07f9ddd27034da3fc`，Actions run `37256487639` 成功。线上已确认新入口 `index-NePGC3x0.js` 与 `PhysicsWorld-D2VxNf7J.js`，画面检查通过，运行错误为零，截图 `output/playwright/camera-online.png`。
+
+用户验收决定（2026-10-05）：用户确认“没问题了，可以继续按计划推进”。球形地面、缩小星球、档案馆球面拖动、面板收起、短镜头余动及 68° 镜头观感均已获体验验收。未提供独立创作者保存任务的计时记录，未将此决定扩大为全部 Phase 2 观察指标通过。

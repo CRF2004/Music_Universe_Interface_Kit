@@ -1450,6 +1450,34 @@ try {
   await settleReviewCamera();
   await screenshot('02-archive-complete');
 
+  const feedback = () => evaluate('window.__MUSIC_UNIVERSE_WORLD_E2E__.getSnapshot().visuals.memoryRecovery');
+  const wasReduced = await evaluate(`document.querySelector('[aria-label="Toggle reduced visual effects"]').getAttribute('aria-pressed') === 'true'`);
+  if (wasReduced) await evaluate(`document.querySelector('[aria-label="Toggle reduced visual effects"]').click()`, true);
+  await evaluate(`[...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Pause')?.click()`, true);
+  await waitFor(async () => (await feedback())?.fragmentCount === 24, 'recovered memory fragments');
+  await seekForEnvironment(0.42);
+  await wait(250);
+  const pausedFeedback = await feedback();
+  await wait(600);
+  check('Memory recovery freezes while the song is paused', JSON.stringify((await feedback()).firstMatrix) === JSON.stringify(pausedFeedback.firstMatrix));
+  await evaluate(`[...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Play')?.click()`, true);
+  await wait(600);
+  check('Memory fragments move while the song plays', JSON.stringify((await feedback()).firstMatrix) !== JSON.stringify(pausedFeedback.firstMatrix));
+  await evaluate(`[...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Pause')?.click()`, true);
+  await seekForEnvironment(0.8);
+  await wait(250);
+  check('Memory recovery follows forward seek', JSON.stringify((await feedback()).firstMatrix) !== JSON.stringify(pausedFeedback.firstMatrix));
+  await seekForEnvironment(0.42);
+  await wait(250);
+  check('Memory recovery reconstructs identical fragments after backward seek', JSON.stringify((await feedback()).firstMatrix) === JSON.stringify(pausedFeedback.firstMatrix));
+  await screenshot('02-archive-memory-feedback');
+  snapshots.memoryFeedbackPerformance = await evaluate(`new Promise(resolve => {const frames=[];let previous=performance.now();const sample=now=>{frames.push(now-previous);previous=now;if(frames.length<180)requestAnimationFrame(sample);else{frames.sort((a,b)=>a-b);resolve({samples:frames.length,medianFps:1000/frames[90],onePercentLowFps:1000/frames[178],renderer:window.__MUSIC_UNIVERSE_PERFORMANCE_E2E__?.renderer});}};requestAnimationFrame(sample);})`);
+  await evaluate(`document.querySelector('[aria-label="Toggle reduced visual effects"]').click()`, true);
+  const reducedFeedback = await waitFor(async () => {const state=await feedback();return state?.visible && state.fragmentCount===0 ? state:null;}, 'static reduced-effects memory');
+  check('Reduced effects keeps recovered memory with zero moving fragments', reducedFeedback.visible && reducedFeedback.fragmentCount === 0);
+  await screenshot('02-archive-memory-reduced');
+  if (!wasReduced) await evaluate(`document.querySelector('[aria-label="Toggle reduced visual effects"]').click()`, true);
+
   // Review the Tree from a stable, unobstructed world-space angle. Keeping the
   // camera at the Archive only proved that the object mounted off-screen.
   await setPlayer([-16, 0.65, -7]);
@@ -1799,6 +1827,7 @@ try {
   await setPlayer([0, 0.65, 0]);
   await settleReviewCamera();
   await screenshot('04-replay-reset');
+  check('Replay removes the recovered-memory feedback', (await feedback())?.visible === false);
 
   if (creatorAcceptanceMode) {
     // Keep spatial, timing and action edits together through the full file workflow.
