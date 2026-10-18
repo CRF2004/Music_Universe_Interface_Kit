@@ -5,6 +5,8 @@ import { easing } from 'maath';
 import { useWorldStore } from '../state/useWorldStore';
 import { cameraPresets } from './cameraPresets';
 import { applyOrbitMouseDelta } from './thirdPersonCameraInput';
+import { useProjectStore } from '../state/useProjectStore';
+import { planetRadius, surfaceUp } from '../world/planetSurface';
 
 interface MaterialSnapshot {
   transparent: boolean;
@@ -41,6 +43,8 @@ export default function CameraRig() {
   const rayDirection = useRef(new THREE.Vector3());
   const occludedMaterials = useRef(new Map<THREE.Material, MaterialSnapshot>());
   const orbitAngles = useRef({ yaw: Math.PI, pitch: 0.18 });
+  const previousUp = useRef(new THREE.Vector3(0, 1, 0));
+  const surfaceFrame = useRef(new THREE.Quaternion());
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -68,6 +72,10 @@ export default function CameraRig() {
   useEffect(() => restoreOccludedMaterials, []);
 
   useFrame((_, delta) => {
+    if (useProjectStore.getState().editorMode === 'drag') {
+      restoreOccludedMaterials();
+      return;
+    }
     // Cap delta to prevent massive jumps after tab focus or initial load
     const dt = Math.min(delta, 0.1);
 
@@ -96,6 +104,11 @@ export default function CameraRig() {
     // Read the model's world quaternion so the camera stays behind the character.
     const playerPos = playerRef.current.getWorldPosition(playerWorldPosition.current);
     const playerQuat = playerModelRef.current.getWorldQuaternion(playerWorldQuaternion.current);
+    const radius = planetRadius(useProjectStore.getState().project.scene.environment.terrain);
+    const up = surfaceUp([playerPos.x, playerPos.y, playerPos.z], radius);
+    surfaceFrame.current.premultiply(new THREE.Quaternion().setFromUnitVectors(previousUp.current, up));
+    previousUp.current.copy(up);
+    camera.up.copy(up);
     
     if (isNaN(playerPos.x) || isNaN(playerPos.y) || isNaN(playerPos.z)) return;
     
@@ -103,18 +116,18 @@ export default function CameraRig() {
     const targetQuat = new THREE.Quaternion();
     
     if (currentMode === 'explore') {
-      targetQuat.setFromEuler(new THREE.Euler(0, orbitAngles.current.yaw, 0));
+      targetQuat.copy(surfaceFrame.current).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, orbitAngles.current.yaw, 0)));
     } else if (preset.followRotation) {
-      const euler = new THREE.Euler().setFromQuaternion(playerQuat, 'YXZ');
-      targetQuat.setFromEuler(new THREE.Euler(0, euler.y, 0));
+      targetQuat.copy(playerQuat);
     } else {
       // Use fixed world heading
-      targetQuat.setFromEuler(new THREE.Euler(0, preset.fixedHeading || 0, 0));
+      targetQuat.copy(surfaceFrame.current).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, preset.fixedHeading || 0, 0)));
     }
     
     // Smooth the rotation tracking (frame-rate independent)
     const rotationSpeed = 10;
-    smoothedPlayerQuat.current.slerp(targetQuat, 1 - Math.exp(-rotationSpeed * dt));
+    if (currentMode === 'explore') smoothedPlayerQuat.current.copy(targetQuat);
+    else smoothedPlayerQuat.current.slerp(targetQuat, 1 - Math.exp(-rotationSpeed * dt));
     
     const orbitHeight = currentMode === 'explore'
       ? preset.height + Math.sin(orbitAngles.current.pitch) * preset.distance
@@ -126,11 +139,15 @@ export default function CameraRig() {
     offset.applyQuaternion(smoothedPlayerQuat.current);
     
     const targetPos = new THREE.Vector3().copy(playerPos).add(offset);
-    const idealLookAt = new THREE.Vector3().copy(playerPos).add(new THREE.Vector3(0, preset.lookAtHeight, 0));
+    const idealLookAt = new THREE.Vector3().copy(playerPos).addScaledVector(up, preset.lookAtHeight);
 
     // Smoothly damp position
     if (reducedEffects) camera.position.copy(targetPos);
     else easing.damp3(camera.position, targetPos, preset.followSharpness, dt);
+    if (radius !== null) {
+      const radial = camera.position.clone().add(new THREE.Vector3(0, radius, 0));
+      if (radial.length() < radius + 0.6) camera.position.copy(radial.setLength(radius + 0.6)).sub(new THREE.Vector3(0, radius, 0));
+    }
     
     // Smoothly damp look-at target to eliminate micro-jitter
     if (reducedEffects) lookAtTarget.current.copy(idealLookAt);

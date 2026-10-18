@@ -26,9 +26,9 @@ export const demoScene = {
       barrelDistortion: 0.12,
     },
     terrain: {
-      type: 'curved-plane',
-      size: [1000, 1000],
-      curvature: 0.002,
+      type: 'sphere',
+      size: [120, 120],
+      curvature: 1 / 120,
     },
   },
   zones: [

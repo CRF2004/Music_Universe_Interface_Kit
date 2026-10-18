@@ -1,7 +1,7 @@
 # Browser Support and Performance Budget
 
-> Status: provisional Phase 0 release gate; calibrate with measured devices
-> Last updated: 2026-07-27
+> Status: approved first-release desktop scope
+> Last updated: 2026-08-19
 
 ## Purpose
 
@@ -30,6 +30,11 @@ The runtime requires:
 - ES modules and modern JavaScript;
 - pointer and keyboard input.
 
+The first release is tuned and supported only for desktop systems with a
+hardware-accelerated discrete GPU. Integrated GPUs may work, but they are not a
+promised launch target and are not a release gate. The product does not claim a
+minimum integrated-GPU frame rate, loading time, or visual-quality tier.
+
 ### Mobile
 
 The first release is explicitly desktop-only. Touch-only devices are stopped
@@ -46,9 +51,9 @@ CSS responsiveness alone is not mobile support.
 
 | Tier | Purpose | Provisional definition |
 |---|---|---|
-| Minimum | Release floor | 4 logical CPU cores, 8 GB RAM, integrated GPU with WebGL 2 |
-| Reference | Primary tuning | Recent 6+ core laptop, 16 GB RAM, integrated or entry discrete GPU |
-| High | Quality ceiling | Modern discrete GPU; must not hide minimum-tier regressions |
+| Supported | Release floor and primary tuning | Recent 6+ core desktop/laptop, 16 GB RAM, hardware-accelerated discrete GPU with WebGL 2 |
+| High | Quality ceiling | Modern discrete GPU; must still satisfy the supported-tier budgets |
+| Compatibility | Best effort, not promised | Integrated GPU with WebGL 2; failures or low frame rates do not block the first release |
 
 Record browser version, OS, viewport, device pixel ratio, power state, GPU, and
 whether the run was cold or cached.
@@ -73,13 +78,13 @@ build ceiling, not a target to consume.
 
 The authorized built-in Crywolf demo adds 5.83 MiB of generated Ogg audio. The
 complete generated asset set is 6.07 MiB, inside the vertical-slice transfer
-target; cold-load measurement on minimum/reference hardware is still required.
+target. Integrated-GPU cold-load measurement is not a first-release gate.
 
 ## Runtime budgets
 
 Measure at the release viewport and device pixel ratio:
 
-| Metric | Minimum tier target | Hard floor |
+| Metric | Supported-tier target | Hard floor |
 |---|---:|---:|
 | Exploration frame rate | 55 FPS median | 30 FPS sustained |
 | 1% low frame rate | 40 FPS | 24 FPS |
@@ -120,7 +125,8 @@ For every release candidate:
 5. sample arrival, storm, Memory Tree, Light Path, open gate, and afterglow;
 6. capture median/1% low FPS, draw calls, triangles, estimated texture memory,
    request count, and transferred bytes;
-7. repeat on minimum and reference tiers;
+7. repeat on the supported discrete-GPU tier when a change materially affects
+   loading, rendering, physics, or assets;
 8. attach results and deterministic screenshots to the PR.
 
 Asset preview screenshots do not replace runtime measurements.
@@ -140,7 +146,7 @@ Asset preview screenshots do not replace runtime measurements.
 The vertical slice is ready only when:
 
 - supported browsers complete the audio and journey lifecycle;
-- minimum-tier measurements stay above hard floors;
+- supported-tier measurements stay above hard floors;
 - normal targets pass or an approved issue explains the exception;
 - WebGL/runtime/audio failures provide a recovery action;
 - unsupported mobile users are not dropped into an unusable world.
@@ -191,8 +197,8 @@ Production build, Chromium, 1280×720, device pixel ratio 1, reduced effects:
 
 The same browser completed local audio load, play, natural end, replay,
 interaction-state reset, and replacement-oriented UI flow with zero console
-errors. A hardware-accelerated minimum-tier and reference-tier run remains
-required before release.
+errors. This software-rendered result is diagnostic only; the supported launch
+scope is covered by discrete-GPU hardware evidence below.
 
 ### Production JavaScript split
 
@@ -238,12 +244,11 @@ Warm arrival-state result:
 | Requests | 23 | pass |
 | Encoded transfer | 1.39 MB | pass |
 
-This is a valid high-tier hardware result. It does not replace the required
-integrated-GPU minimum/reference-tier run. The first short cold sample included
+This is valid supported discrete-GPU hardware evidence. The first short cold sample included
 startup compilation and produced a misleading 6.55 FPS 1% low; the recorded
 result uses the settled 600-frame sample required by the protocol.
 
 The departure automation now creates a deterministic local WAV fixture and
-records setup diagnostics. A stable post-reload departure sample is still
-required on the integrated-GPU tier; arrival hardware acceleration and the
-high-tier performance floor are verified.
+records setup diagnostics. Arrival hardware acceleration and the supported-tier
+performance floor are verified. Integrated-GPU departure measurement is
+explicitly outside the first-release promise.

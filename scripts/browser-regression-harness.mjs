@@ -2,6 +2,16 @@ import { access, readdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
+export function browserLaunchEnvironment() {
+  const environment = { ...process.env };
+  // App-health compatibility instrumentation causes Edge to exit before CDP attaches.
+  // Scope this workaround to the observed layer and this test-owned child process.
+  if (process.platform === 'win32' && environment.__COMPAT_LAYER === 'DetectorsAppHealth') {
+    delete environment.__COMPAT_LAYER;
+  }
+  return environment;
+}
+
 export async function findBrowserExecutable(requestedBrowser) {
   if (process.env.CHROME_BIN) return process.env.CHROME_BIN;
   const installedBrowsers =

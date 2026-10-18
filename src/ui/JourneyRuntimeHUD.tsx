@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { interactionEventBus } from '../interaction/interactionRuntime';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { useWorldStore } from '../state/useWorldStore';
+import { useExplorationMode } from './useExplorationMode';
 
 function blockedMessage(interactionId: string, flags: Readonly<Record<string, unknown>>) {
   if (interactionId === 'memory-archive' && flags['journey.started'] !== true) {
@@ -17,6 +18,7 @@ function blockedMessage(interactionId: string, flags: Readonly<Record<string, un
 }
 
 export default function JourneyRuntimeHUD() {
+  const exploring = useExplorationMode();
   const [feedback, setFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const flags = useInteractionStore((state) => state.interactionFlags);
   const activePanelId = useInteractionStore((state) => state.activePanelId);
@@ -109,6 +111,7 @@ export default function JourneyRuntimeHUD() {
     <>
       <aside
         aria-label="Current journey objective"
+        hidden={exploring}
         className="pointer-events-none fixed right-5 top-5 z-[55] max-w-[min(20rem,calc(100vw-2.5rem))] rounded-xl border-2 border-white/70 bg-ink/80 px-4 py-3 text-white shadow-lg backdrop-blur"
       >
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
@@ -119,6 +122,7 @@ export default function JourneyRuntimeHUD() {
           <p className="mt-1 text-xs text-white/70">Follow the pulsing trail and world marker.</p>
         )}
       </aside>
+      {exploring && <p className="pointer-events-none fixed bottom-4 right-5 text-xs text-white/70">Esc · controls</p>}
 
       <div
         aria-atomic="true"

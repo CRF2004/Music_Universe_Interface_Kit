@@ -47,8 +47,9 @@ export class LocalAudioPlayer {
 
   clear(): void {
     this.element.pause();
-    this.element.currentTime = 0;
     this.element.removeAttribute('src');
+    // Cancel outstanding media requests before releasing their object URL.
+    this.element.load();
 
     if (this.objectUrl) {
       URL.revokeObjectURL(this.objectUrl);

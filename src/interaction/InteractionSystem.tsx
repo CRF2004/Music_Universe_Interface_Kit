@@ -3,10 +3,11 @@ import { useInteractionStore } from '../state/useInteractionStore';
 import * as THREE from 'three';
 import { useEffect } from 'react';
 import { InteractionDispatcher } from './InteractionDispatcher';
+import { useProjectStore } from '../state/useProjectStore';
+import { planetRadius, surfaceDistance } from '../world/planetSurface';
 import {
   blocksWorldInteractionKey,
   consumePointerLockAcquisitionClick,
-  horizontalInteractionDistance,
 } from './interactionInput';
 
 export default function InteractionSystem() {
@@ -18,6 +19,7 @@ export default function InteractionSystem() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (useProjectStore.getState().editorMode !== null) return;
       const target = e.target;
       const editing =
         target instanceof HTMLElement && blocksWorldInteractionKey(target);
@@ -33,6 +35,7 @@ export default function InteractionSystem() {
 
   useEffect(() => {
     const handlePointerInteraction = (event: MouseEvent) => {
+      if (useProjectStore.getState().editorMode !== null) return;
       if (consumePointerLockAcquisitionClick()) return;
       if (event.button !== 0 || document.pointerLockElement?.tagName !== 'CANVAS') return;
       const currentNearestId = useInteractionStore.getState().nearestInteractionId;
@@ -45,6 +48,10 @@ export default function InteractionSystem() {
   }, []);
 
   useFrame(() => {
+    if (useProjectStore.getState().editorMode !== null) {
+      if (useInteractionStore.getState().nearestInteractionId !== null) setNearestInteraction(null);
+      return;
+    }
     const player = scene.getObjectByName('player');
     if (!player) return;
     player.getWorldPosition(playerPosition);
@@ -55,9 +62,10 @@ export default function InteractionSystem() {
     interactions.forEach((item) => {
       if (!item.enabled) return;
       
-      const dist = horizontalInteractionDistance(
+      const dist = surfaceDistance(
         [playerPosition.x, playerPosition.y, playerPosition.z],
         item.position,
+        planetRadius(useProjectStore.getState().project.scene.environment.terrain),
       );
       
       if (dist < (item.radius || 3) && dist < minBoardDist) {

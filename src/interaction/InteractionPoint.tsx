@@ -11,6 +11,9 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import { Color, Mesh, MeshStandardMaterial, type Group } from 'three';
+import { useProjectStore } from '../state/useProjectStore';
+import type { ThreeEvent } from '@react-three/fiber';
+import { planetRadius, surfacePosition, surfaceRotation } from '../world/planetSurface';
 
 interface Props {
   definition: InteractionPointDefinition;
@@ -339,6 +342,12 @@ function InteractionCollider({ definition }: Props) {
 }
 
 export default function InteractionPoint({ definition }: Props) {
+  const preview = useProjectStore((state) => definition.id === 'memory-archive' ? state.archivePreview : null);
+  const authoredArchive = useProjectStore((state) => state.project.scene.objects.find(({ id }) => id === definition.id));
+  const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
+  const radius = planetRadius(terrain);
+  const previewPosition = preview && authoredArchive ? surfacePosition([preview[0], authoredArchive.transform.position[1], preview[1]], radius) : null;
+  const previewRotation = previewPosition ? surfaceRotation(previewPosition, radius, authoredArchive?.transform.rotation) : definition.rotation;
   const nearestId = useInteractionStore((state) => state.nearestInteractionId);
   const isNearest = nearestId === definition.id;
   const bloom = useMusicRuntimeStore((state) => state.environment.bloomIntensity ?? 0.25);
@@ -348,8 +357,9 @@ export default function InteractionPoint({ definition }: Props) {
     (state) => state.interactionFlags['memory.received'] === true,
   );
 
-  const handlePointerClick = (e: any) => {
+  const handlePointerClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
+    if (useProjectStore.getState().editorMode !== null) return;
     if (consumePointerLockAcquisitionClick()) return;
     InteractionDispatcher.executeInteraction(definition.id, 'click');
   };
@@ -357,10 +367,15 @@ export default function InteractionPoint({ definition }: Props) {
   const Visual = visualRegistry[definition.visual.type] || visualRegistry['crate'];
 
   return (
-    <group position={definition.position} rotation={definition.rotation} scale={definition.scale}>
+    <>
+      <group position={definition.position} rotation={definition.rotation} scale={definition.scale}>
       <RigidBody type="fixed" colliders={false} name={`${definition.id}-collider`}>
         <InteractionCollider definition={definition} />
+        {isArchive && radius !== null && <CuboidCollider args={[5.3, 0.7, 7.2]} position={[0, -0.7, 0]} />}
       </RigidBody>
+      </group>
+      <group name={`${definition.id}-visual`} position={previewPosition ?? definition.position} rotation={previewRotation} scale={definition.scale}>
+      {isArchive && radius !== null && <mesh position={[0, -0.7, 0]} receiveShadow><boxGeometry args={[10.6, 1.4, 14.4]} /><meshStandardMaterial color="#51465f" roughness={0.95} /></mesh>}
       {isArchive ? (
         <ArchiveBuildingResponse awakened={archiveAwakened}>
           <Visual definition={definition} onClick={handlePointerClick} />
@@ -380,6 +395,7 @@ export default function InteractionPoint({ definition }: Props) {
         position={[0, definition.visual.type === 'building' ? 6 : 2.5, 0]}
         center
         distanceFactor={10}
+        occlude
         style={{ pointerEvents: 'none' }}
       >
         <div className={`transition-opacity duration-300 ${isNearest ? 'opacity-100' : 'opacity-0'}`}>
@@ -388,6 +404,7 @@ export default function InteractionPoint({ definition }: Props) {
           </div>
         </div>
       </Html>
-    </group>
+      </group>
+    </>
   );
 }

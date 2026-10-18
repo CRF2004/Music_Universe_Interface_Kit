@@ -1,7 +1,7 @@
 # Memory Journey First-User Observation
 
-> Status: active Phase 1 usability protocol
-> Last updated: 2026-08-12
+> Status: Phase 1 observation accepted; retained as the repeatable protocol
+> Last updated: 2026-08-19
 
 ## Purpose
 
@@ -138,7 +138,19 @@ Observed:
 - subtitles could be hidden without hiding blocked-condition guidance;
 - reduced effects remained independently selectable.
 
-Human observation status: pending recruitment of 3–5 first-time participants.
+Human observation status: completed and accepted by the project owner on
+2026-08-19. The owner reported that the current experience has no material
+first-use blocker and is ready to move forward. Participant-level anonymized
+notes and timings were not supplied to the repository, so this record does not
+claim measured threshold values that cannot be independently audited.
+
+## Phase 1 observation decision — 2026-08-19
+
+The completed observation found no issue requiring another Phase 1 repair pass.
+The project owner accepted the listener journey and directed work to proceed to
+the versioned `MusicWorldProject` boundary in Phase 2. This is a product
+acceptance decision, not a claim that every subjective visual preference or
+future accessibility/device target has been exhausted.
 
 ## Agent preflight
 

@@ -1,7 +1,7 @@
 # Creator Workflow
 
 > Product workflow target; capabilities are introduced by roadmap phase.
-> Last updated: 2026-08-04
+> Last updated: 2026-10-05
 
 ## Product goal
 
@@ -14,20 +14,68 @@ produce separate incompatible formats.
 
 ## Current capability
 
-The repository currently supports a runtime demonstration:
+The accepted spherical-ground repair introduces MusicWorldProject v2. The Memory planet has a
+60m radius. Archive X/Z coordinates describe surface distances from arrival;
+Y describes height above the ground. Visuals and collision follow the same
+projection and local orientation. v1 curved projects migrate on import/open,
+preserving song identity and authored edits. See the current
+[repair acceptance record](validation/spherical-planet-2026-10-04.md).
+
+The repository now has a first versioned `MusicWorldProject` boundary for the
+curated Memory Journey:
 
 ```text
 Local audio file
   -> real duration
-  -> default normalized timeline
+  -> validated MusicWorldProject v2 normalized timeline
   -> environment / camera / narration / landmarks
   -> explorable browser experience
 ```
 
-It does not yet analyze the music, save creator projects, publish experiences,
-or remix existing worlds. These are roadmap goals, not current product claims.
+The canonical project can be validated, serialized to JSON, imported, and used
+to reconstruct the same scene and duration-relative timeline. The current
+Project Editor can create, duplicate, rename, open, soft-delete, and restore
+named local drafts. It can move the Memory Archive, change one existing cue's
+normalized position, autosave the library to IndexedDB, restore it after
+refresh, export the active project, and safely import without an invalid file
+replacing current work. Archive X/Z, cue-position, and environment-action changes support undo/redo.
+The Archive can also be dragged in a fixed overview using red/blue axis arrows;
+releasing commits one edit, while Escape cancels the active drag. Coordinate
+inputs remain available for keyboard and precise editing. There is not yet a
+general scene/timeline editor, permanent trash cleanup, migration from a future schema version,
+music analysis, publishing, or remix.
+
+Edit history is session-local, capped at 100 edits, and resets when opening a
+draft, importing, creating/duplicating, resetting, or deleting the active draft.
+Renaming preserves spatial/timeline history. Refresh restores the saved project
+with an empty history. Ctrl/Cmd+Z undoes and Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y redoes
+while the editor is open; text inputs retain their native editing shortcuts.
+
+Dragging previews the visual without saving intermediate positions. Physics,
+movement, pointer lock, and narrative interaction are suspended in drag mode;
+the committed collider is rebuilt after release or undo/redo. Losing window
+focus, pointer cancellation, closing the editor, or changing projects cancels an
+unfinished drag. Music playback continues to drive the timeline.
+
+Select an existing timeline cue, then its environment action. The inspector
+edits sky/ground hex colors, rain (0–1), and bloom (0–2). Apply commits all four
+fields as one undoable operation. Blank removes that cue's override, so the
+earlier cue's value or runtime default applies. Fog, stars and other actions
+remain intact. Multiple environment actions can be selected individually;
+cues without one show a readable empty state. Close the editor and seek to the
+event in the music player to preview it. Reduced effects suppress rain and bloom
+while preserving the project's authored values.
 
 ## Target creation flow
+
+Uploaded songs save their name, actual duration, file fingerprint and private
+preview rights record with the project. After refresh, opening or importing,
+choose **Restore original song** and select the original file. The browser
+checks file contents and duration; a different file with the same name is rejected.
+**Replace music** deliberately changes the song. Older local-file projects without
+a fingerprint require this replacement step. Built-in tracks have a restore button.
+JSON exports contain the project and song identity; keep the original audio file
+alongside the export. Switching projects clears playback and pending loads.
 
 ### 1. Start
 

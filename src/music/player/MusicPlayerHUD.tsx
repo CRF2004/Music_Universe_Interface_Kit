@@ -2,14 +2,22 @@ import { useEffect, useState } from 'react';
 import { useRuntimeAsset } from '../../assets/runtimeAssetManifest';
 import { useExperienceSettingsStore } from '../../state/useExperienceSettingsStore';
 import { setMusicPlaybackVolume, useAudioPlayerStore } from './useAudioPlayerStore';
+import { useProjectStore } from '../../state/useProjectStore';
+import { defaultMusicWorldProject } from '../../content/defaultMusicWorldProject';
+import { useExplorationMode } from '../../ui/useExplorationMode';
 
 export default function MusicPlayerHUD() {
-  const demoTrack = useRuntimeAsset('crywolf-athetosis-demo', 'audio');
+  const exploring = useExplorationMode();
+  const projectId = useProjectStore((state) => state.activeProjectId);
+  const projectTrack = useProjectStore((state) => state.project.track);
+  const hydrated = useProjectStore((state) => state.hydrated);
+  const demoTrack = useRuntimeAsset(projectTrack.source === 'asset' ? projectTrack.assetId ?? '' : 'crywolf-athetosis-demo', 'audio');
   const [demoLoading, setDemoLoading] = useState(false);
   const [demoError, setDemoError] = useState<string | null>(null);
   const { track, currentTime, duration, playing, status, error, load, play, pause, seek } =
     useAudioPlayerStore();
   const ready = Boolean(track) && duration > 0;
+  const needsOriginal = !track && projectTrack.source === 'local-file';
   const {
     musicVolume,
     effectsVolume,
@@ -35,10 +43,11 @@ export default function MusicPlayerHUD() {
       const response = await fetch(demoTrack.asset.url);
       if (!response.ok) throw new Error(`Demo request failed with ${response.status}.`);
       const blob = await response.blob();
-      load(
-        new File([blob], 'ATHETOSIS — Crywolf.ogg', {
+      if (useProjectStore.getState().activeProjectId !== projectId) return;
+      await load(
+        new File([blob], projectTrack.source === 'asset' && projectTrack.assetId !== 'crywolf-athetosis-demo' ? `${projectTrack.title}.ogg` : 'ATHETOSIS — Crywolf.ogg', {
           type: blob.type || 'audio/ogg',
-        }),
+        }), { assetTrack: projectTrack.source === 'asset' ? projectTrack : defaultMusicWorldProject.track },
       );
     } catch {
       setDemoError('The demo track could not load. Retry or choose your own music.');
@@ -50,7 +59,8 @@ export default function MusicPlayerHUD() {
   return (
     <section
       aria-label="Music player"
-      className="pointer-events-auto fixed bottom-5 left-5 z-[60] w-[min(22rem,calc(100vw-2.5rem))] rounded-xl border-4 border-ink bg-paper p-4 text-ink shadow-[6px_6px_0_0_#111]"
+      hidden={exploring && !error && !demoError}
+      className="pointer-events-auto fixed bottom-5 left-5 z-[60] max-h-[calc(100dvh-2.5rem)] w-[min(22rem,calc(100vw-2.5rem))] overflow-y-auto rounded-xl border-4 border-ink bg-paper p-4 text-ink shadow-[6px_6px_0_0_#111]"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
@@ -58,7 +68,7 @@ export default function MusicPlayerHUD() {
             Music Universe
           </p>
           <p className="max-w-52 truncate font-display font-bold">
-            {track?.name ?? 'Choose a song to begin'}
+            {track?.name ?? (needsOriginal ? projectTrack.file?.name ?? projectTrack.title : 'Choose a song to begin')}
           </p>
         </div>
         <span className="rounded-full bg-ink px-2 py-1 font-mono text-[10px] uppercase text-white">
@@ -66,27 +76,40 @@ export default function MusicPlayerHUD() {
         </span>
       </div>
 
-      {!track && (
+      {!track && !needsOriginal && (
         <button
           className="comic-button mb-2 block w-full bg-comic-yellow text-center text-sm disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={demoTrack.status !== 'ready' || demoLoading}
+          disabled={!hydrated || demoTrack.status !== 'ready' || demoLoading}
           onClick={() => void loadDemoTrack()}
           type="button"
         >
-          {demoLoading ? 'Loading demo…' : 'Start the Crywolf demo'}
+          {demoLoading ? 'Loading demo…' : projectTrack.assetId === 'crywolf-athetosis-demo' ? 'Start the Crywolf demo' : 'Restore project song'}
         </button>
       )}
 
-      <label className="comic-button block cursor-pointer bg-white text-center text-sm">
-        {track ? 'Replace music' : 'Choose music'}
+      {needsOriginal && <div aria-label="Project song recovery" className="mb-3 text-sm">
+        <p>This project needs <strong>{projectTrack.file?.name ?? projectTrack.title}</strong>{projectTrack.expectedDurationSeconds ? ` (${Math.round(projectTrack.expectedDurationSeconds)}s)` : ''}. Choose the original file to restore it.</p>
+        <label className="comic-button mt-2 block cursor-pointer bg-comic-yellow text-center focus-within:ring-4 focus-within:ring-comic-blue">
+          Restore original song
+          <input aria-label="Restore original project song" className="sr-only" type="file" accept="audio/*" disabled={!hydrated || status === 'loading'} onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void load(file, { reattach: true });
+            event.target.value = '';
+          }} />
+        </label>
+      </div>}
+      {needsOriginal && <button className="comic-button mb-2 w-full bg-paper text-sm" disabled={demoTrack.status !== 'ready' || demoLoading} onClick={() => void loadDemoTrack()}>Use the Crywolf demo instead</button>}
+      <label className="comic-button block cursor-pointer bg-white text-center text-sm focus-within:ring-4 focus-within:ring-comic-blue">
+        {track || needsOriginal ? 'Replace music' : 'Choose music'}
         <input
           id="music-file-input"
           className="sr-only"
           type="file"
           accept="audio/*"
+          disabled={!hydrated}
           onChange={(event) => {
             const file = event.target.files?.[0];
-            if (file) load(file);
+            if (file) void load(file);
             event.target.value = '';
           }}
         />
@@ -185,9 +208,10 @@ export default function MusicPlayerHUD() {
 
       {!track && (
         <p className="mt-2 text-xs text-ink/65">
-          Start the demo or choose your own track, press Play, then follow the world marker.
+          {needsOriginal ? 'Song files stay on your computer. Restore the original, or replace it to change this project’s song.' : 'Start the demo or choose your own track, press Play, then follow the world marker.'}
         </p>
       )}
+      {projectTrack.source === 'local-file' && <p className="mt-2 text-xs text-ink/65">{projectTrack.rights.licenseRef === 'LicenseRef-User-Provided-Unverified' ? 'Private local preview. Uploaded music rights are unverified.' : 'Local song. Rights recorded in this project.'}</p>}
       {(demoError || demoTrack.status === 'error') && (
         <p role="alert" className="mt-2 text-sm font-bold text-comic-red">
           {demoError ?? 'The built-in demo is unavailable. Choose your own music to continue.'}

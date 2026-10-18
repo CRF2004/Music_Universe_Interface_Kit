@@ -1,10 +1,14 @@
 import { useKeyboardControls } from '@react-three/drei';
-import { CapsuleCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier';
+import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierRigidBody } from '@react-three/rapier';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { resolvePlayerMovement } from './playerMovement';
 import { FOOTSTEP_EVENT } from '../audio/audioEvents';
+import { useProjectStore } from '../state/useProjectStore';
+import { planetRadius, surfaceUp, surfacePosition } from '../world/planetSurface';
+import { useWorldStore } from '../state/useWorldStore';
+import { useInteractionStore } from '../state/useInteractionStore';
 
 interface MovementControls {
   forward: boolean;
@@ -22,6 +26,8 @@ interface PlayerE2ETelemetry {
   cameraPosition: [number, number, number];
   cameraQuaternion: [number, number, number, number];
   velocity: [number, number, number];
+  groundUp: [number, number, number];
+  grounded: boolean;
   animationState: 'idle' | 'walk' | 'run';
   cameraOccludedMaterials?: number;
   getPlayerPosition: () => [number, number, number];
@@ -35,6 +41,24 @@ type E2EWindow = Window & {
 
 export default function PlayerController() {
   const bodyRef = useRef<RapierRigidBody>(null);
+  const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
+  const spawn = useProjectStore((state) => state.project.scene.spawn ?? [0, 0, 0]);
+  const radius = planetRadius(terrain);
+  const { world, rapier } = useRapier();
+  const groundUp = useRef(new THREE.Vector3(0, 1, 0));
+  const tangentVelocity = useRef(new THREE.Vector3());
+  const localDirection = useRef(new THREE.Vector3());
+  const bodySurfaceFrame = useRef(new THREE.Quaternion());
+  const previousGroundUp = useRef(new THREE.Vector3(0, 1, 0));
+
+  useBeforePhysicsStep(() => {
+    const body = bodyRef.current;
+    if (!body || radius === null) return;
+    const position = body.translation();
+    const up = surfaceUp([position.x, position.y, position.z], radius);
+    const gravity = -9.81 * body.mass() * world.timestep;
+    body.applyImpulse({ x: up.x * gravity, y: up.y * gravity, z: up.z * gravity }, true);
+  });
   const modelRef = useRef<THREE.Group>(null);
   const bodyVisualRef = useRef<THREE.Group>(null);
   const leftArmRef = useRef<THREE.Group>(null);
@@ -73,40 +97,50 @@ export default function PlayerController() {
     const model = modelRef.current;
     if (!body || !model) return;
 
-    const controls = getControls();
+    const worldState = useWorldStore.getState();
+    const editing = useProjectStore.getState().editorMode !== null || worldState.helpOpen || worldState.isPaused || useInteractionStore.getState().activePanelId !== null;
+    const controls = editing
+      ? { forward: false, backward: false, leftward: false, rightward: false, jump: false, run: false }
+      : getControls();
     const velocity = body.linvel();
+    const position = body.translation();
+    const positionTuple: [number, number, number] = [position.x, position.y, position.z];
+    groundUp.current.copy(surfaceUp(positionTuple, radius));
+    bodySurfaceFrame.current.premultiply(new THREE.Quaternion().setFromUnitVectors(previousGroundUp.current, groundUp.current)).normalize();
+    previousGroundUp.current.copy(groundUp.current);
+    const upRotation = bodySurfaceFrame.current;
+    body.setRotation(upRotation, true);
+    const radialVelocity = new THREE.Vector3(velocity.x, velocity.y, velocity.z).dot(groundUp.current);
+    const groundRay = new rapier.Ray(position, { x: -groundUp.current.x, y: -groundUp.current.y, z: -groundUp.current.z });
+    const groundHit = world.castRay(groundRay, 0.8, true, undefined, undefined, undefined, body, (collider) => !collider.isSensor());
+    const grounded = groundHit !== null && groundHit.timeOfImpact <= 0.73 && radialVelocity < 0.8;
     const drive = e2eDrive.current;
     const driveActive =
-      e2eEnabled.current && drive !== null && performance.now() < drive.until;
+      !editing && e2eEnabled.current && drive !== null && performance.now() < drive.until;
     if (drive && !driveActive) e2eDrive.current = null;
 
     camera.getWorldDirection(cameraForward.current);
-    const movement = resolvePlayerMovement(controls, cameraForward.current, camera.up);
+    const movement = resolvePlayerMovement(controls, cameraForward.current, camera.up, groundUp.current);
 
     if (driveActive && drive) {
+      tangentVelocity.current.set(...drive.velocity).projectOnPlane(groundUp.current).addScaledVector(groundUp.current, radialVelocity);
       body.setLinvel(
-        {
-          x: drive.velocity[0],
-          y: drive.velocity[1],
-          z: drive.velocity[2],
-        },
+        tangentVelocity.current,
         true,
       );
     } else if (movement.moving) {
       const speed = controls.run ? 7.5 : 5;
+      tangentVelocity.current.copy(movement.direction).multiplyScalar(speed).addScaledVector(groundUp.current, radialVelocity);
       body.setLinvel(
-        {
-          x: movement.direction.x * speed,
-          y: velocity.y,
-          z: movement.direction.z * speed,
-        },
+        tangentVelocity.current,
         true,
       );
 
       if (movement.updateFacing) {
+        localDirection.current.copy(movement.direction).applyQuaternion(upRotation.clone().invert());
         targetEuler.current.set(
           0,
-          Math.atan2(movement.direction.x, movement.direction.z),
+          Math.atan2(localDirection.current.x, localDirection.current.z),
           0,
         );
         targetQuaternion.current.setFromEuler(targetEuler.current);
@@ -116,17 +150,19 @@ export default function PlayerController() {
         );
       }
     } else {
-      body.setLinvel({ x: 0, y: velocity.y, z: 0 }, true);
+      body.setLinvel(tangentVelocity.current.copy(groundUp.current).multiplyScalar(radialVelocity), true);
     }
 
-    if (Math.abs(velocity.y) < 0.08) {
+    if (grounded) {
       groundedFrames.current += 1;
     } else {
       groundedFrames.current = 0;
     }
 
     if (controls.jump && groundedFrames.current > 3) {
-      body.setLinvel({ x: velocity.x, y: 4.8, z: velocity.z }, true);
+      const currentVelocity = body.linvel();
+      tangentVelocity.current.set(currentVelocity.x, currentVelocity.y, currentVelocity.z).projectOnPlane(groundUp.current).addScaledVector(groundUp.current, 4.8);
+      body.setLinvel(tangentVelocity.current, true);
       groundedFrames.current = 0;
     }
 
@@ -139,7 +175,11 @@ export default function PlayerController() {
       }
     }
 
-    const movingSpeed = Math.hypot(velocity.x, velocity.z);
+    // Rapier's velocity snapshot above predates this frame's movement command.
+    // Read it again so gait and the E2E probe reflect the velocity we applied
+    // instead of lagging one render frame behind.
+    const animationVelocity = body.linvel();
+    const movingSpeed = tangentVelocity.current.set(animationVelocity.x, animationVelocity.y, animationVelocity.z).projectOnPlane(groundUp.current).length();
     const moving = movingSpeed > 0.15;
     const running = moving && (controls.run || movingSpeed > 6.2);
     const animationState = moving ? (running ? 'run' : 'walk') : 'idle';
@@ -172,7 +212,9 @@ export default function PlayerController() {
         playerQuaternion: model.quaternion.toArray(),
         cameraPosition: camera.position.toArray(),
         cameraQuaternion: camera.quaternion.toArray(),
-        velocity: [velocity.x, velocity.y, velocity.z],
+        velocity: [animationVelocity.x, animationVelocity.y, animationVelocity.z],
+        groundUp: groundUp.current.toArray(),
+        grounded,
         animationState,
         cameraOccludedMaterials: (window as E2EWindow).__MUSIC_UNIVERSE_E2E__
           ?.cameraOccludedMaterials,
@@ -200,10 +242,10 @@ export default function PlayerController() {
     <RigidBody
       ref={bodyRef}
       name="player"
-      position={[0, 2, 0]}
+      position={surfacePosition([spawn[0], spawn[1] + 2, spawn[2]], radius)}
       colliders={false}
       enabledRotations={[false, false, false]}
-      linearDamping={2}
+      linearDamping={0}
       canSleep={false}
     >
       <CapsuleCollider args={[0.35, 0.3]} />

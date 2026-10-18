@@ -9,10 +9,14 @@ import {
   ShaderMaterial,
 } from 'three';
 import { lightPathPhase, lightPathPoint } from './environmentLayout';
+import { useProjectStore } from '../state/useProjectStore';
+import { planetRadius, surfacePosition, surfaceQuaternion } from './planetSurface';
 
 const NODE_COUNT = 34;
 
 export default function LightPath() {
+  const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
+  const radius = planetRadius(terrain);
   const mesh = useRef<InstancedMesh>(null);
   const helper = useMemo(() => new Object3D(), []);
   const phases = useMemo(
@@ -59,15 +63,16 @@ export default function LightPath() {
   useLayoutEffect(() => {
     if (!mesh.current) return;
     for (let index = 0; index < NODE_COUNT; index += 1) {
-      helper.position.set(...lightPathPoint(index, NODE_COUNT));
+      helper.position.set(...surfacePosition(lightPathPoint(index, NODE_COUNT), radius));
       const phase = lightPathPhase(index, NODE_COUNT);
       helper.scale.setScalar(0.16 + phase * 0.12);
       helper.rotation.set(Math.PI / 2, phase * 1.5, 0);
+      helper.quaternion.premultiply(surfaceQuaternion(helper.position.toArray(), radius));
       helper.updateMatrix();
       mesh.current.setMatrixAt(index, helper.matrix);
     }
     mesh.current.instanceMatrix.needsUpdate = true;
-  }, [helper]);
+  }, [helper, radius]);
 
   useFrame(({ clock }) => {
     material.uniforms.uTime.value = clock.elapsedTime;
@@ -81,7 +86,7 @@ export default function LightPath() {
         </octahedronGeometry>
         <primitive object={material} attach="material" />
       </instancedMesh>
-      <mesh position={[0, 0.025, -10.2]} rotation={[-Math.PI / 2, 0, 0]}>
+      {radius === null && <mesh position={[0, 0.025, -10.2]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[5.5, 17, 1, 1]} />
         <meshBasicMaterial
           color="#8d6bff"
@@ -90,7 +95,7 @@ export default function LightPath() {
           depthWrite={false}
           blending={AdditiveBlending}
         />
-      </mesh>
+      </mesh>}
     </group>
   );
 }

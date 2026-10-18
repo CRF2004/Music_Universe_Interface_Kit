@@ -1,7 +1,10 @@
 import { useWorldStore } from '../state/useWorldStore';
 import { Accessibility, CircleHelp, Monitor } from 'lucide-react';
+import ProjectEditorPanel from './ProjectEditorPanel';
+import { useExplorationMode } from './useExplorationMode';
 
 export default function ActionDock() {
+  const exploring = useExplorationMode();
   const toggleDevMode = useWorldStore((state) => state.toggleDevMode);
   const isDevMode = useWorldStore((state) => state.isDevMode);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
@@ -12,7 +15,7 @@ export default function ActionDock() {
     new URLSearchParams(window.location.search).has('debug');
 
   return (
-    <div className="absolute top-6 left-6 flex flex-col gap-3 pointer-events-auto">
+    <div hidden={exploring} className={`absolute top-6 left-6 ${exploring ? 'hidden' : 'flex'} flex-col gap-3 pointer-events-auto`}>
       {debugAvailable && (
         <button
           onClick={toggleDevMode}
@@ -24,6 +27,7 @@ export default function ActionDock() {
       )}
       
       <div className="flex gap-3">
+        <ProjectEditorPanel />
         <button
           aria-pressed={reducedEffects}
           aria-label="Toggle reduced visual effects"

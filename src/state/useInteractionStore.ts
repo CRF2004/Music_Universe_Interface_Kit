@@ -28,6 +28,7 @@ export interface InteractionState {
 
   registerInteraction: (interaction: InteractionPointDefinition) => void;
   registerInteractions: (interactions: InteractionPointDefinition[]) => void;
+  replaceInteractions: (interactions: InteractionPointDefinition[]) => void;
   unregisterInteraction: (id: string) => void;
   setActiveInteraction: (id: string | null) => void;
   setNearestInteraction: (id: string | null) => void;
@@ -108,6 +109,15 @@ export const useInteractionStore = create<InteractionState>((set, get) => ({
         }
       });
       return changed ? { interactions } : state;
+    }),
+
+  replaceInteractions: (newItems) =>
+    set({
+      interactions: new Map(newItems.map((item) => [item.id, item])),
+      activeInteractionId: null,
+      nearestInteractionId: null,
+      activePanelId: null,
+      activePanelPayload: null,
     }),
 
   unregisterInteraction: (id) =>
