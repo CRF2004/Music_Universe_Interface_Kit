@@ -27,9 +27,12 @@ The preview is written to `output/playwright/departure-portal-preview.png`.
 
 For a distinctive hero asset that cannot be satisfied by reuse, the repository
 also has an optional Tripo text/image-to-3D candidate CLI. It writes only to an
-ignored review directory and cannot bypass this pipeline. See
+ignored review directory and cannot bypass this pipeline. Real runs spend
+credits and need a prior dry run plus owner confirmation; interrupted runs are
+recovered with `resume`, never by regenerating. See
 [`tripo-asset-generation.md`](tripo-asset-generation.md) for the official
-tutorial URLs, commands, rights review, and staged product plan.
+tutorial URLs, commands, reference-image preparation, rights review, and staged
+product plan.
 
 ## Adding an asset
 

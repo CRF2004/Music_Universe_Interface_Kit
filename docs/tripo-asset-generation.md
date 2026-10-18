@@ -1,7 +1,7 @@
 # Tripo 3D candidate asset workflow
 
 > Status: optional internal authoring tool; not a runtime or creator-facing dependency
-> Last reviewed: 2026-08-03
+> Last reviewed: 2026-10-05
 
 Tripo can generate review candidates from text or images when the licensed
 library and repository-authored options cannot satisfy a distinctive hero-asset
@@ -102,19 +102,77 @@ uploading data or spending credits. P Series is the default because its
 documented 50–20,000 face range is closer to the project's WebGL needs than an
 unconstrained high-fidelity mesh.
 
-Each successful run immediately downloads the temporary result into:
+### Confirm before spending credits
+
+A real run spends account credits and cannot be undone. Before any non-dry run:
+
+1. run the same command with `--dry-run` and read the sanitized payload;
+2. state the candidate ID, model, face limit, input (prompt or reference image),
+   and the remaining budget to the person who owns the spending limit;
+3. generate only after that person confirms, one candidate per confirmation
+   unless a larger batch was explicitly approved;
+4. never widen an approved batch (more seeds, another model, another provider)
+   inside the same confirmation.
+
+Automated agents must treat a missing or ambiguous confirmation as a stop.
+
+### Prepare a reference image
+
+For image input, one object per image gives the model less to misread. Use a
+reference that:
+
+- shows one physically separable object, meaning a person could pick it up or
+  push it as a unit; do not combine a prop with the ground, furniture, or
+  neighbouring props;
+- has a plain background, the whole object in frame, and neutral even lighting;
+- is owned or licensed for generative use (see acceptance step 3 below).
+
+If the source image is cluttered, prepare a clean single-object reference
+before generation and keep it with the candidate's review notes. Record the
+edit tool and prompt used; an edited image is a new input, not the original.
+Changing the reference is a separate variable from changing the model, so
+compare with and without it only as a planned experiment.
+
+### Output
+
+Each run creates one timestamped folder. The task is recorded **before**
+polling starts, so a timeout or failed download never loses the paid task:
 
 ```text
 output/tripo-candidates/<candidate-id>/<timestamp>/
-  candidate.glb
+  generation-request.json      # written as soon as the task is created
+  candidate.glb                # after a successful download
   preview.<format>             # when returned by Tripo
-  generation-receipt.json
+  generation-receipt.json      # written last; its presence marks a finished run
 ```
 
-The receipt records the provider, model snapshot, prompt or input-image hash,
-seed, face limit, task ID, consumed credits when reported, output hash, official
-documentation URLs, and incomplete review gates. It never records the API key
-or the temporary signed upload/download URLs.
+`generation-request.json` holds the intent and provenance: provider, candidate
+ID, sanitized request payload, input-image hash, and the provider task ID. The
+receipt is the result: model snapshot, consumed credits when reported, output
+hash, official documentation URLs, and incomplete review gates. Neither file
+records the API key, the upload file token, or temporary signed URLs.
+
+The same split applies to project data. A `MusicWorldProject` asset record keeps
+*what was wanted and why* (intent, rights declaration, review status, fallback).
+Provider task IDs and generation parameters are optional provenance; runtime
+behavior must not depend on them.
+
+### Recover an interrupted run
+
+If polling times out or the download fails, the CLI prints the exact recovery
+command. It re-queries the recorded task and downloads the result; it never
+creates a new task:
+
+```bash
+npm run assets:tripo -- resume --id memory-archive-pilot
+npm run assets:tripo -- resume --id memory-archive-pilot --run 2026-10-05T03-16-14Z
+npm run assets:tripo -- resume --id memory-archive-pilot --dry-run
+```
+
+Without `--run`, the newest run that has a request record but no receipt is
+used. `resume` does not accept generation options, and it cannot recover a task
+that Tripo reports as failed, cancelled, or banned; those need a new, newly
+confirmed generation. The finished receipt sets `resumedFromRequestRecord`.
 
 ## Candidate acceptance
 

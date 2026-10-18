@@ -1,7 +1,7 @@
 # Music Universe Development Workflow
 
 > Status: active engineering process
-> Last updated: 2026-07-26
+> Last updated: 2026-10-05
 
 This workflow keeps implementation aligned with the product direction while
 allowing small, reversible experiments.
@@ -116,6 +116,36 @@ and decision output. A spike is not permission to merge an unfinished subsystem.
   build settings in `assets/asset-manifest.json`.
 - Do not bypass runtime manifest resolution with ad hoc public paths.
 
+### Generation and paid-service boundary
+
+Applies to any internal tool that calls a generation or other paid provider
+(currently [`tripo-asset-generation.md`](tripo-asset-generation.md)):
+
+- **Confirm before spending.** Run the tool's `--dry-run` first, state the
+  input, model, and remaining budget, and generate only after the person who
+  owns the spending limit confirms. One confirmation covers one stated batch;
+  more seeds, models, or providers need a new confirmation. A missing or
+  ambiguous confirmation is a stop, not a default.
+- **One task per run.** Each run produces one atomic result. If an input is
+  missing or ambiguous, stop and report it instead of guessing or batching.
+- **Record before you wait.** Persist the provider task and sanitized request
+  before polling, so a timeout or failed download is recovered by re-querying
+  that task and never by paying for a second generation.
+- **Repair locally.** Fill missing local files from recorded provenance. Do not
+  start a new generation to fix a file-system problem.
+- **Keep intent and result apart.** Project data stores what was wanted, the
+  rights declaration, review status, and fallback. Provider task IDs, URLs, and
+  parameters are provenance only; runtime code never depends on them or loads a
+  temporary provider URL.
+- **Keys stay local.** Credentials live in the ignored `.env` and are read only
+  by local scripts. Tell the owner where to create a key; do not ask for keys to
+  be pasted into a session or echo them back.
+- **Generated output is a candidate.** It enters `assets/source` only through
+  the asset acceptance steps and rights review in the tool's document.
+- **Do not skip perceptual review.** Generated images and models are inspected
+  by a person or by the documented review step; receipts and hashes prove
+  provenance, not quality.
+
 ### Dependency boundary
 
 Add a dependency only when:
@@ -203,6 +233,7 @@ Before declaring a task complete:
 | `docs/development-workflow.md` | Engineering execution rules | Repeated process failure or agreed policy change |
 | `docs/creator-workflow.md` | Creator-facing product flow | Actual creator capability changes |
 | Schema/runtime docs | Technical contracts | Contract or lifecycle changes |
+| `docs/tripo-asset-generation.md` | Internal generation CLI contract and acceptance | CLI behavior, provider terms, or acceptance steps change |
 | Historical plans/handoffs | Context only | Add status banner; do not use as task queue |
 
 Avoid duplicating current priorities across several documents.
