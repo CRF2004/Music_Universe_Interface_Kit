@@ -1,7 +1,7 @@
 # Creator Workflow
 
 > Product workflow target; capabilities are introduced by roadmap phase.
-> Last updated: 2026-10-05
+> Last updated: 2026-10-18
 
 ## Product goal
 
@@ -55,7 +55,7 @@ The Archive can also be dragged in a fixed overview using red/blue axis arrows;
 releasing commits one edit, while Escape cancels the active drag. Coordinate
 inputs remain available for keyboard and precise editing. There is not yet a
 general scene/timeline editor, permanent trash cleanup, migration from a future schema version,
-music analysis, publishing, or remix.
+automatic tempo/semantic analysis, publishing, or remix.
 
 Edit history is session-local, capped at 100 edits, and resets when opening a
 draft, importing, creating/duplicating, resetting, or deleting the active draft.

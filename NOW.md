@@ -1,6 +1,6 @@
 # NOW — Music Universe project schema and creator workflow
 
-> Last updated: 2026-10-05
+> Last updated: 2026-10-18
 > Phase 0/1 acceptance baseline: `b7f08b6 feat: refine player proportions and gait`
 
 ## Current phase
@@ -17,6 +17,12 @@ without editing TypeScript source. AI generation, creator publishing, and commun
 features remain later phases.
 
 ## Completed baseline
+
+- The 2026-10-18 version integration consolidates the published runtime, creator,
+  spherical planet, camera, memory feedback and local-analysis releases with
+  the remaining local generation-recovery tooling and isolated BPM research.
+  Reconciliation, fresh checks and unchanged acceptance boundaries are recorded
+  in [version integration](docs/validation/version-integration-2026-10-18.md).
 
 - The audited branch contains the runtime baseline through the external asset,
   spatial audio, performance telemetry, and data-driven outline work.
