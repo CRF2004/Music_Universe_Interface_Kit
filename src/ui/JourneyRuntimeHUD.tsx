@@ -17,8 +17,9 @@ function blockedMessage(interactionId: string, flags: Readonly<Record<string, un
 }
 
 export default function JourneyRuntimeHUD() {
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const flags = useInteractionStore((state) => state.interactionFlags);
+  const activePanelId = useInteractionStore((state) => state.activePanelId);
   const helpOpen = useWorldStore((state) => state.helpOpen);
   const setHelpOpen = useWorldStore((state) => state.setHelpOpen);
   const helpDialogRef = useRef<HTMLElement>(null);
@@ -26,8 +27,25 @@ export default function JourneyRuntimeHUD() {
   useEffect(
     () =>
       interactionEventBus.subscribe((event) => {
-        if (event.type !== 'interaction.blocked') return;
-        setFeedback(blockedMessage(event.interactionId, useInteractionStore.getState().interactionFlags));
+        if (event.type === 'interaction.blocked') {
+          setFeedback({
+            message: blockedMessage(event.interactionId, useInteractionStore.getState().interactionFlags),
+            success: false,
+          });
+          return;
+        }
+        if (event.type === 'interaction.runtime-reset') {
+          setFeedback(null);
+          return;
+        }
+        if (event.type !== 'interaction.flag-changed' || event.value !== true) return;
+        const messages: Record<string, string> = {
+          'journey.started': 'Journey accepted — follow the violet trail to the Memory Archive.',
+          'memory.received': 'Memory recovered — the green signal marks the Departure Gate.',
+          'journey.completed': 'Memory carried home — your journey is complete.',
+        };
+        const message = messages[event.key];
+        if (message) setFeedback({ message, success: true });
       }),
     [],
   );
@@ -40,7 +58,14 @@ export default function JourneyRuntimeHUD() {
 
   useEffect(() => {
     if (!helpOpen) return;
+    const helpTrigger = document.querySelector<HTMLElement>(
+      '[aria-label="Open journey guide"]',
+    );
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setHelpOpen(false);
+        return;
+      }
       if (event.key !== 'Tab' || !helpDialogRef.current) return;
       const focusable = Array.from(
         helpDialogRef.current.querySelectorAll<HTMLElement>(
@@ -59,8 +84,11 @@ export default function JourneyRuntimeHUD() {
       }
     };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [helpOpen]);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      helpTrigger?.focus();
+    };
+  }, [helpOpen, setHelpOpen]);
 
   const objective =
     flags['journey.started'] !== true
@@ -70,6 +98,12 @@ export default function JourneyRuntimeHUD() {
         : flags['journey.completed'] !== true
           ? 'Reach the Departure Gate'
           : 'Journey complete';
+  const step =
+    flags['journey.started'] !== true
+      ? 1
+      : flags['memory.received'] !== true
+        ? 2
+        : 3;
 
   return (
     <>
@@ -77,8 +111,13 @@ export default function JourneyRuntimeHUD() {
         aria-label="Current journey objective"
         className="pointer-events-none fixed right-5 top-5 z-[55] max-w-[min(20rem,calc(100vw-2.5rem))] rounded-xl border-2 border-white/70 bg-ink/80 px-4 py-3 text-white shadow-lg backdrop-blur"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Current objective</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">
+          Journey step {step} / 3
+        </p>
         <p className="mt-1 font-display font-bold">{objective}</p>
+        {flags['journey.completed'] !== true && (
+          <p className="mt-1 text-xs text-white/70">Follow the pulsing trail and world marker.</p>
+        )}
       </aside>
 
       <div
@@ -86,9 +125,16 @@ export default function JourneyRuntimeHUD() {
         aria-live="polite"
         className="pointer-events-none fixed left-1/2 top-24 z-[80] w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2"
       >
-        {feedback && (
-          <div className="rounded-xl border-4 border-ink bg-comic-yellow p-4 text-center font-display font-bold shadow-[6px_6px_0_0_#111]">
-            {feedback}
+        {feedback && !activePanelId && (
+          <div
+            className={`rounded-xl border-4 border-ink p-4 text-center font-display font-bold shadow-[6px_6px_0_0_#111] ${
+              feedback.success ? 'bg-emerald-300' : 'bg-comic-yellow'
+            }`}
+          >
+            <p className="text-[10px] uppercase tracking-[0.16em] opacity-60">
+              {feedback.success ? 'Objective updated' : 'Not yet'}
+            </p>
+            {feedback.message}
           </div>
         )}
       </div>
@@ -111,9 +157,11 @@ export default function JourneyRuntimeHUD() {
             </p>
             <ul className="mt-5 grid gap-2 sm:grid-cols-2">
               <li><strong>Move:</strong> WASD / arrows</li>
+              <li><strong>Look:</strong> Click the world, then move the mouse</li>
               <li><strong>Interact:</strong> E or click</li>
               <li><strong>Jump:</strong> Space</li>
               <li><strong>Run:</strong> Shift</li>
+              <li><strong>Release mouse:</strong> Esc</li>
             </ul>
             <button
               autoFocus

@@ -17,11 +17,17 @@ describe('music timeline runtime', () => {
     assert.equal(late.portals.departure, true);
     assert.equal(late.landmarks['memory-tree'], true);
     assert.equal(late.landmarks['light-path'], true);
+    assert.equal(late.landmarks['departure-afterglow'], undefined);
+
+    const afterglow = replayMusicTimeline(cues, 98);
+    assert.equal(afterglow.portals.departure, true);
+    assert.equal(afterglow.landmarks['departure-afterglow'], true);
 
     const early = replayMusicTimeline(cues, 20);
     assert.equal(early.portals.departure, undefined);
     assert.equal(early.landmarks['memory-tree'], undefined);
     assert.equal(early.landmarks['light-path'], undefined);
+    assert.equal(early.landmarks['departure-afterglow'], undefined);
     assert.equal(early.narration, 'Distant notes gather into constellations.');
   });
 

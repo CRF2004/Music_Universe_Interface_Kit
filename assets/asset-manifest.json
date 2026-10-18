@@ -292,6 +292,25 @@
       }
     },
     {
+      "id": "crywolf-athetosis-demo",
+      "type": "audio",
+      "source": "audio/crywolf-athetosis-demo.mp3",
+      "license": {
+        "spdx": "LicenseRef-Project-Owner-Demo-Authorization",
+        "author": "Crywolf / Justin Taylor Phillips",
+        "provenance": "Recording supplied by the Music Universe project owner, who explicitly confirmed authorization for use as the built-in public demo on 2026-08-05.",
+        "sourceUrl": "https://soundcloud.com/crywolf/athetosis-heres-the-lullaby-you-made-me-promise-never-to-write-2",
+        "accessedAt": "2026-08-05",
+        "licenseVersion": "Project owner public demo authorization, 2026-08-05",
+        "licenseFile": "assets/licenses/crywolf-athetosis-demo-authorization.snapshot.md"
+      },
+      "build": {
+        "loudnessLufs": -16,
+        "format": "ogg",
+        "quality": 5
+      }
+    },
+    {
       "id": "pipeline-example-grid",
       "type": "texture",
       "source": "textures/pipeline-example-grid.svg",

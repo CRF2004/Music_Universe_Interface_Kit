@@ -124,6 +124,7 @@ export const defaultNormalizedMusicTimeline: NormalizedMusicTimelineCue[] = [
     position: 0.96,
     label: 'Afterglow',
     actions: [
+      { type: 'set-landmark', payload: { id: 'departure-afterglow', visible: true } },
       {
         type: 'set-environment',
         payload: { skyColor: '#693b82', groundColor: '#8a5d83', stars: 520, bloomIntensity: 1.35 },

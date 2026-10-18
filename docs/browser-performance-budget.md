@@ -17,9 +17,11 @@ budget or declaring the slice release-ready.
 The first release targets current and previous major versions of:
 
 - Chrome;
-- Edge;
-- Firefox;
-- Safari on macOS.
+- Edge.
+
+Firefox and Safari are compatibility follow-ups rather than Phase 0 release
+blockers. They must not be described as supported until their full audio,
+journey, and recovery lifecycle has equivalent evidence.
 
 The runtime requires:
 
@@ -30,13 +32,13 @@ The runtime requires:
 
 ### Mobile
 
-Mobile is not considered supported until touch movement, interaction controls,
-layout, audio unlock, and a target-device performance pass are complete.
+The first release is explicitly desktop-only. Touch-only devices are stopped
+before Canvas initialization with a readable explanation that keyboard and
+pointer controls are required. Hybrid devices with a coarse pointer but hover
+support may continue with their keyboard and pointer.
 
-Until then, narrow/touch-only devices must receive either:
-
-- a usable touch implementation; or
-- an explicit desktop-only message before entering the world.
+Mobile remains deferred until touch movement, interaction controls, layout,
+audio unlock, and a target-device performance pass are complete.
 
 CSS responsiveness alone is not mobile support.
 
@@ -68,6 +70,10 @@ Measured on a clean profile, production build, 20 Mbps downlink, 40 ms RTT:
 
 The repository manifest’s 50 MiB total generated-asset limit remains a hard
 build ceiling, not a target to consume.
+
+The authorized built-in Crywolf demo adds 5.83 MiB of generated Ogg audio. The
+complete generated asset set is 6.07 MiB, inside the vertical-slice transfer
+target; cold-load measurement on minimum/reference hardware is still required.
 
 ## Runtime budgets
 
@@ -141,6 +147,27 @@ The vertical slice is ready only when:
 
 Change a budget only with measurements and a product tradeoff, not to silence a
 warning.
+
+## Browser reliability run — 2026-08-11
+
+Production black-box regression on Windows verified:
+
+- headed hardware Chrome and Edge each loaded, sought, naturally ended, and
+  replayed the authorized Crywolf demo while completing the interaction,
+  accessibility, and context-loss lifecycle with 48 checks, six screenshots,
+  and no application runtime errors;
+- headless Chrome and Edge each completed the deterministic WAV lifecycle with
+  47 checks and no application runtime errors;
+- forced WebGL 2 unavailability remained readable across three reloads;
+- a forced runtime render failure reached the reloadable error boundary, and
+  removing the E2E-only fault restored normal world startup.
+
+The E2E fault parameters are ignored unless `e2e=1` is also present. The
+headless software-audio environment decodes and seeks the authorized MP3 but
+does not advance its media clock reliably, so headless natural-end evidence
+comes from the deterministic WAV fixture. The headed hardware passes provide
+the authorized demo track's natural-end and replay evidence. The first-release
+supported-browser matrix is Chrome and Edge.
 
 ## Measurement record — 2026-07-27 container baseline
 

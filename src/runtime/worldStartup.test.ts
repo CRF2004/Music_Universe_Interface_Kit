@@ -34,4 +34,22 @@ describe('world startup support', () => {
       { supported: false, reason: 'webgl2-unavailable' },
     );
   });
+
+  it('allows the e2e probe to opt into a software WebGL renderer', () => {
+    let requestedAttributes: WebGLContextAttributes | undefined;
+    const support = detectWorldStartupSupport(
+      () => ({
+        getContext: (_contextId, attributes) => {
+          requestedAttributes = attributes;
+          return {
+            getExtension: () => null,
+          } as unknown as WebGL2RenderingContext;
+        },
+      }),
+      { allowSoftwareRenderer: true },
+    );
+
+    assert.deepEqual(support, { supported: true });
+    assert.equal(requestedAttributes?.failIfMajorPerformanceCaveat, false);
+  });
 });
