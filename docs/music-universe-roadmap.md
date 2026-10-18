@@ -197,6 +197,12 @@ Deliverables:
 - shareable experience pages with social preview metadata;
 - operational storage, CDN, and bandwidth budgets.
 
+Research note (2026-10-18): a single-file HTML diorama export ("one song, one page"
+lightweight format) is under evaluation as a low-cost shareable-experience candidate:
+Three.js via CDN, zero build, music-reactive via Web Audio. See `docs/html-branch.md`
+for the prompt template, experiment results, and pipeline design. Not sequenced work;
+no implementation until a Phase 4 exit gate requires it.
+
 Exit gate:
 
 - published experiences remain reproducible and legally traceable;
