@@ -3,7 +3,7 @@ import { CameraPreset, CameraMode } from './cameraTypes';
 export const cameraPresets: Record<CameraMode, CameraPreset> = {
   explore: {
     id: 'explore',
-    fov: 82,
+    fov: 68,
     distance: 5.5,
     height: 2.3,
     lookAtHeight: 1.1,

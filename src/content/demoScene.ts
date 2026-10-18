@@ -20,7 +20,7 @@ export const demoScene = {
       palette: 'comic-red-blue',
     },
     camera: {
-      fov: 82,
+      fov: 68,
       distance: 5.5,
       height: 2.3,
       barrelDistortion: 0.12,
