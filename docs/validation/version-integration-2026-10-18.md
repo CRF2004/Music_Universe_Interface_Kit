@@ -8,6 +8,8 @@ the accepted Phase 2 creator workflow and the existing Phase 3 local-analysis
 slice. Product direction, runtime behavior and owner-acceptance boundaries remain
 unchanged. Local-analysis product acceptance is still pending.
 
+Integration pull request: [#16](https://github.com/CRF2004/Music_Universe_Interface_Kit/pull/16).
+
 ## Reconciliation
 
 GitHub was read through the owner's localhost HTTP proxy on port 7895. Remote
@@ -65,6 +67,7 @@ analysis fixture is 60 seconds with a known energy boundary.
 | Chrome recovery, after harness repair | 8 checks, 2 screenshots passed |
 | Edge recovery | 8 checks, 2 screenshots passed |
 | Chrome spherical-world checks | 23 checks, 6 screenshots passed |
+| Edge spherical-world checks | 23 checks, 6 screenshots passed |
 | Chrome local-analysis workflow | 26 checks, zero page errors; fixture analysis 343 ms |
 | Edge local-analysis workflow | 26 checks, zero page errors; fixture analysis 512 ms |
 
