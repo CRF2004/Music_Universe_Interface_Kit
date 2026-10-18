@@ -1,7 +1,7 @@
 # Music Universe Product Roadmap
 
 > Status: active product direction
-> Last updated: 2026-10-02
+> Last updated: 2026-10-05
 
 ## Vision
 
@@ -68,11 +68,13 @@ The repository already has:
 The current working-state baseline documented in `NOW.md` also includes
 `MusicWorldProject` v2 with validated v1 migration, a named local project library, autosave/recovery,
 JSON import/export, and bounded Archive-position and cue-position editing.
-Phase 0/1 were accepted on 2026-08-19; Phase 2 is in progress. These capabilities
+Phase 0/1 were accepted on 2026-08-19. The current Phase 2 Memory Journey
+creator slice was accepted and closed on 2026-10-05; broader authoring remains
+future scope. Phase 3 begins with local waveform/RMS analysis and editable sections. These capabilities
 include uncommitted local work and should not be assumed to exist on `main`.
 
 The experience still uses one default normalized timeline for every track.
-Music analysis, general scene/action editing, a public share page, and a
+Tempo/semantic analysis, general scene/action editing, a public share page, and a
 complete mobile input path remain future capabilities. `NOW.md` owns current
 sequencing and links the reusable 3D tools adoption plan.
 

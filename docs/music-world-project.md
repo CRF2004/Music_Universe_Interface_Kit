@@ -1,7 +1,7 @@
 # MusicWorldProject v2
 
 > Status: active Phase 2 project boundary
-> Last updated: 2026-10-04
+> Last updated: 2026-10-05
 
 `MusicWorldProject` is the canonical editable and serializable input to the
 Music Universe runtime. The TypeScript contract is in
@@ -116,6 +116,13 @@ JSON, and invalid fields report path-based errors while preserving the current
 draft.
 
 ## Current boundary
+
+Optional `track.analysis` stores local peak/RMS summaries and editable section
+starts. Bounds and additive v2 compatibility are documented in
+[local music analysis](local-music-analysis.md). Analysis edits use validated
+undo/redo, autosave and export. They keep playback intact; song replacement
+removes old analysis/history, while matching reattachment preserves sections.
+Cue placement is an explicit existing-cue edit; analysis preserves the timeline.
 
 Successfully decoded local audio is bound to the active project with its actual
 duration and optional `track.file` identity: original name, byte size and
