@@ -46,6 +46,7 @@ interface WorldInspectionSnapshot {
       facingYaw: number;
       responseIntensity: number;
     } | null;
+    memoryRecovery: { visible: boolean; fragmentCount: number; firstMatrix: number[] } | null;
     archiveAwakening: number;
     archiveFacadeAwakening: number;
     memoryTree: RevealVisualSnapshot | null;
@@ -180,6 +181,15 @@ export default function WorldInspectionProbe() {
                 responseIntensity: Number(identity.userData.responseIntensity ?? 0),
               }
             : null;
+        })(),
+        memoryRecovery: (() => {
+          const feedback = scene.getObjectByName('memory-recovery-feedback');
+          const fragments = scene.getObjectByName('memory-recovery-fragments');
+          return feedback && fragments instanceof THREE.InstancedMesh ? {
+            visible: feedback.visible,
+            fragmentCount: fragments.count,
+            firstMatrix: Array.from(fragments.instanceMatrix.array.slice(0, 16)),
+          } : null;
         })(),
         archiveAwakening:
           scene.getObjectByName('archive-building-body')?.userData.awakeningProgress ?? 0,

@@ -145,12 +145,16 @@ Owner-authorized acceptance repairs are implemented: a 60m-radius spherical plan
 radial gravity, tangent movement, local camera orientation, surface Archive dragging,
 immersive HUD and shorter camera damping. v1 drafts migrate to v2 on open/import.
 98 unit tests, lint and production build pass. Chrome and Edge pass creator,
-recovery and spherical-world checks; human acceptance of the changed planet remains
-pending. Evidence: [repair acceptance](docs/validation/spherical-planet-2026-10-04.md).
+recovery and spherical-world checks. The owner accepted the planet, Archive drag,
+immersive HUD and final 68-degree camera on 2026-10-05. Evidence: [repair acceptance](docs/validation/spherical-planet-2026-10-04.md).
 
 1. Observe a human creator completing the saved-project workflow and record
    remaining usability issues; retain target-device performance calibration.
-2. Run the B1 same-image DMX Tripo P1 / Hyper3D (Rodin) / Meshy comparison.
+   The owner accepted the deployed experience on 2026-10-05; this decision does
+   not supply measured creator-session timings. B2 recovery feedback now passes
+   engineering acceptance with 100 unit tests, 132 creator checks and 8 recovery
+   checks per supported browser. Evidence: [B2 acceptance](docs/validation/memory-recovery-feedback-2026-10-05.md).
+B1 same-image DMX Tripo P1 / Hyper3D (Rodin) / Meshy comparison is closed.
    The owner authorized one generation per DMX provider, total at most CNY 10;
    published standard-image estimates total CNY 5.30. The first DMX token
    excluded both models; one Hyper3D submission returned HTTP 403 with no task.
@@ -168,7 +172,7 @@ pending. Evidence: [repair acceptance](docs/validation/spherical-planet-2026-10-
    [the cleanup evidence](docs/validation/hyper3d-cleanup-2026-10-03.md).
    Meshy 7.1 / Smart Topology and Tripo P2 remain
    a separate deferred comparison; do not label P1 results as P2 evidence.
-3. The owner authorized one isolated Marble room pilot with zero cash spend.
+Marble: the owner authorized one isolated room pilot with zero cash spend.
    The owner's generated room was inspected in Marble: coherent room layout,
    stretched door detail and blurred pedestal surfaces; retain a visual room
    candidate. The owner confirmed export is unavailable and chose not to pay;
@@ -182,13 +186,13 @@ The project owner accepted planning for reusable 3D tools on 2026-10-02.
 The detailed sequence, experiment limits, acceptance evidence, and fallback
 choices live in [the 3D tools adoption plan](docs/3d-tools-adoption-plan.zh-CN.md).
 Undo/redo, Archive dragging and bounded environment-action editing are implemented;
-complete editor engineering acceptance passes; tool pilots remain pending. Current evidence and browser
+complete editor engineering acceptance passes; B1 is closed and B2 engineering acceptance passes. Current evidence and browser
 limitations are recorded in
 [the drag editing validation record](docs/validation/archive-drag-editing-2026-10-02.md).
 Environment-action validation and the current browser limitation are recorded in
 [the cue editing validation record](docs/validation/cue-environment-editing-2026-10-02.md).
 Full creator acceptance and its audio fixes were completed on 2026-10-02.
-Current checks: 93 unit tests, lint and production build pass. Chrome and Edge
+Checks recorded on 2026-10-02: 93 unit tests, lint and production build pass. Chrome and Edge
 each pass 125 real-song creator checks and 8 recovery checks with zero runtime
 errors. A4 engineering acceptance passes; human creator observation remains
 part of overall Phase 2 acceptance. See
