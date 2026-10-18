@@ -1,0 +1,1242 @@
+{
+  "source": "https://zenodo.org/records/3967852/files/FSL10K.zip?download=1",
+  "selection": "Expert valid labels, <=2% agreement, CC0/CC BY, vocal/provenance risk exclusions; SHA256 ID order round-robin four tempo buckets",
+  "samples": [
+    {
+      "id": "107170",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/newshooze/sounds/107170/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "a304dcfecc77948391e83ec616e72dc24ea08ae9a654d82f578035931d2503c1",
+      "author": "newshooze",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "27320",
+      "bpm": 92,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Big_D123/sounds/27320/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "9c952902bd5e5b785b0935ebe93787823e523921e3c6dae5f2fc34ecca7d6eaa",
+      "author": "Big_D123",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "275419",
+      "bpm": 135,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/hipihopi/sounds/275419/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "20b979a5888a363320f692e743318f24d445c5e0288d339849a4cd9be9d0b86f",
+      "author": "hipihopi",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "246079",
+      "bpm": 175,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/lerwickdj/sounds/246079/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "12843b3c42d6c638d96e7d092696fc84e4ee15a2716cacc1baf7a7bc494195e3",
+      "author": "lerwickdj",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "205806",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/VectorSpace/sounds/205806/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "c22df0d9f63cc364bdb045d5dde2b62587af4a38c92d9d093c2d48d7562aaa3a",
+      "author": "VectorSpace",
+      "annotators": [
+        "1",
+        "7"
+      ]
+    },
+    {
+      "id": "18428",
+      "bpm": 110,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/ramjac/sounds/18428/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "3676d0ea7bbaf39d5424ad9e5bc829bb8f51970dcae4cba95eed0041685822af",
+      "author": "ramjac",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "260674",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/jputman/sounds/260674/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "899278504911fe498c61f7e3a906642de22818106e0e32df67cd21b3c59de271",
+      "author": "jputman",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "337824",
+      "bpm": 174,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/hardwareshaba/sounds/337824/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "b086b4fed8d3f8b8b4626c0aadc1913185b8daa6ba8fe9608f7e81e10fb72c8b",
+      "author": "hardwareshaba",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "441190",
+      "bpm": 85,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/vykroft/sounds/441190/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "1b175dfa79c2db532b4ec4a62006a7b3864d2a09ba30da2945ed09798298ec40",
+      "author": "vykroft",
+      "annotators": [
+        "4"
+      ]
+    },
+    {
+      "id": "154913",
+      "bpm": 94,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Owl/sounds/154913/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "29c34f7f6436f163efdaecd4a4ea375b0028357f79b47a1e496d7c7a5d959794",
+      "author": "Owl",
+      "annotators": [
+        "6"
+      ]
+    },
+    {
+      "id": "38104",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/THE_bizniss/sounds/38104/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "e132e8053f754e30ef72e1686d51be8ef41c63e0627298f510dffbac9a0b2736",
+      "author": "THE_bizniss",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "246061",
+      "bpm": 175,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/lerwickdj/sounds/246061/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "330ea1d9a58308c10dec3989c7ebc9b22dfecab3f9db61f291d4aacc71836ec8",
+      "author": "lerwickdj",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "131423",
+      "bpm": 80,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/arightwizard/sounds/131423/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "67874e011aa0a3acd9a94400ab4c0f1155aedcf1a3807ca1a1cf5eea79e8915a",
+      "author": "arightwizard",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "136984",
+      "bpm": 109,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/CmdRobot/sounds/136984/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "0264964d0d01bc8ca5aed3e41eb7e787f30bfe84830785245220128145138829",
+      "author": "CmdRobot",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "468504",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/kroshe/sounds/468504/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "67b3ec286ae779e3dd651a4de7caacdc4723aa2fa0a6f4b54a93c252467682b3",
+      "author": "kroshe",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "244342",
+      "bpm": 169,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Insidebeat/sounds/244342/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "a17ef0128a1d04290e72100e4f557e96db62681237a0af62eaaeca001dba95ac",
+      "author": "Insidebeat",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "491285",
+      "bpm": 80,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/Xinematix/sounds/491285/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "e28e7a310b28cba1b3f7c50ea45509d9fa9e40b579ac3b518d9c0f862b2efa53",
+      "author": "Xinematix",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "102886",
+      "bpm": 119,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Uknow Dude/sounds/102886/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "618af315acdd6d7d7451ac470563cae26283ed4bc135aca77bfda73f8094bc87",
+      "author": "Uknow Dude",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "119565",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Ongitak/sounds/119565/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "9eebbf67613c2f624ac5cc39a2b6b2fbc6e2290ec38bb59379f6f2bcf9929931",
+      "author": "Ongitak",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "121536",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/AniCator/sounds/121536/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "6402c29bda1b8503c83737ac6d1a2172e61052119fc4f75f72968591dffd7961",
+      "author": "AniCator",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "455099",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/Xinematix/sounds/455099/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "7c65feb6bc94391c1119ee3b74aec479d32e781149ec413f54ddc58560ca0066",
+      "author": "Xinematix",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "424124",
+      "bpm": 102,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/@realdavidfloat/sounds/424124/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "66721ca75a3b0c8aa20bd860c547634bd1351c8a6e5118615c986f9553366621",
+      "author": "@realdavidfloat",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6043",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Jovica/sounds/6043/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "2f0bf4c5c5280d110bc77e64c6f26fb96f3f92c9acef5ad159eb2ef3c012296a",
+      "author": "Jovica",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "319313",
+      "bpm": 150,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/druidbloke/sounds/319313/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "ec732487ff3139e1eda1e52174a422f815068d8c4f26377ea7d685d0b5a3fa88",
+      "author": "druidbloke",
+      "annotators": [
+        "6"
+      ]
+    },
+    {
+      "id": "112287",
+      "bpm": 75,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/deleted_user_984625/sounds/112287/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "94ecdb2761c85d2001d7e7894acbf28b878b724ae98e5a39226e287429a8892d",
+      "author": "deleted_user_984625",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "165855",
+      "bpm": 110,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/guitarelement/sounds/165855/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "e6dfdc6fffdeb63e48176da59aa3bd4b210951aca00dec65027311b0e8a2f272",
+      "author": "guitarelement",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "148105",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/njdunn/sounds/148105/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "da7c779514a2ebb59a69a3e30ed248f8e29c035836e65968b2099c1f50bdd3d2",
+      "author": "njdunn",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "48529",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/asdftekno/sounds/48529/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "2c4adbf5ea39cbed4917b424f5c3fe27660842110fe6e9d40dd2ae26d993484f",
+      "author": "asdftekno",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "59310",
+      "bpm": 89,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/suonho/sounds/59310/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "265a88ef57c5b8c6f1bbc227abbe66cb4d32e014b4342ef111dfc074ce928d65",
+      "author": "suonho",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "477203",
+      "bpm": 90,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/nuFF3/sounds/477203/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "513b81729e0de13a07686ff0a862b77dc00f5d277bb5ec5ce2300787a5ecfbb6",
+      "author": "nuFF3",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "104502",
+      "bpm": 133,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/kantouth/sounds/104502/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "3a40d81515d56badf0927ae260140d137b29b88f8cb575ce06ef3ec06442efd8",
+      "author": "kantouth",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "324984",
+      "bpm": 172,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/ArcTis/sounds/324984/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "5af2177fa8b349bca404bc3eedc06d0d1b388a4c21d26f1d00fe073ee21be3a6",
+      "author": "ArcTis",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "80503",
+      "bpm": 85,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/mammo/sounds/80503/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "739326a2fde35526ac33795fd9b7318f31b581f59d919ab74deb14401fa0103c",
+      "author": "mammo",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "485392",
+      "bpm": 98,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Manuel.Ed/sounds/485392/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "fd6dac1120ab6b64249cb2181f30b594bbac2856ea0a940029bfb87b72cd341d",
+      "author": "Manuel.Ed",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "86757",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Vicces1212/sounds/86757/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "90d0bd3b31094956296777f7974b7e89c564b2672beba9da1c9e7fb6b11fc17f",
+      "author": "Vicces1212",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "189589",
+      "bpm": 250,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/PsychoticSynthesis/sounds/189589/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "b61ca2883b81dc4e84d073331cada5fb4c0a5e2b6374063127a9a7ac0fd4f6b4",
+      "author": "PsychoticSynthesis",
+      "annotators": [
+        "1",
+        "7"
+      ]
+    },
+    {
+      "id": "239051",
+      "bpm": 83,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/AgoraphobicNosebleed/sounds/239051/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "60d398af99f1b43f4620d8ef4268ec4c323924b590e6391a98a0270bb48d25cc",
+      "author": "AgoraphobicNosebleed",
+      "annotators": [
+        "10"
+      ]
+    },
+    {
+      "id": "245048",
+      "bpm": 97,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Insidebeat/sounds/245048/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "624a0bffeab56d613576c04c9139ee2f2e838f542fb5ae5b66c157d8b2331227",
+      "author": "Insidebeat",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "271146",
+      "bpm": 133,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/.Andre_Onate/sounds/271146/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "71d8196d6c0b6e9e2714c484e0824f6b803425c98492c57b2641b20f534c5203",
+      "author": ".Andre_Onate",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "468009",
+      "bpm": 200,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Royrsd/sounds/468009/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "f363ab4a384a9401b019dc5c571cd2bf620f2b2ab635dfd04211ac3c56b239ca",
+      "author": "Royrsd",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "337762",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/turtlewithpants/sounds/337762/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "c36fe88f6ae036a25f5f6ad135e27bf31471550a1dd14adca8251ec4b2105e1f",
+      "author": "turtlewithpants",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "239550",
+      "bpm": 95,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Bronxio/sounds/239550/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "62c540b259faf6a479c770d1ea55c03ccabf0d6378b320106dd44ba3e849597b",
+      "author": "Bronxio",
+      "annotators": [
+        "1"
+      ]
+    },
+    {
+      "id": "200858",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/LoopPacks/sounds/200858/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "b1b64e276a1c41996be0b810c9102a4b49f5d45f172fe9b5a7f527d1a5ac99f4",
+      "author": "LoopPacks",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "126055",
+      "bpm": 176,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/comadjinn/sounds/126055/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "036e2eae2e0f90ddcdfb974c2d74efc81ced5e2b07b38bc1072855f68d081f71",
+      "author": "comadjinn",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "250497",
+      "bpm": 83,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/deleted_user_2195044/sounds/250497/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "1e85baa323e855de82bb825cd44a42aad64bd27269739d10d81cbd734c01b582",
+      "author": "deleted_user_2195044",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "413259",
+      "bpm": 104,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/GRD-music-/sounds/413259/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "a74ca6e5c3d516e70aa04dfdc3f9488e61cf7e62b5dbdc575aff94a028dbfd7b",
+      "author": "GRD-music-",
+      "annotators": [
+        "5"
+      ]
+    },
+    {
+      "id": "140397",
+      "bpm": 122,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/ochimaru/sounds/140397/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "1eb74e72c5625688d828b99ee67b903fc359f76140aa7d4113b2a412d9029fe6",
+      "author": "ochimaru",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "48528",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/asdftekno/sounds/48528/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "0b7a2b412df7bb5bff03acd8ffd42d7795735dd825d112b9aa881ec54c2070b3",
+      "author": "asdftekno",
+      "annotators": [
+        "10"
+      ]
+    },
+    {
+      "id": "491281",
+      "bpm": 80,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/Xinematix/sounds/491281/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "6aa63cc5832f3a18d95dd2308632fc129097cb4b040bb5063bac8852b808488c",
+      "author": "Xinematix",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "265290",
+      "bpm": 110,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/gblanke/sounds/265290/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "f72af3f3c6ecee9f30ad2c322286ee4e06f774b90b3412ac821ff5f8de7d1abc",
+      "author": "gblanke",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "138989",
+      "bpm": 145,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/joabir/sounds/138989/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "c9391a978d066612745bf821f7e4178aa9fdddedaf0437f8cbf7f3d34e3a3a42",
+      "author": "joabir",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "62039",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/hesed23/sounds/62039/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "7aadc3baa54d04ca88bd8a88fdabb93f89e016d952dae48eb27d687127969b8b",
+      "author": "hesed23",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "426647",
+      "bpm": 80,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/jovanovich/sounds/426647/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "d3c2a3e9aeca9e609f2fddbad5ab47ef42e5d92e82f7ced6bd8de53b0c76df6c",
+      "author": "jovanovich",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "199874",
+      "bpm": 90,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Bronxio/sounds/199874/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "ea1e6fe1eaffa4854fae15d89eefcdec6932026cb1ec4b5e31cef43a5d3b1054",
+      "author": "Bronxio",
+      "annotators": [
+        "1"
+      ]
+    },
+    {
+      "id": "468507",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/kroshe/sounds/468507/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "21d94d24230178a0286d0c33f26586a14566eda20b02157e8ea3af9eb4584ff1",
+      "author": "kroshe",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "90925",
+      "bpm": 155,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Blackie666/sounds/90925/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "2d08bf6bcea1cb1fad51739566ac8b850e1a4e9eb9dd01fe1b89333eb715cfaf",
+      "author": "Blackie666",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "337760",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/turtlewithpants/sounds/337760/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "57f05b04d5f1681434afe6cf4517d8313c93f78c2041f2a4a7e7e13334c13d79",
+      "author": "turtlewithpants",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "381353",
+      "bpm": 119.5,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/waveplay_old/sounds/381353/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "ad4848c84575ae04f0408de666acadf03a99d84bf4cdd857bee6d54b34bc8b4d",
+      "author": "waveplay_old",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "70075",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/DanielsonIII/sounds/70075/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "352d34d9e4416c8822adaa9ea7d3b6d5456c70c34bf45c4b1182df922f5eea0e",
+      "author": "DanielsonIII",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "321221",
+      "bpm": 165,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Kevcio/sounds/321221/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "8d7df42a6433b0e2f773d1b8e207ed6c1136f540f14896bb33e930ba4e8f2d19",
+      "author": "Kevcio",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "132051",
+      "bpm": 74,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/keplar/sounds/132051/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "b7ded4fb8b5caf496963cec4c306835dd9d1eb6b54ee7b57e498a03b0c7bd939",
+      "author": "keplar",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "485394",
+      "bpm": 111,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Manuel.Ed/sounds/485394/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "0c1be80a66702f7b47f1df5937a38b6b48074900d9839b6e6655e98f8aa78f9f",
+      "author": "Manuel.Ed",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "319315",
+      "bpm": 125,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/druidbloke/sounds/319315/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "282869af4d02bf42f0200d4938fbb5ded241404f3c88f2c7b0d598f64522c36c",
+      "author": "druidbloke",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "151313",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/rap2h/sounds/151313/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "e94973cedfba5601b56a67309a63ff5307facc211c716185366b0b583e4a5d6c",
+      "author": "rap2h",
+      "annotators": [
+        "4"
+      ]
+    },
+    {
+      "id": "107181",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/newshooze/sounds/107181/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "f9b5cd08e661a653fd27c7b5317291bd25d5de03da5d66ee0d11f39de64ebcac",
+      "author": "newshooze",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "13638",
+      "bpm": 117,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/starpause/sounds/13638/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "12775aa995577946b943cc0f51473eacecb77b09a83eca3cfd8e9d7a24871af9",
+      "author": "starpause",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "413429",
+      "bpm": 130,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Greek555/sounds/413429/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "b4f05a043065c53a23425ab829595c6da57553a81e81cf393e53a4769edac1a1",
+      "author": "Greek555",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "90923",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Blackie666/sounds/90923/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "6cfae68224ea8d93a92b0d67a2c5fec9702aca3162e28a87c2995bc3c41439b2",
+      "author": "Blackie666",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "148857",
+      "bpm": 80,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/kkz/sounds/148857/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "d090313eaf62ed174806747eb3e31b1eaf9d699cc7ec853b112c8ace44e4c28c",
+      "author": "kkz",
+      "annotators": [
+        "10"
+      ]
+    },
+    {
+      "id": "160376",
+      "bpm": 95,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/day_tripper13/sounds/160376/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "cc9f439bbacfaecd29d917cb01acb5e00e348e581c9f9bb216d998d571313406",
+      "author": "day_tripper13",
+      "annotators": [
+        "5"
+      ]
+    },
+    {
+      "id": "25765",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/jim68000/sounds/25765/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "6c15749a8df06c964c6f3c421e2ea71b4586ec9f829c36438678ef90ee9817bf",
+      "author": "jim68000",
+      "annotators": [
+        "10"
+      ]
+    },
+    {
+      "id": "415280",
+      "bpm": 175,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/MOS420/sounds/415280/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "4b5f14b05b33a9180d4a44f045e4bcc000ba41f6c644cd6dd2e78dec04afd096",
+      "author": "MOS420",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "4636",
+      "bpm": 60,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/Jovica/sounds/4636/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "5cb1cad8eaf5bc3409f6b0cd60e8675b8359f75e3f1e87cbdbd1dc24279eee25",
+      "author": "Jovica",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "483130",
+      "bpm": 110,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/josefpres/sounds/483130/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "adf0d41284625d013965e14c7c319fb47b0de1e97cb9cb10fd9831bb49511fc8",
+      "author": "josefpres",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "177812",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Louderest/sounds/177812/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "af2f79407be78bb1d5c70530288c45240e93d37362d38161ac8b1ea495003035",
+      "author": "Louderest",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "246087",
+      "bpm": 175,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/lerwickdj/sounds/246087/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "fa0bf31e4083eb1fe0fdc10c2e14ad43e6d908e37d6d1cca78cb21ec397c106d",
+      "author": "lerwickdj",
+      "annotators": [
+        "1",
+        "7"
+      ]
+    },
+    {
+      "id": "69606",
+      "bpm": 86,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/deleted_user_984625/sounds/69606/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "971fa8c997a46a821d4c858bce661fd9a77bb873b62dfc132528d5fa17ff0a63",
+      "author": "deleted_user_984625",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "144484",
+      "bpm": 100,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Strever953/sounds/144484/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "c1612a637040797cbea3cff4f6cfa37996949116ba9a0729383f117e3de0ccfc",
+      "author": "Strever953",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "179542",
+      "bpm": 140,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Clinthammer/sounds/179542/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "edcace1603a8488bcd913a164a4b901bda7c93676665e1137eed319544e62efe",
+      "author": "Clinthammer",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "168672",
+      "bpm": 155,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/NenadSimic/sounds/168672/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "dc2c98601883ae7938a7abfd151fdf7e6e38a730a9ddc3b6c65753d484978139",
+      "author": "NenadSimic",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "107176",
+      "bpm": 70,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/newshooze/sounds/107176/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "bda098cee6e22dcee590f31f9b919c0e7b50b9696b327a1537060011c4ac59d5",
+      "author": "newshooze",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "209345",
+      "bpm": 93,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Vinnie_Palermo/sounds/209345/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "2128ed049ef5a4b647ec72f5bc09dc46853dcbcc4ce84d427f44ec2dc7e409c3",
+      "author": "Vinnie_Palermo",
+      "annotators": [
+        "5"
+      ]
+    },
+    {
+      "id": "41304",
+      "bpm": 121,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/UncleSigmund/sounds/41304/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "d3a8d89588b235fd705bbc15666a21aa1dae560049adb775ef490278580c5184",
+      "author": "UncleSigmund",
+      "annotators": [
+        "4"
+      ]
+    },
+    {
+      "id": "320952",
+      "bpm": 180,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Kevcio/sounds/320952/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "245747de24631fe8a46310897b30c1b8f801aaa00cf148a9067fb4d7e732c05d",
+      "author": "Kevcio",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "114064",
+      "bpm": 87,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/jordanielmills/sounds/114064/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "c09739e23661441951aeba4466b72bebd6030f41b13122875c305881c3462ad2",
+      "author": "jordanielmills",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "199860",
+      "bpm": 90,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Bronxio/sounds/199860/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "9fc22aec0eeffb160fa25d96abbfdeb3498d16c8cead74193615924972613ef6",
+      "author": "Bronxio",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "262442",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/Xinematix/sounds/262442/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "8eb75888bd9d5d59a6365bbf710c8efeef58e9b41e4c4688277c631491976adf",
+      "author": "Xinematix",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "45742",
+      "bpm": 155,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/torn.rugged.audio.35/sounds/45742/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "adc33640bd154c1195af10291f22eaefd8b18014015df88a10cc42af2776b9bc",
+      "author": "torn.rugged.audio.35",
+      "annotators": [
+        "10"
+      ]
+    },
+    {
+      "id": "136979",
+      "bpm": 80,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/marcusvmanzoni/sounds/136979/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "3438ceea9b0b2432cd8f2c86d1cca616f9442461ca5bb4d71776b7aa188498f4",
+      "author": "marcusvmanzoni",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "427915",
+      "bpm": 95,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/Teacoma/sounds/427915/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "ff26650468562ef8c97d23468cc27fddf717549758af1c016d83eb86bb997c2d",
+      "author": "Teacoma",
+      "annotators": [
+        "2"
+      ]
+    },
+    {
+      "id": "219112",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/copyc4t/sounds/219112/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "a13b03e4b92ac9ff5e36365129401e483954c20d7c85665d502f90f8a80b1814",
+      "author": "copyc4t",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "201010",
+      "bpm": 160,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/LoopPacks/sounds/201010/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "34ae1bc3966fb0d9dd32ebaf835829d84d25cb62a32419841d5fbea56519a930",
+      "author": "LoopPacks",
+      "annotators": [
+        "10",
+        "5"
+      ]
+    },
+    {
+      "id": "328868",
+      "bpm": 85,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/bigshovel/sounds/328868/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "5606c0166a2ef989713cf47492cd4f095a158bf3062cef6d43e309e200882b78",
+      "author": "bigshovel",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "41027",
+      "bpm": 99.5,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/hello_flowers/sounds/41027/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "673df50a5b51fc19e23ccc95d4f2ec5688422998e296cc9ec34e90802e2f854c",
+      "author": "hello_flowers",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "202384",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/waveplay_old/sounds/202384/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "c79764a16fb7380acc3402a1229a2b459e2c62e607a4c75f12abfad73b0c5de2",
+      "author": "waveplay_old",
+      "annotators": [
+        "2",
+        "6"
+      ]
+    },
+    {
+      "id": "270313",
+      "bpm": 175,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Dee_Vigga/sounds/270313/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "b885cb3fbbbe9ad4ab61320ade09a17330f62d6f61de9562e22096164fec68f9",
+      "author": "Dee_Vigga",
+      "annotators": [
+        "3"
+      ]
+    },
+    {
+      "id": "27506",
+      "bpm": 60,
+      "bucket": "under90",
+      "source": "https://freesound.org/people/crushed bits/sounds/27506/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "95bfc3cb33cf3b760fca75a4ad5a2d2b4d25bcf52bd97c0707bcf78c763e51bc",
+      "author": "crushed bits",
+      "annotators": [
+        "7"
+      ]
+    },
+    {
+      "id": "189599",
+      "bpm": 110,
+      "bucket": "90to119",
+      "source": "https://freesound.org/people/zimbot/sounds/189599/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "9c6e7ebb1f36ac083a429d05aaad6a47780151c05ecc6b5f50cb82e437ee028e",
+      "author": "zimbot",
+      "annotators": [
+        "10"
+      ]
+    },
+    {
+      "id": "418991",
+      "bpm": 120,
+      "bucket": "120to149",
+      "source": "https://freesound.org/people/@realdavidfloat/sounds/418991/",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "08370afa22a9c782a4019e39ccb763b400f66b95588837661a9bd4fbd7ef65bf",
+      "author": "@realdavidfloat",
+      "annotators": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "43581",
+      "bpm": 187,
+      "bucket": "150plus",
+      "source": "https://freesound.org/people/Wrylytucker/sounds/43581/",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "sha256": "9e4b5e94b2ef63fd7daed1874062af5e98b93a0425e8921799b57f45050000f1",
+      "author": "Wrylytucker",
+      "annotators": [
+        "3"
+      ]
+    }
+  ]
+}

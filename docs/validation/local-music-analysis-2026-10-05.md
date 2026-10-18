@@ -13,6 +13,9 @@ Validation on 2026-10-05:
 - Focused analysis browser workflow covers synthetic 60-second amplitude change,
   section/cue editing, keyboard focus after save, malformed import preservation,
   refresh, reattachment, cancel, worker failure/retry and replacement.
+  Chrome and Edge each pass 26 checks with zero page errors. Cancellation uses
+  an artificially delayed real worker to make the pending-state action observable.
+  The browser script waits for React input synchronization after undo/cue edits.
 - Authorized private local Crywolf MP3 (278.4437 seconds): 3,848 ms to analyze,
   512 bins, 12 candidates, 44,990-byte project export; seek and play/pause keep
   sections. Measured on this desktop only. This is processing evidence; semantic
@@ -44,3 +47,15 @@ creator timings remain follow-up checks. Owner product acceptance is pending.
 The engineering result uses the existing project v2 plus optional analysis;
 older strict-v2 applications reject this new field. Seek/replay, playback-time
 authority, manual editing fallback and existing spatial/cue history are retained.
+
+Delivery snapshot: local `d6a8963a217cd3bec0ce8c12f8abb1f524d530db`, published
+`56f1dcd57062b02645c27dbdd74f5354e3802e16` on
+`codex/music-analysis-2026-10-05`. GitHub Pages workflow run `37268140246`.
+The normal workspace branch and index remain intact. These delivery notes are
+documentation-only after the behavior snapshot.
+
+Pages deployment succeeded. A cache-busting `?release=analysis-20261005` entry
+was used after the plain URL briefly served the preceding deployment. The live
+built-in processed OGG was loaded and analyzed; waveform and editable candidates
+were shown and section-start seek worked. Evidence:
+`output/playwright/music-analysis-live.txt` and `music-analysis-live.png`.

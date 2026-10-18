@@ -155,7 +155,22 @@ immersive HUD and final 68-degree camera on 2026-10-05. Evidence: [repair accept
    through optional validated `track.analysis`: rename, boundary adjustment,
    split/merge, undo/redo, autosave/export/reopen and explicit existing-cue
    placement. See [scope and contract](docs/local-music-analysis.md). Owner visual
-   acceptance is next; BPM accuracy/bundle evaluation is the following candidate.
+   acceptance is next. The owner-authorized BPM detector evaluation is complete:
+   web-audio-beat-detector 8.2.39 fails the exact-tempo accuracy gate (frequent
+   half/double choices); keep it isolated. The fixed 100-loop expert-labelled
+   FSLD comparison also fails: 31% exact default / 17% wide at 12 kHz, identical
+   Chrome/Edge results. Dataset-leading Percival/Essentia.js 0.1.3 improves to
+   52% default / 54% wide at 44.1 kHz and 16/22 ARTBeaT windows, still below
+   the accuracy gate; AGPL/commercial licensing and ~800 kB gzip remain adoption
+   constraints. Official Beat This! final0 native CPU evaluation is complete:
+   53/100 FSLD loops, 21/22 ARTBeaT reference windows. The short-loop accuracy
+   and ≤2-second CPU gates fail; model ~81 MB and native dependencies ~1.36 GB.
+   Retain it for beat/tempo-map investigation after execution/rights review.
+   Editable tempo suggestions with manual fallback remain a separate slice. Evidence:
+   [BPM evaluation](docs/validation/bpm-tool-accuracy-2026-10-05.md) and
+   [expert-labelled comparison](docs/validation/annotated-bpm-accuracy-2026-10-05.md) and
+   [Percival comparison](docs/validation/percival-bpm-accuracy-2026-10-05.md) and
+   [Beat This! comparison](docs/validation/beat-this-accuracy-2026-10-05.md).
 2. Retain independent creator-session observation and target-device/network
    calibration as follow-up validation. Owner closeout supplies a product
    acceptance decision; participant timing thresholds remain unmeasured.

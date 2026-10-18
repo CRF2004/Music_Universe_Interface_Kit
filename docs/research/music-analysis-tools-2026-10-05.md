@@ -1,7 +1,15 @@
 # BPM and song information tools
 
-Primary documentation reviewed 2026-10-05. No dependency/service adopted or
-runtime benchmark of these tools performed in this slice.
+Primary documentation reviewed 2026-10-05. No dependency/service adopted.
+Isolated BPM comparisons now cover the first Web Audio candidate,
+Essentia.js Percival and native Beat This! final0. See
+[ranked-method results](../validation/percival-bpm-accuracy-2026-10-05.md) and
+[Beat This! results](../validation/beat-this-accuracy-2026-10-05.md).
+
+Follow-up 2026-10-05: owner-authorized detector 8.2.39 accuracy evaluation is now
+complete. Both tested tempo policies failed the predeclared exact-tempo gate;
+retain it as a research candidate. No runtime adoption. See
+[measured results and decision](../validation/bpm-tool-accuracy-2026-10-05.md).
 
 ## BPM candidate
 
@@ -18,7 +26,8 @@ the authorized real song. Keep results editable and identify estimates clearly.
 analysis stack. [Official licensing](https://essentia.upf.edu/licensing_information.html)
 describes AGPLv3 and commercial licensing, plus separate model/dependency
 conditions. It requires a licensing and payload review before adoption. No
-pretrained models or code from this tool were added.
+pretrained models were used. A pinned 0.1.3 local evaluation now measures
+PercivalBpmEstimator outside the product; root dependencies remain unchanged.
 
 ## Song information chain — proposed follow-up
 
