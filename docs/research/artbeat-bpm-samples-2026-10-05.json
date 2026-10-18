@@ -1,0 +1,369 @@
+{
+  "source": "https://audiolabs-erlangen.de/resources/MIR/2024-ARTBeaT",
+  "author": "Rico Rosenbusch",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "archiveSha256": "55d29f0ea5c42c5babfaad6eb30e8b41d5deda9efe8b92694d8bba86a6b7edc3",
+  "excluded": [
+    "18: piano performance provenance review"
+  ],
+  "reference": "Supplied gt_csv beat times; first/last quarter median intervals on abrupt-change cases 05–15 only. Whole clips have no global truth BPM.",
+  "samples": [
+    {
+      "id": "01",
+      "file": "01_ARTBeaT_Basic_calib.wav",
+      "duration": 9.749795918367347,
+      "sha256": "5d14e4a31bc8cfeae19d1883dc6297dc3044cf64095cafe8702a41c1bcb20da2",
+      "referenceSha256": "93e21e04c90c103f4c714d601ebd3f92832ca4c30024998e90df43044d1bee13",
+      "windows": []
+    },
+    {
+      "id": "02",
+      "file": "02_ARTBeaT_Basic_arp1.wav",
+      "duration": 17.5,
+      "sha256": "65c4daf2d97aa6e4550b15b352e5b876644e399dedd2341a9f09e9f352139c5c",
+      "referenceSha256": "15252eadcd3fea9de7d1cc62b3382c1086b59a193ff17aed9188971b8649d0e4",
+      "windows": []
+    },
+    {
+      "id": "03",
+      "file": "03_ARTBeaT_Deception_arp2.wav",
+      "duration": 18.124988662131518,
+      "sha256": "2e6abea29bb96a4c695da20de89f27c7b38cd6d91ad72149fa7dbaf3dbe977f1",
+      "referenceSha256": "88b6844917e4fa64e75c016154ebfd468a274106fcad058b9d5e25ef065d2dae",
+      "windows": []
+    },
+    {
+      "id": "04",
+      "file": "04_ARTBeaT_Polyrhythm_arp3.wav",
+      "duration": 23.124988662131518,
+      "sha256": "0b59bd9b48188b973275128703e608cc1c5508bd788dcff814e46ec2ba434c17",
+      "referenceSha256": "0014e5083d612b5a39a21d4eda7ffd00a4bae1ff695d4d940e27c214b909fed0",
+      "windows": []
+    },
+    {
+      "id": "05",
+      "file": "05_ARTBeaT_TempoA_75to150.wav",
+      "duration": 13.6,
+      "sha256": "223826b7c5713bda7d6cfb59e417b5db5ff738154e29c18c9d79c83d52598472",
+      "referenceSha256": "222009f01110cd1da40393d0f7c0869b4e9e3261f9fbffceb2f3a03692533595",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 3.4,
+          "expected": 75.43216343635412,
+          "beats": 5
+        },
+        {
+          "side": "last",
+          "offset": 10.2,
+          "duration": 3.4000000000000004,
+          "expected": 149.99999999999986,
+          "beats": 8
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "file": "06_ARTBeaT_TempoA_150to75.wav",
+      "duration": 13.6,
+      "sha256": "39e81ed14d612a2cd45c04ec6c755321a08b44dbe847e5eff439805a6515249f",
+      "referenceSha256": "88b790879ea4890336ff263229ae43267bd62f4c17f1301ca8dba0680d194f00",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 3.4,
+          "expected": 152.0591341077086,
+          "beats": 9
+        },
+        {
+          "side": "last",
+          "offset": 10.2,
+          "duration": 3.4000000000000004,
+          "expected": 74.7663551401869,
+          "beats": 4
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "file": "07_ARTBeaT_TempoA_75to112.5.wav",
+      "duration": 13.333333333333334,
+      "sha256": "f26f7413df87c5aed8535dc334ce5f9975383d50ef7b1699a4f320ae9e0e7508",
+      "referenceSha256": "65cf03ab5992a1f023f81bd0198e19ea5d559a9667f17b290428b12ce246f920",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 3.3333333333333335,
+          "expected": 75.61039642950907,
+          "beats": 5
+        },
+        {
+          "side": "last",
+          "offset": 10,
+          "duration": 3.333333333333334,
+          "expected": 112.97057008385865,
+          "beats": 6
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "file": "08_ARTBeaT_TempoA_112.5to75.wav",
+      "duration": 14,
+      "sha256": "8d27727961b58d8c19ca170f1b5d95591aad9de8a743f54ddb8a241c3e25cfa7",
+      "referenceSha256": "94b3f6b0143b817f7bb23c1754d8ad09573783baa5e4225f6362ff9dfb9b6f0c",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 3.5,
+          "expected": 111.28270479151855,
+          "beats": 7
+        },
+        {
+          "side": "last",
+          "offset": 10.5,
+          "duration": 3.5,
+          "expected": 74.84407484407492,
+          "beats": 4
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "file": "09_ARTBeaT_TempoA_90to80.wav",
+      "duration": 17.604172335600907,
+      "sha256": "3079487704b6a895836c2b605a954af8b062de591a19cac52cd6f70a26b3ddf5",
+      "referenceSha256": "33a42e13f52c2c7b015059b636197e2d64a974fa2653c7436cd5c443aeb2daa5",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 4.401043083900227,
+          "expected": 89.9999550000225,
+          "beats": 7
+        },
+        {
+          "side": "last",
+          "offset": 13.20312925170068,
+          "duration": 4.401043083900227,
+          "expected": 80.33472803347289,
+          "beats": 6
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "file": "10_ARTBeaT_TempoA_90to120.wav",
+      "duration": 16.61111111111111,
+      "sha256": "4bfab99ecb26abf129553dd37160fc9b6948d6ed40a6b4b06c23b03dc500eddc",
+      "referenceSha256": "65423875e2c38e1d5a6f320df0a65fac9bbb7508a9380933007986dd09acf455",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 4.152777777777778,
+          "expected": 90.14080000002252,
+          "beats": 7
+        },
+        {
+          "side": "last",
+          "offset": 12.458333333333332,
+          "duration": 4.152777777777779,
+          "expected": 120.75471698113225,
+          "beats": 8
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "file": "11_ARTBeaT_TempoA_60to80.wav",
+      "duration": 17.40637188208617,
+      "sha256": "8667e5eae50cfcbe5513c2c11b78d6b57f8d7827a35f7cc0a2238f115c36e85a",
+      "referenceSha256": "8da7558a2f2a83303d5e631bfc130b7a496036fb2859c49070b1734a3cc5e4d5",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 4.351592970521542,
+          "expected": 59.65820818228896,
+          "beats": 5
+        },
+        {
+          "side": "last",
+          "offset": 13.054778911564627,
+          "duration": 4.351592970521542,
+          "expected": 80.33472803347289,
+          "beats": 6
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "file": "12_ARTBeaT_TempoA_80to150.wav",
+      "duration": 17.424784580498866,
+      "sha256": "b583f40beda5d9e875aa48a7a63340934d2204f8f97296e93b9636aab7dd513c",
+      "referenceSha256": "cacae5679632415e72fd7cfa32c8fb5f821a716854341dec4a3cc689d472ebe3",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 4.356196145124716,
+          "expected": 79.58549222797927,
+          "beats": 6
+        },
+        {
+          "side": "last",
+          "offset": 13.06858843537415,
+          "duration": 4.356196145124716,
+          "expected": 150.62761506276146,
+          "beats": 10
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "file": "13_ARTBeaT_TempoA_180to120.wav",
+      "duration": 13.833333333333334,
+      "sha256": "db7f08f00319dfb1478a50b6b485734e11199f1a0561ffb68cf4ebc32710cef4",
+      "referenceSha256": "da1c4ab8fb9ad4eedfbfcb6516e7fd8be17201031624810a42f95023b588435f",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 3.4583333333333335,
+          "expected": 179.81287492213605,
+          "beats": 11
+        },
+        {
+          "side": "last",
+          "offset": 10.375,
+          "duration": 3.458333333333334,
+          "expected": 121.00840336134448,
+          "beats": 6
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "file": "14_ARTBeaT_TempoA_240to96.wav",
+      "duration": 16.31249433106576,
+      "sha256": "964aef5a861ffb40e1c108b104928493f91d67573d8b77e7c913152e8a90f2e8",
+      "referenceSha256": "21dc7d158f124182c5cb6d1470000b687d1fad34f881f6e253de7d0cddba74c9",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 4.07812358276644,
+          "expected": 240.12506513809274,
+          "beats": 17
+        },
+        {
+          "side": "last",
+          "offset": 12.23437074829932,
+          "duration": 4.078123582766441,
+          "expected": 95.25581395348837,
+          "beats": 7
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "file": "15_ARTBeaT_TempoA_85to127.5.wav",
+      "duration": 22.58823129251701,
+      "sha256": "01725818fb739153b783d7c6e7fe65adb865f3f2c59ca07f0aad5bc1da058e84",
+      "referenceSha256": "59e384cbdddfe8dd9526c27766a9a887c594b9dd239ef51cae0eb76838846644",
+      "windows": [
+        {
+          "side": "first",
+          "offset": 0,
+          "duration": 5.647057823129252,
+          "expected": 85.00004250002127,
+          "beats": 9
+        },
+        {
+          "side": "last",
+          "offset": 16.941173469387756,
+          "duration": 5.647057823129252,
+          "expected": 127.50006375003206,
+          "beats": 11
+        }
+      ]
+    },
+    {
+      "id": "16",
+      "file": "16_ARTBeaT_Odd_beat7.wav",
+      "duration": 15.491814058956916,
+      "sha256": "8ad9b8a0409fc4ddcbf6874c3688db41265236af06b422302ae05e6aecccb852",
+      "referenceSha256": "a08585da943ff32aa5f7aef3e4d2e9e9380201761d76fe7b8feb3e38fab516ac",
+      "windows": []
+    },
+    {
+      "id": "17",
+      "file": "17_ARTBeaT_Odd_doom7.wav",
+      "duration": 23.967392290249432,
+      "sha256": "2387921ce964ee0ecbd8433f241a6091e3da65f4f6c63d6bb762992af233f001",
+      "referenceSha256": "dee2b3277a520be9b5f995a42d9314cbd4a8970d85a949f93ae89dab40c6ccda",
+      "windows": []
+    },
+    {
+      "id": "19",
+      "file": "19_ARTBeaT_TempoC_80to200.wav",
+      "duration": 17.24920634920635,
+      "sha256": "dd9f1bbe228be2ab575d578735462fd4899c00bcf9159121a8e57d554ebe65f2",
+      "referenceSha256": "89e13f0d39b2a6111f3435484144131df5ac6276a09922fa387838fbcda8cc8e",
+      "windows": []
+    },
+    {
+      "id": "20",
+      "file": "20_ARTBeaT_TempoC_200to80.wav",
+      "duration": 17.271428571428572,
+      "sha256": "59c2e5d18d70ae6d26e26fbfe590823623353301ae1ee65ba881c25c1a76db99",
+      "referenceSha256": "ae0f2323d7ec1852b24f6a15d8efee9c8b022af3e5f3a02c0d0d10bd09b5477e",
+      "windows": []
+    },
+    {
+      "id": "21",
+      "file": "21_ARTBeaT_Polyrhythm_140to105.wav",
+      "duration": 12.285714285714286,
+      "sha256": "f02d954eb20e5033377195d847c3159f6b187c6facdc99bce6ad296a27376a42",
+      "referenceSha256": "dfcc3ac17c33c62151af28254f5d378f65d934fe529d7bebbc92e4f63a61ddb1",
+      "windows": []
+    },
+    {
+      "id": "22",
+      "file": "22_ARTBeaT_Polyrhythm_94.wav",
+      "duration": 11.01063492063492,
+      "sha256": "919bc4ee9885fa3c8eb59a4e2ffc8f5593eab6f345fc367d299e1ee572c9c2a5",
+      "referenceSha256": "8d24accda7d4ac07ac6d3a4cf95b32a37044d75cc1c974a552fbd61bb2c76172",
+      "windows": []
+    },
+    {
+      "id": "23",
+      "file": "23_ARTBeaT_Deception_102.wav",
+      "duration": 19.558843537414965,
+      "sha256": "fce17ada6d1e0f56149f99368638bcd25cc8495e69075babcdb0b2295a2a81be",
+      "referenceSha256": "ac4115eae1894cd46453d25186e87256e4fab81a2443f895d3c25540708dc39d",
+      "windows": []
+    },
+    {
+      "id": "24",
+      "file": "24_ARTBeaT_Syncopated_94.wav",
+      "duration": 21.913038548752834,
+      "sha256": "824e798a7c158136256106a3ee2993dd2247644f96ff39f2e35a696afd16d2e8",
+      "referenceSha256": "48129ba1330287703d7a8b9024e3b6b4c7ed4425aea9efca59fe459b08fc0b31",
+      "windows": []
+    },
+    {
+      "id": "25",
+      "file": "25_ARTBeaT_Odd_metal11.wav",
+      "duration": 23.823514739229026,
+      "sha256": "931e7b7914283c9e74baa728a6f153d070b97629c84dbada78225431d8821379",
+      "referenceSha256": "0e1d20e9abc7ed3ff7f7516b358b7dcd9dba9ec4a35a31c2d21893c65fed898d",
+      "windows": []
+    }
+  ]
+}

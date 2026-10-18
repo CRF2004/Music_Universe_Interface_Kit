@@ -82,6 +82,10 @@ later.” Record them as future work instead.
 - Prefer existing repository patterns and dependencies.
 - Add a dependency only when current-phase behavior requires it and its bundle,
   maintenance, and license costs are understood.
+- Do not run a paid or quota-limited generation call without a prior dry run and
+  the spending owner's confirmation of that specific batch. Follow the
+  generation and paid-service boundary in `docs/development-workflow.md`.
+  Never ask for API keys to be pasted into a session.
 - Do not weaken types with `any`, unchecked casts, or silent fallbacks merely to
   make a build pass.
 - Do not leave placeholder success paths, unconditional condition checks, or

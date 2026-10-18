@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://music-universe.local/schemas/experience-report.schema.json",
+  "title": "Music Universe first-user experience report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "scenarioId", "commit", "environment", "limits", "outcome", "actions", "findings", "evidence"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "scenarioId": { "const": "memory-journey-first-run" },
+    "commit": { "type": "string", "minLength": 7 },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["browser", "viewport", "reducedMotion"],
+      "properties": {
+        "browser": { "type": "string", "minLength": 1 },
+        "viewport": { "type": "string", "pattern": "^[0-9]+x[0-9]+$" },
+        "reducedMotion": { "type": "boolean" }
+      }
+    },
+    "limits": { "type": "object" },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed", "firstObjectiveSeconds", "frictionCount", "misactionCount", "backtrackCount", "replayDiscovered"],
+      "properties": {
+        "completed": { "type": "boolean" },
+        "firstObjectiveSeconds": { "type": ["number", "null"], "minimum": 0 },
+        "frictionCount": { "type": "integer", "minimum": 0 },
+        "misactionCount": { "type": "integer", "minimum": 0 },
+        "backtrackCount": { "type": "integer", "minimum": 0 },
+        "replayDiscovered": { "type": "boolean" }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["elapsedSeconds", "visibleState", "interpretation", "input", "result"],
+        "properties": {
+          "elapsedSeconds": { "type": "number", "minimum": 0 },
+          "visibleState": { "type": "string" },
+          "interpretation": { "type": "string" },
+          "input": { "type": "string" },
+          "result": { "type": "string" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "severity", "statement", "evidence"],
+        "properties": {
+          "kind": { "enum": ["observation", "inference", "recommendation"] },
+          "severity": { "enum": ["blocked", "severe", "moderate", "minor"] },
+          "statement": { "type": "string", "minLength": 1 },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "evidence": { "type": "array", "items": { "type": "string" } }
+  }
+}

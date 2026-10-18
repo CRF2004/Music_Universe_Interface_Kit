@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://music-universe.local/schemas/music-world-project.schema.json",
+  "title": "MusicWorldProject v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "metadata", "track", "worldBible", "timeline", "scene", "assets", "presentation"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "id": { "$ref": "#/$defs/nonEmptyString" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "createdAt", "updatedAt", "authors"],
+      "properties": {
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "description": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/nonEmptyString" },
+        "updatedAt": { "$ref": "#/$defs/nonEmptyString" },
+        "authors": { "$ref": "#/$defs/nonEmptyStrings" }
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "title", "rights"],
+      "allOf": [{
+        "if": { "properties": { "source": { "const": "asset" } } },
+        "then": { "not": { "required": ["file"] } }
+      }],
+      "properties": {
+        "source": { "enum": ["asset", "local-file"] },
+        "assetId": { "$ref": "#/$defs/nonEmptyString" },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "artist": { "type": "string" },
+        "expectedDurationSeconds": { "type": "number", "exclusiveMinimum": 0 },
+        "analysis": { "$ref": "#/$defs/musicAnalysis" },
+        "file": {
+          "type": "object", "additionalProperties": false,
+          "required": ["name", "sizeBytes", "sha256"],
+          "properties": {
+            "name": { "$ref": "#/$defs/nonEmptyString" },
+            "sizeBytes": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+            "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        },
+        "rights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["licenseRef", "attribution"],
+          "properties": {
+            "licenseRef": { "$ref": "#/$defs/nonEmptyString" },
+            "attribution": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        }
+      }
+    },
+    "worldBible": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["premise", "listenerRole", "visualMotifs", "palette", "emotionalArc"],
+      "properties": {
+        "premise": { "$ref": "#/$defs/nonEmptyString" },
+        "listenerRole": { "$ref": "#/$defs/nonEmptyString" },
+        "visualMotifs": { "$ref": "#/$defs/nonEmptyStrings" },
+        "palette": { "$ref": "#/$defs/nonEmptyStrings" },
+        "emotionalArc": { "$ref": "#/$defs/nonEmptyStrings" }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timeBase", "cues"],
+      "properties": {
+        "timeBase": { "const": "normalized-track-position" },
+        "cues": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "position", "actions"],
+            "properties": {
+              "id": { "$ref": "#/$defs/nonEmptyString" },
+              "position": { "type": "number", "minimum": 0, "maximum": 1 },
+              "label": { "type": "string" },
+              "sectionId": { "type": "string" },
+              "actions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "payload"],
+                  "allOf": [{
+                    "if": { "properties": { "type": { "const": "set-environment" } } },
+                    "then": { "properties": { "payload": { "$ref": "#/$defs/environmentPayload" } } }
+                  }],
+                  "properties": {
+                    "type": { "enum": ["set-environment", "set-camera", "show-narration", "set-portal", "set-landmark"] },
+                    "payload": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "required": ["version", "id", "name", "environment", "objects"],
+      "description": "Validated by the embedded SpatialScene 0.1 validator."
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "licenseRef"],
+        "properties": {
+          "id": { "$ref": "#/$defs/nonEmptyString" },
+          "type": { "enum": ["model", "texture", "audio"] },
+          "licenseRef": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subtitlesAvailable", "reducedEffectsAvailable", "launchInput"],
+      "properties": {
+        "subtitlesAvailable": { "type": "boolean" },
+        "reducedEffectsAvailable": { "type": "boolean" },
+        "launchInput": { "const": "desktop-keyboard-pointer" }
+      }
+    },
+    "extensions": { "type": "object" }
+  },
+  "$defs": {
+    "musicAnalysis": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "method", "durationSeconds", "peaks", "rmsDb", "sections"],
+      "description": "Runtime validation additionally checks equal array lengths, song duration and ordered unique section starts beginning at zero.",
+      "properties": {
+        "version": { "const": 1 },
+        "method": { "const": "local-peak-rms-v1" },
+        "durationSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 600 },
+        "peaks": { "type": "array", "minItems": 1, "maxItems": 512, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+        "rmsDb": { "type": "array", "minItems": 1, "maxItems": 512, "items": { "type": "number", "minimum": -96, "maximum": 0 } },
+        "sections": {
+          "type": "array", "minItems": 1, "maxItems": 32,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["id", "label", "start"],
+            "properties": {
+              "id": { "$ref": "#/$defs/nonEmptyString" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+              "start": { "type": "number", "minimum": 0, "exclusiveMaximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "hexColor": { "type": "string", "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$" },
+    "environmentPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skyColor": { "$ref": "#/$defs/hexColor" },
+        "groundColor": { "$ref": "#/$defs/hexColor" },
+        "fogColor": { "$ref": "#/$defs/hexColor" },
+        "fogDensity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "stars": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "rainIntensity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "bloomIntensity": { "type": "number", "minimum": 0, "maximum": 2 }
+      }
+    },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "nonEmptyStrings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/nonEmptyString" }
+    }
+  }
+}

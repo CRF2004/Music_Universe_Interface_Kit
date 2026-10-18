@@ -4,6 +4,10 @@ An AI-native spatial application runtime for turning music into interactive worl
 
 Built with React Three Fiber, Three.js, Rapier physics, and a declarative spatial schema layer.
 
+The optional development asset stack also includes glTF Transform for
+optimization and Tripo's API for review-only text/image-to-3D candidates. Tripo
+is not a browser runtime dependency or a current creator-facing feature.
+
 The project explores a new interface paradigm:
 
 > Turn music into worlds people can enter.
@@ -105,6 +109,16 @@ npm run assets:build
 
 See [`docs/asset-pipeline.md`](docs/asset-pipeline.md) for formats, budgets,
 licensing requirements, and cache policy.
+
+Optional generated hero-asset candidates use the local Tripo CLI:
+
+```bash
+npm run assets:tripo -- --help
+```
+
+See [`docs/tripo-asset-generation.md`](docs/tripo-asset-generation.md) for the
+official tutorial URLs, credential setup, rights gates, commands, and staged
+integration plan. Candidates remain outside the runtime manifest until review.
 
 The verified free-source index and per-asset acceptance rules are documented in
 [`docs/asset-library-index.zh-CN.md`](docs/asset-library-index.zh-CN.md).

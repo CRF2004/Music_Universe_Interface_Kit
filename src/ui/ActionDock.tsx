@@ -1,24 +1,33 @@
 import { useWorldStore } from '../state/useWorldStore';
 import { Accessibility, CircleHelp, Monitor } from 'lucide-react';
+import ProjectEditorPanel from './ProjectEditorPanel';
+import { useExplorationMode } from './useExplorationMode';
 
 export default function ActionDock() {
+  const exploring = useExplorationMode();
   const toggleDevMode = useWorldStore((state) => state.toggleDevMode);
   const isDevMode = useWorldStore((state) => state.isDevMode);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const setReducedEffects = useWorldStore((state) => state.setReducedEffects);
   const setHelpOpen = useWorldStore((state) => state.setHelpOpen);
+  const debugAvailable =
+    import.meta.env.DEV ||
+    new URLSearchParams(window.location.search).has('debug');
 
   return (
-    <div className="absolute top-6 left-6 flex flex-col gap-3 pointer-events-auto">
-      <button 
-        onClick={toggleDevMode}
-        className={`comic-button flex items-center gap-2 ${isDevMode ? 'bg-comic-yellow' : 'bg-paper'}`}
-      >
-        <Monitor size={18} />
-        <span className="hidden sm:inline">Debug</span>
-      </button>
+    <div hidden={exploring} className={`absolute top-6 left-6 ${exploring ? 'hidden' : 'flex'} flex-col gap-3 pointer-events-auto`}>
+      {debugAvailable && (
+        <button
+          onClick={toggleDevMode}
+          className={`comic-button flex items-center gap-2 ${isDevMode ? 'bg-comic-yellow' : 'bg-paper'}`}
+        >
+          <Monitor size={18} />
+          <span className="hidden sm:inline">Debug</span>
+        </button>
+      )}
       
       <div className="flex gap-3">
+        <ProjectEditorPanel />
         <button
           aria-pressed={reducedEffects}
           aria-label="Toggle reduced visual effects"

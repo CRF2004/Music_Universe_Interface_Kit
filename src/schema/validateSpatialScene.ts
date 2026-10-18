@@ -163,6 +163,9 @@ export function validateSpatialScene(input: unknown): SpatialSceneValidationResu
       if (!isVector2(terrain.size) || terrain.size.some((size) => size <= 0)) {
         issues.push({ path: '$.environment.terrain.size', message: 'must contain two positive finite numbers' });
       }
+      if (terrain.type === 'sphere' && isVector2(terrain.size) && terrain.size[0] !== terrain.size[1]) {
+        issues.push({ path: '$.environment.terrain.size', message: 'sphere diameter must be equal on both axes' });
+      }
       if (!isFiniteNumber(terrain.curvature) || terrain.curvature < 0) {
         issues.push({ path: '$.environment.terrain.curvature', message: 'must be a non-negative finite number' });
       }

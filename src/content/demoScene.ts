@@ -20,15 +20,15 @@ export const demoScene = {
       palette: 'comic-red-blue',
     },
     camera: {
-      fov: 82,
+      fov: 68,
       distance: 5.5,
       height: 2.3,
       barrelDistortion: 0.12,
     },
     terrain: {
-      type: 'curved-plane',
-      size: [1000, 1000],
-      curvature: 0.002,
+      type: 'sphere',
+      size: [120, 120],
+      curvature: 1 / 120,
     },
   },
   zones: [
@@ -102,7 +102,9 @@ export const demoScene = {
       },
       interaction: {
         kind: 'inspect',
-        radius: 5,
+        // The normalized hangar is ~14.2 m deep. Keep the interaction reachable
+        // from outside its solid collision volume.
+        radius: 8.5,
         enabled: true,
         triggers: [
           {

@@ -1,18 +1,28 @@
-# NOW — Music Universe baseline and vertical slice
+# NOW — Music Universe project schema and creator workflow
 
-> Last updated: 2026-07-28
-> Branch at audit: `agent/external-assets-outline`
-> Baseline commit at audit: `d734b4d feat: add data-driven outlines to interaction models`
+> Last updated: 2026-10-18
+> Phase 0/1 acceptance baseline: `b7f08b6 feat: refine player proportions and gait`
 
 ## Current phase
 
-Roadmap Phase 0: baseline and reliability.
+Roadmap Phase 2: the current Memory Journey project/schema and creator workflow
+slice is accepted and closed by the owner on 2026-10-05. Phase 3 starts with
+the owner-authorized local waveform/RMS analysis and editable section slice.
+See [the closeout decision](docs/validation/creator-workflow-closeout-2026-10-05.md).
 
-The next product outcome is one complete, understandable 3–5 minute vertical
-slice. AI generation, creator publishing, and community features remain later
-phases until the runtime baseline and experience loop pass their exit gates.
+The project owner accepted the Phase 0 reliability baseline and Phase 1 Memory
+Journey vertical slice on 2026-08-19. The accepted creator slice delivers a
+reproducible, editable project that can be saved, reopened, changed, and exported
+without editing TypeScript source. AI generation, creator publishing, and community
+features remain later phases.
 
 ## Completed baseline
+
+- The 2026-10-18 version integration consolidates the published runtime, creator,
+  spherical planet, camera, memory feedback and local-analysis releases with
+  the remaining local generation-recovery tooling and isolated BPM research.
+  Reconciliation, fresh checks and unchanged acceptance boundaries are recorded
+  in [version integration](docs/validation/version-integration-2026-10-18.md).
 
 - The audited branch contains the runtime baseline through the external asset,
   spatial audio, performance telemetry, and data-driven outline work.
@@ -36,45 +46,202 @@ phases until the runtime baseline and experience loop pass their exit gates.
   resolution, LOD behavior, scenery layout, interaction conditions, scene
   condition validation, Store/Dispatcher flags and lifecycle reset, and WebGL
   startup probing.
+- An optional development-only Tripo CLI can stage reproducible text/image-to-3D
+  candidates with generation receipts. Candidates still require rights,
+  geometry, perceptual, collision, asset-pipeline, and performance review before
+  entering the runtime manifest; creator-facing generation remains Phase 3.
 
 ## Baseline verification
 
-Run on 2026-07-28:
+Run on 2026-08-01:
 
 ```text
-npm test       46 passing
+npm test       51 passing
 npm run lint   passing
-npm run build  passing; 15 assets, 240.60 kB generated total
+npm run build  passing; 16 assets, 6.07 MiB generated total
+npm run journey:regression  passing; 22 checks, 5 screenshots, 0 browser errors
 ```
 
 Current production split:
 
 ```text
-ExperienceRoot app code  37.39 kB (11.84 kB gzip)
-PhysicsWorld app code     41.59 kB (13.43 kB gzip)
+ExperienceRoot app code  38.48 kB (12.17 kB gzip)
+PhysicsWorld app code     48.30 kB (15.32 kB gzip)
 Three runtime            732.43 kB (189.75 kB gzip)
-Rapier runtime         2,260.67 kB (838.07 kB gzip)
+Rapier runtime         2,260.70 kB (838.08 kB gzip)
 ```
 
 The former application-chunk warnings are resolved through explicit cache
 boundaries. Rapier remains the dominant compressed transfer. Hardware
 target-device measurement is still required before public release.
 
+Working-state verification on 2026-08-05:
+
+```text
+npm test       58 passing
+npm run lint   passing
+npm run build  passing; 16 assets, 6.07 MiB generated total
+journey regression with synthetic audio  passing; 27 checks, 5 screenshots
+journey regression with private local demo input  passing; 27 checks, 5 screenshots
+```
+
+Release-candidate verification on 2026-08-19 after introducing
+`MusicWorldProject` v1 and the first local creator workflow:
+
+```text
+npm test       73 passing
+npm run lint   passing
+npm run build  passing; 16 assets, 6.07 MiB generated total
+Chrome journey regression  passing; 77 checks, 13 screenshots
+Edge journey regression    passing; 77 checks, 13 screenshots
+Chrome recovery regression passing; 8 checks, 2 screenshots
+Edge recovery regression   passing; 8 checks, 2 screenshots
+```
+
+The browser journey now covers library creation, duplicate, rename, open,
+recoverable delete/restore, normalized cue editing, Archive position editing,
+runtime and physics reconstruction, debounced IndexedDB autosave, export,
+invalid-import preservation, refresh recovery, and valid re-import before
+continuing through the full listener journey.
+
+The first Chrome run exposed a fixed-time gait assertion and one-frame-stale
+velocity telemetry. The runtime now reports the velocity applied in the current
+frame and the regression waits within a bounded animation window; the complete
+Chrome and Edge journeys then passed.
+
+The black-box first-user agent also verified that the WebGL-unavailable page is
+readable and stable across three reload attempts in a headed software-rendered
+environment. That environment could not enter the world without the explicit
+test-only software-renderer override, so it is recovery evidence rather than a
+completed experience preflight or target-device result.
+
 ## Current priorities
 
-### P0 — Must finish before feature expansion
+### P0 — Versioned project boundary
 
-1. Repeat the completed Chromium audio/interaction lifecycle on the supported
-   hardware browser matrix.
-2. Measure and calibrate the provisional hardware device, frame-rate, loading,
-   request, GPU-memory, and bundle budgets in
-   `docs/browser-performance-budget.md`.
-3. Browser-verify the WebGL/runtime recovery page and add explicit recovery for
-   any remaining audio or context-loss failure.
-4. Decide the first-release touch strategy: implement controls or explicitly
-   ship desktop-only.
-5. Create a legally distributable built-in demonstration track or documented
-   demo input.
+Completed:
+
+1. `MusicWorldProject` v2 is typed, JSON-described, and strictly validated.
+2. The curated Memory Journey is the default project; scene and normalized
+   timeline runtime behavior consume it.
+3. Creator-facing JSON import/export reports actionable validation errors and
+   preserves the active draft after invalid input.
+4. IndexedDB creates, autosaves, and restores the active local draft.
+5. The Project Editor moves the Memory Archive on X/Z and reconstructs both the
+   rendered interaction and Rapier collision body from project data.
+6. The local library creates, duplicates, renames, opens, soft-deletes, and
+   restores named drafts while preserving one valid active project.
+7. The first bounded timeline editor changes an existing cue's normalized
+   position without changing its identity or typed actions.
+8. Archive coordinates and cue positions share validated undo/redo transactions,
+   with up to 100 session edits and isolated history when projects change.
+9. The Memory Archive can be dragged on X/Z using the existing Drei controls.
+   A complete drag commits one edit; Escape, window blur, and canceled pointer
+   input restore the committed position. Coordinate inputs remain available.
+10. Existing environment actions expose sky/ground hex colors, rain (0–1), and
+    bloom (0–2). Apply, undo/redo, autosave and JSON round-trip use the validated
+    project path; blank fields inherit previous cues or runtime defaults.
+11. Successful local uploads bind the song's name, actual duration, byte size,
+    SHA-256 identity and unverified private-preview rights record to the project.
+12. Refresh/open/import request the saved original song, verify matching bytes
+    and duration, and preserve the project after a wrong selection. Project
+    switching cancels pending audio and clears playback; failed replacements
+    preserve the previous song. Audio bytes stay on the user's computer.
+
+Next:
+
+Owner-authorized acceptance repairs are implemented: a 60m-radius spherical planet,
+radial gravity, tangent movement, local camera orientation, surface Archive dragging,
+immersive HUD and shorter camera damping. v1 drafts migrate to v2 on open/import.
+98 unit tests, lint and production build pass. Chrome and Edge pass creator,
+recovery and spherical-world checks. The owner accepted the planet, Archive drag,
+immersive HUD and final 68-degree camera on 2026-10-05. Evidence: [repair acceptance](docs/validation/spherical-planet-2026-10-04.md).
+
+1. Local waveform/RMS analysis and editable candidate sections are implemented
+   through optional validated `track.analysis`: rename, boundary adjustment,
+   split/merge, undo/redo, autosave/export/reopen and explicit existing-cue
+   placement. See [scope and contract](docs/local-music-analysis.md). Owner visual
+   acceptance is next. The owner-authorized BPM detector evaluation is complete:
+   web-audio-beat-detector 8.2.39 fails the exact-tempo accuracy gate (frequent
+   half/double choices); keep it isolated. The fixed 100-loop expert-labelled
+   FSLD comparison also fails: 31% exact default / 17% wide at 12 kHz, identical
+   Chrome/Edge results. Dataset-leading Percival/Essentia.js 0.1.3 improves to
+   52% default / 54% wide at 44.1 kHz and 16/22 ARTBeaT windows, still below
+   the accuracy gate; AGPL/commercial licensing and ~800 kB gzip remain adoption
+   constraints. Official Beat This! final0 native CPU evaluation is complete:
+   53/100 FSLD loops, 21/22 ARTBeaT reference windows. The short-loop accuracy
+   and ≤2-second CPU gates fail; model ~81 MB and native dependencies ~1.36 GB.
+   Retain it for beat/tempo-map investigation after execution/rights review.
+   Editable tempo suggestions with manual fallback remain a separate slice. Evidence:
+   [BPM evaluation](docs/validation/bpm-tool-accuracy-2026-10-05.md) and
+   [expert-labelled comparison](docs/validation/annotated-bpm-accuracy-2026-10-05.md) and
+   [Percival comparison](docs/validation/percival-bpm-accuracy-2026-10-05.md) and
+   [Beat This! comparison](docs/validation/beat-this-accuracy-2026-10-05.md).
+2. Retain independent creator-session observation and target-device/network
+   calibration as follow-up validation. Owner closeout supplies a product
+   acceptance decision; participant timing thresholds remain unmeasured.
+
+The owner closed the current creator slice, including B2, on 2026-10-05.
+Last behavior checks: 100 unit tests, lint/build, 132 creator checks and 8
+recovery checks per supported browser. Evidence: [closeout](docs/validation/creator-workflow-closeout-2026-10-05.md).
+
+B1 same-image DMX Tripo P1 / Hyper3D (Rodin) / Meshy comparison is closed.
+   The owner authorized one generation per DMX provider, total at most CNY 10;
+   published standard-image estimates total CNY 5.30. The first DMX token
+   excluded both models; one Hyper3D submission returned HTTP 403 with no task.
+   The replacement token has access and both candidates were generated,
+   optimized and visually checked: Tripo 329,160 bytes / Rodin 405,776 bytes.
+   Both need pedestal cleanup and remain isolated candidates. The owner's
+   Meshy 6 Lite export was checked: 158,870 triangles / 1,408,048 optimized
+   bytes; an 8,000-triangle variant is 526,516 bytes with visible quality loss.
+   Rodin cleanup produced a 12-part, 5,142-triangle candidate (399,260 bytes),
+   with rebuilt pedestal/energy surface and edit/export round-trip checks.
+   Script-assisted repair and verification took 6.85 minutes. The owner accepted
+   workflow validation as this pilot's endpoint; further finishing is deferred.
+   Open seams and inner-edge remnants are recorded candidate limitations;
+   rights and target-device review are prerequisites for future adoption. See
+   [the cleanup evidence](docs/validation/hyper3d-cleanup-2026-10-03.md).
+   Meshy 7.1 / Smart Topology and Tripo P2 remain
+   a separate deferred comparison; do not label P1 results as P2 evidence.
+Marble: the owner authorized one isolated room pilot with zero cash spend.
+   The owner's generated room was inspected in Marble: coherent room layout,
+   stretched door detail and blurred pedestal surfaces; retain a visual room
+   candidate. The owner confirmed export is unavailable and chose not to pay;
+   stop this pilot at the free visual review. Collision and local-browser
+   performance remain untested until export becomes available and the owner
+   reopens the pilot. This pilot does not advance the
+   formal product to Phase 3. See
+   [the updated pilot record](docs/validation/3d-tool-pilots-2026-10-03.md).
+
+The project owner accepted planning for reusable 3D tools on 2026-10-02.
+The detailed sequence, experiment limits, acceptance evidence, and fallback
+choices live in [the 3D tools adoption plan](docs/3d-tools-adoption-plan.zh-CN.md).
+Undo/redo, Archive dragging and bounded environment-action editing are implemented;
+complete editor engineering acceptance passes; B1 is closed and B2 engineering acceptance passes. Current evidence and browser
+limitations are recorded in
+[the drag editing validation record](docs/validation/archive-drag-editing-2026-10-02.md).
+Environment-action validation and the current browser limitation are recorded in
+[the cue editing validation record](docs/validation/cue-environment-editing-2026-10-02.md).
+Full creator acceptance and its audio fixes were completed on 2026-10-02.
+Checks recorded on 2026-10-02: 93 unit tests, lint and production build pass. Chrome and Edge
+each pass 125 real-song creator checks and 8 recovery checks with zero runtime
+errors. A4 engineering acceptance passes; the owner closed the current creator slice
+on 2026-10-05. Independent creator-session observation remains follow-up validation. See
+[the audio recovery acceptance record](docs/validation/project-audio-recovery-2026-10-02.md).
+The accepted spherical-ground repair introduces the first validated v1-to-v2 migration.
+
+### Planned 3D tool evaluations — after the editor gate
+
+After the creator workflow above passes, evaluate one authored landmark using
+DMX Tripo P1, Hyper3D (Rodin) and Meshy 6 Lite (received free export), then one existing-journey animation or VFX
+improvement using Quaternius / Wawa VFX. Each evaluation has a separate review
+and the existing asset pipeline remains the acceptance boundary.
+
+Marble + Spark and HY-World belong to a bounded Phase 3 scene pilot after
+Phase 2 acceptance. Triplex, Asset Forge, and Spline are authoring candidates;
+Theatre.js, ecctrl/BVHEcctrl, TRELLIS.2, ARDY, Atlas, WorldClaw, and Buffalo are
+conditional evaluations or research references. Tool selection and dependency
+adoption require the evidence specified in the plan.
 
 ### P1 — First vertical slice
 
@@ -107,43 +274,127 @@ Implemented:
   `docs/first-user-observation.md`.
 - GitHub Pages builds automatically from `main` and supports manual deployment
   of a selected research branch with repository-safe asset paths.
+- the first observation repair pass replaces synchronized rain with independent
+  drop motion, stabilizes instanced-rock visibility, adds rock collision, and
+  introduces a three-stage world-space trail and destination beacon;
+- objective completion now produces explicit feedback and advances a visible
+  three-step journey state;
+- an instanced memory grove adds mid-ground depth and visibly reacts when the
+  memory is recovered;
+- research builds hide development controls by default and keep idle audio
+  controls compact.
+- built-in prop rendering and collision now share reviewed visual profiles;
+- physics debug rendering and a machine-readable world inspection snapshot are
+  available for agent/browser regression work.
+- `npm run journey:regression` builds a relative-path production bundle and
+  contains the full Guide -> Archive -> Gate -> Replay semantic, collision, and
+  fixed-camera regression flow. The complete asset-build -> production-build ->
+  Chromium path passes locally with 22 checks, five screenshots, and no browser
+  runtime errors.
+- the first release is explicitly desktop-only; touch-only devices receive a
+  readable keyboard/pointer requirement before Canvas startup;
+- audio decode/load errors expose an immediate replacement-file action, and a
+  lost WebGL context moves to a reloadable non-Canvas recovery page;
+- `crew/agents/first-user-experience.md` defines a bounded, read-only black-box
+  agent preflight before human observation, with a versioned scenario and
+  report schema. It cannot inspect semantic probes or replace human testing.
+- the project owner authorized Crywolf’s 4:38 `ATHETOSIS` recording as the
+  public built-in demo. It is available as a one-click start, processed through
+  the licensed asset pipeline, and recorded as
+  `LicenseRef-Project-Owner-Demo-Authorization`; the underlying written
+  permission should supplement the repository snapshot before distribution audit;
+- the first-user crew now has versioned professional heuristics, frozen
+  calibration cases, a governed improvement protocol, deterministic report
+  validation/comparison tools, and a hardware Chrome black-box driver that
+  exposes only screenshots and visible keyboard/pointer input;
+- hardware black-box testing found and repaired stale local-coordinate
+  proximity detection, focused-button suppression of the `E` key, world-label
+  click interception, subtitle/feedback overlap, and three driver calibration
+  failures. Native Chrome visual evidence now shows the Guide proximity prompt
+  followed by panel opening and Step 2 progression.
+- headed hardware Chrome and Edge regressions now complete the authorized demo
+  track's load, play, seek, natural-end, replay, interaction, accessibility,
+  and context-loss lifecycle with 48 checks and six screenshots per browser;
+  both browsers also pass the forced WebGL/runtime recovery suite.
 
-Next:
+Accepted on 2026-08-19:
 
-1. Recruit 3–5 first-time participants and record completion problems with the
-   prepared observation protocol.
-2. Complete integrated-GPU minimum/reference-tier departure measurements; the
-   RTX 4050 high-tier run passes at 144.93 FPS median / 72.46 FPS 1% low.
+- the project owner reports that first-time user observation is complete and
+  found no material blocker; participant-level timings were not supplied to the
+  repository, so no unaudited threshold metrics are claimed;
+- the first release does not promise integrated-GPU support. Supported launch
+  hardware is a desktop system with a hardware-accelerated discrete GPU;
+- the RTX 4050 supported-tier run passes at 144.93 FPS median / 72.46 FPS 1% low.
+
+## First observation findings
+
+The first external observation reported:
+
+- rough visuals and insufficient environmental variety;
+- intermittent missing rocks, collision clipping, and apparently frozen rain;
+- unclear task purpose and weak interaction feedback;
+- low moment-to-moment engagement.
+
+The immediate priority is therefore experience comprehension and spatial
+reliability, not feature expansion. The next observation round is the
+acceptance evidence for this repair pass.
+
+The second observation round additionally found that the character camera did
+not match established third-person controls, timeline-driven weather and color
+changes cut abruptly, the Memory Tree overlapped the solid Archive, and the
+star field still read as a regular point grid. The immediate repair adds a
+click-to-lock mouse orbit camera with camera-relative movement, smooths the
+environment/rain response, separates the Tree from the Archive footprint, and
+uses a deterministic irregular sky distribution. Higher-fidelity authored
+models remain a focused art-direction follow-up rather than an undirected asset
+expansion.
 
 ## Known gaps
 
 - every uploaded track currently uses the same default normalized timeline;
+- uploaded audio bytes stay on the user's computer; refresh/open/import require
+  selecting the matching original file. Legacy projects without fingerprints
+  require explicit replacement; JSON alone cannot carry the audio;
 - non-flag condition sources need explicit adapter resolvers before use;
-- no versioned `MusicWorldProject` exists yet;
-- no creator save/import/export workflow exists;
+- `MusicWorldProject` v2 covers the current Memory Journey; v1-to-v2 import/open
+  migration exists, while future migrations require a concrete accepted change;
+- named local drafts exist, but there is no permanent trash cleanup, storage
+  quota UI, or cloud synchronization;
+- edits cover Memory Archive X/Z, existing Cue positions, and four environment
+  action fields; general scene editing and other action types remain deferred;
 - no public share page or publishing backend exists;
 - keyboard is the only complete movement input;
-- load and runtime performance do not yet have hardware target-device
-  measurements;
+- the launch is intentionally desktop-only; mobile/touch controls are deferred
+  until the desktop product is mature;
+- integrated-GPU performance is best effort and explicitly outside the first
+  release support promise;
 
 ## Not now
 
 - world-model integrations;
+- creator-facing Tripo/API generation; the internal candidate CLI does not
+  promote this work ahead of the versioned project and editor;
 - multiple experience templates;
 - community publishing or remix;
 - multiplayer;
-- true spherical physics;
+- further planetary systems beyond the authorized spherical-ground repair;
 - monorepo migration;
 - WebGPU migration.
 
-## Definition of done for the current phase
+## Definition of done for the current Phase 2 slice
 
-- automated checks pass;
-- real-browser audio lifecycle passes;
-- target device and performance budgets are recorded;
-- failure states provide a recovery action;
-- touch/desktop-only decision is explicit;
-- vertical-slice brief and legally usable demo audio are ready.
+- `MusicWorldProject` v2 is typed, strictly validated, and documented;
+- the default Memory Journey round-trips through JSON and reconstructs the same
+  scene and duration-relative timeline;
+- runtime scene and timeline behavior consume the default project;
+- a creator can edit the Archive position, autosave, refresh, export, re-import,
+  and recover from invalid input without editing TypeScript;
+- automated checks and supported-browser journey/recovery regressions pass;
+- Archive dragging and undo/redo use the validated project mutation path;
+  local save/recovery and a bounded environment-action inspector are implemented;
+- the expanded editor retains keyboard inputs, preserves drafts after invalid
+  input or canceled edits, and reconstructs collision and timeline state after
+  undo/redo, refresh, export, and re-import.
 
 ## Working-tree care
 

@@ -92,8 +92,8 @@ function RuntimeInteractionModel({
           source instanceof MeshStandardMaterial
             ? source.clone()
             : new MeshStandardMaterial({ color: colorToken });
-        material.roughness = 0.68;
-        material.metalness = Math.min(material.metalness ?? 0, 0.16);
+        material.roughness = emissive ? 0.42 : 0.58;
+        material.metalness = Math.min(Math.max(material.metalness ?? 0, 0.08), 0.24);
         material.color.lerp(accentColor, emissive ? 0.38 : 0.2);
         if (emissive) {
           material.emissive = new Color(colorToken);

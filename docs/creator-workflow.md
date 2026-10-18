@@ -1,7 +1,7 @@
 # Creator Workflow
 
 > Product workflow target; capabilities are introduced by roadmap phase.
-> Last updated: 2026-07-26
+> Last updated: 2026-10-18
 
 ## Product goal
 
@@ -14,20 +14,80 @@ produce separate incompatible formats.
 
 ## Current capability
 
-The repository currently supports a runtime demonstration:
+The first Phase 3 local analysis slice adds waveform peaks, relative RMS level,
+and editable candidate sections in the Project Editor. Load a song, choose
+Analyze, rename/adjust/split/merge sections, then explicitly place an existing
+selected cue at a section start. Saved summaries/sections survive refresh and
+JSON export; reattach the original song to audition. See
+[local analysis scope](local-music-analysis.md). BPM and external metadata are
+researched follow-ups in [tool selection](research/music-analysis-tools-2026-10-05.md).
+
+The owner accepted and closed the current Memory Journey creator workflow on
+2026-10-05. Scope, latest validation, release and deferred limits are recorded in
+[the closeout decision](validation/creator-workflow-closeout-2026-10-05.md).
+
+The accepted spherical-ground repair introduces MusicWorldProject v2. The Memory planet has a
+60m radius. Archive X/Z coordinates describe surface distances from arrival;
+Y describes height above the ground. Visuals and collision follow the same
+projection and local orientation. v1 curved projects migrate on import/open,
+preserving song identity and authored edits. See the current
+[repair acceptance record](validation/spherical-planet-2026-10-04.md).
+
+The repository now has a first versioned `MusicWorldProject` boundary for the
+curated Memory Journey:
 
 ```text
 Local audio file
   -> real duration
-  -> default normalized timeline
+  -> validated MusicWorldProject v2 normalized timeline
   -> environment / camera / narration / landmarks
   -> explorable browser experience
 ```
 
-It does not yet analyze the music, save creator projects, publish experiences,
-or remix existing worlds. These are roadmap goals, not current product claims.
+The canonical project can be validated, serialized to JSON, imported, and used
+to reconstruct the same scene and duration-relative timeline. The current
+Project Editor can create, duplicate, rename, open, soft-delete, and restore
+named local drafts. It can move the Memory Archive, change one existing cue's
+normalized position, autosave the library to IndexedDB, restore it after
+refresh, export the active project, and safely import without an invalid file
+replacing current work. Archive X/Z, cue-position, and environment-action changes support undo/redo.
+The Archive can also be dragged in a fixed overview using red/blue axis arrows;
+releasing commits one edit, while Escape cancels the active drag. Coordinate
+inputs remain available for keyboard and precise editing. There is not yet a
+general scene/timeline editor, permanent trash cleanup, migration from a future schema version,
+automatic tempo/semantic analysis, publishing, or remix.
+
+Edit history is session-local, capped at 100 edits, and resets when opening a
+draft, importing, creating/duplicating, resetting, or deleting the active draft.
+Renaming preserves spatial/timeline history. Refresh restores the saved project
+with an empty history. Ctrl/Cmd+Z undoes and Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y redoes
+while the editor is open; text inputs retain their native editing shortcuts.
+
+Dragging previews the visual without saving intermediate positions. Physics,
+movement, pointer lock, and narrative interaction are suspended in drag mode;
+the committed collider is rebuilt after release or undo/redo. Losing window
+focus, pointer cancellation, closing the editor, or changing projects cancels an
+unfinished drag. Music playback continues to drive the timeline.
+
+Select an existing timeline cue, then its environment action. The inspector
+edits sky/ground hex colors, rain (0–1), and bloom (0–2). Apply commits all four
+fields as one undoable operation. Blank removes that cue's override, so the
+earlier cue's value or runtime default applies. Fog, stars and other actions
+remain intact. Multiple environment actions can be selected individually;
+cues without one show a readable empty state. Close the editor and seek to the
+event in the music player to preview it. Reduced effects suppress rain and bloom
+while preserving the project's authored values.
 
 ## Target creation flow
+
+Uploaded songs save their name, actual duration, file fingerprint and private
+preview rights record with the project. After refresh, opening or importing,
+choose **Restore original song** and select the original file. The browser
+checks file contents and duration; a different file with the same name is rejected.
+**Replace music** deliberately changes the song. Older local-file projects without
+a fingerprint require this replacement step. Built-in tracks have a restore button.
+JSON exports contain the project and song identity; keep the original audio file
+alongside the export. Switching projects clears playback and pending loads.
 
 ### 1. Start
 
@@ -143,3 +203,50 @@ licenses allow it. A remix retains:
 
 Full automation is not a separate product path. It is an optional acceleration
 layer over the same editable project workflow.
+
+## Phase 2 editor architecture reference
+
+[Pascal Editor](https://github.com/pascalorg/editor) is tracked as a Phase 2
+technical reference for the future Creator editor. It is not an adopted runtime
+dependency or a replacement for `MusicWorldProject`.
+
+Patterns worth carrying into the Creator design:
+
+- a versioned, validated canonical project model with explicit migrations;
+- one mutation/patch layer shared by inspector UI, undo/redo, automation, and
+  future agent-facing tools;
+- transaction boundaries that make multi-field edits atomic and reversible;
+- IndexedDB-backed drafts, crash recovery, and explicit save/publish states;
+- typed registries for editor panels, project nodes, renderers, and plugins;
+- derived render state and dirty-node tracking kept outside canonical project
+  data;
+- headless validation and editing tools operating on the same data model as the
+  visual editor, as demonstrated by Pascal's
+  [MCP package](https://github.com/pascalorg/editor/blob/main/packages/mcp/README.md).
+
+The project should not inherit Pascal's building-specific scene ontology,
+editor/viewer runtime, Next.js monorepo, or WebGPU assumptions. Its built-in
+asset catalog is not an approved asset source without per-item provenance and
+license review under this repository's asset pipeline.
+
+Any future evaluation must be a disposable, bounded spike after the first
+versioned `MusicWorldProject` schema exists. The spike should prove one narrow
+end-to-end capability—such as an undoable landmark transform persisted and
+reloaded through the canonical project API—rather than create a parallel scene
+model. Pascal's
+[plugin architecture](https://github.com/pascalorg/editor/blob/main/wiki/architecture/plugin-authoring.md)
+is useful reference material for that evaluation.
+
+## Planned generated 3D provider boundary
+
+Tripo is available as an optional internal candidate-generation tool, not a
+current creator capability. Its staged evaluation and official documentation
+links are recorded in
+[`tripo-asset-generation.md`](tripo-asset-generation.md).
+
+When assisted asset generation reaches Phase 3, provider credentials and async
+jobs belong behind a backend adapter. Creators must be able to compare, accept,
+edit, replace, or reject candidates, and every accepted result must become a
+normal validated `MusicWorldProject` asset with provenance, input-rights
+declaration, cost, review status, and a non-generated fallback. No project may
+depend on an expiring provider URL.

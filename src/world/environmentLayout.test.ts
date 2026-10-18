@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createRockLayout, lightPathPhase, lightPathPoint } from './environmentLayout';
+import {
+  createRockLayout,
+  createMemoryGroveLayout,
+  createSkyStarPositions,
+  createTerrainReliefLayout,
+  journeyRoutePoint,
+  lightPathPhase,
+  lightPathPoint,
+  MEMORY_TREE_POSITION,
+  isRockClearOfJourney,
+} from './environmentLayout';
 
 test('rock layout is deterministic and stays outside the player clearing', () => {
   const first = createRockLayout(24);
@@ -8,7 +18,48 @@ test('rock layout is deterministic and stays outside the player clearing', () =>
   for (const rock of first) {
     const radius = Math.hypot(rock.position[0], rock.position[2]);
     assert.ok(radius >= 7 && radius <= 38);
+    assert.ok(isRockClearOfJourney(rock.position));
   }
+});
+
+test('rock exclusion zones keep landmark entrances and the main route readable', () => {
+  assert.equal(isRockClearOfJourney([0, 0, -5]), false);
+  assert.equal(isRockClearOfJourney([-8, 0, -3.8]), false);
+  assert.equal(isRockClearOfJourney([0, 0, -15]), false);
+  assert.equal(isRockClearOfJourney([18, 0, -9]), true);
+});
+
+test('memory grove forms sparse side clusters and leaves the navigation lane clear', () => {
+  const layout = createMemoryGroveLayout(20);
+  assert.deepEqual(layout, createMemoryGroveLayout(20));
+  for (const shard of layout) {
+    assert.ok(Math.abs(shard.position[0]) >= 5.8);
+    assert.ok(shard.position[2] <= -5.2);
+  }
+});
+
+test('terrain relief is deterministic and stays outside the authored journey route', () => {
+  const layout = createTerrainReliefLayout(14);
+  assert.deepEqual(layout, createTerrainReliefLayout(14));
+  for (const relief of layout) {
+    const distanceFromRoute = Math.abs(relief.position[0]);
+    const radialDistance = Math.hypot(relief.position[0], relief.position[2] + 7);
+    assert.ok(radialDistance >= 23 && radialDistance <= 42);
+    assert.ok(distanceFromRoute > 8 || relief.position[2] > 4 || relief.position[2] < -24);
+  }
+});
+
+test('Memory Tree stays outside the solid Archive footprint', () => {
+  const archivePosition = [-8, 0, -11] as const;
+  assert.ok(Math.abs(MEMORY_TREE_POSITION[0] - archivePosition[0]) > 6.2);
+  assert.ok(Math.abs(MEMORY_TREE_POSITION[2] - archivePosition[2]) > 0.5);
+});
+
+test('Archive route bends around the front of the solid hangar', () => {
+  const midpoint = journeyRoutePoint([0, 0, -5], 'archive', 0.5);
+  const end = journeyRoutePoint([0, 0, -5], 'archive', 1);
+  assert.ok(midpoint[0] > -0.2, `expected a right-side bend, received ${midpoint[0]}`);
+  assert.deepEqual(end, [-2, 0.09, -11]);
 });
 
 test('light path advances into the world with normalized phases', () => {
@@ -18,4 +69,16 @@ test('light path advances into the world with normalized phases', () => {
   assert.equal(last[2], -18.2);
   assert.equal(lightPathPhase(0, 12), 0);
   assert.equal(lightPathPhase(11, 12), 1);
+});
+
+test('sky stars stay out of the low-altitude playable space', () => {
+  const positions = createSkyStarPositions(520);
+  assert.deepEqual(positions, createSkyStarPositions(520));
+  for (let index = 0; index < positions.length; index += 3) {
+    assert.ok(positions[index + 1] >= 12);
+  }
+  const firstTenXGaps = Array.from({ length: 9 }, (_, index) =>
+    Math.abs(positions[(index + 1) * 3] - positions[index * 3]),
+  );
+  assert.ok(new Set(firstTenXGaps.map((gap) => gap.toFixed(2))).size >= 8);
 });

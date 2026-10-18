@@ -6,24 +6,33 @@ import InteractionSystem from '../interaction/InteractionSystem';
 import InteractionPoint from '../interaction/InteractionPoint';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { useWorldStore } from '../state/useWorldStore';
-import { useEffect } from 'react';
-import { demoWorld } from '../content/demoWorld';
+import { useEffect, useMemo } from 'react';
+import { compileSpatialScene } from '../schema';
 import { demoAdapter } from '../adapters/demoAdapter';
 import AudioWorld from '../audio/AudioWorld';
 import WorldPerformanceProbe from '../performance/WorldPerformanceProbe';
+import JourneyWorldGuide from './JourneyWorldGuide';
+import WorldInspectionProbe from '../runtime/WorldInspectionProbe';
+import { useProjectStore } from '../state/useProjectStore';
+import ArchiveDragControls from './ArchiveDragControls';
 
 export default function WorldScene() {
-  const registerInteractions = useInteractionStore((state) => state.registerInteractions);
+  const replaceInteractions = useInteractionStore((state) => state.replaceInteractions);
   const setAdapter = useInteractionStore((state) => state.setAdapter);
   const setActiveWorld = useWorldStore((state) => state.setActiveWorld);
   const interactionsMap = useInteractionStore((state) => state.interactions);
   const interactions = Array.from(interactionsMap.values());
+  const project = useProjectStore((state) => state.project);
+  const projectRevision = useProjectStore((state) => state.revision);
+  const editorMode = useProjectStore((state) => state.editorMode);
+  const world = useMemo(() => compileSpatialScene(project.scene), [project]);
 
   useEffect(() => {
-    registerInteractions(demoWorld.interactions);
+    replaceInteractions(world.interactions);
     setAdapter(demoAdapter);
-    setActiveWorld(demoWorld);
-  }, [registerInteractions, setAdapter, setActiveWorld]);
+    setActiveWorld(world);
+    useInteractionStore.getState().resetInteractionRuntime('world-replaced');
+  }, [projectRevision, replaceInteractions, setAdapter, setActiveWorld, world]);
 
   return (
     <>
@@ -32,10 +41,16 @@ export default function WorldScene() {
       <MusicReactiveWorld />
       <AudioWorld />
       <WorldPerformanceProbe />
+      <WorldInspectionProbe />
       <PlayerController />
       <InteractionSystem />
+      <JourneyWorldGuide />
+      {editorMode === 'drag' && <ArchiveDragControls />}
       {interactions.map((interaction) => (
-        <InteractionPoint key={interaction.id} definition={interaction} />
+        <InteractionPoint
+          key={`${interaction.id}:${interaction.position.join(',')}:${interaction.rotation?.join(',') ?? ''}:${interaction.scale?.join(',') ?? ''}`}
+          definition={interaction}
+        />
       ))}
     </>
   );

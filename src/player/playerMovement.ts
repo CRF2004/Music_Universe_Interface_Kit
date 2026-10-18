@@ -24,13 +24,17 @@ export function resolvePlayerMovement(
   input: PlayerMovementInput,
   cameraForward: THREE.Vector3,
   cameraUp: THREE.Vector3,
+  groundUp = new THREE.Vector3(0, 1, 0),
 ): PlayerMovementResult {
   const flatForward = cameraForward.clone();
-  flatForward.y = 0;
-  if (flatForward.lengthSq() < 0.001) flatForward.set(0, 0, -1);
+  flatForward.addScaledVector(groundUp, -flatForward.dot(groundUp));
+  if (flatForward.lengthSq() < 0.001) {
+    flatForward.copy(cameraUp).addScaledVector(groundUp, -cameraUp.dot(groundUp));
+    if (flatForward.lengthSq() < 0.001) flatForward.set(0, 0, -1).addScaledVector(groundUp, groundUp.z);
+  }
   flatForward.normalize();
 
-  const cameraRight = new THREE.Vector3().crossVectors(flatForward, cameraUp).normalize();
+  const cameraRight = new THREE.Vector3().crossVectors(flatForward, groundUp).normalize();
   const forwardInput = Number(input.forward) - Number(input.backward);
   const rightInput = Number(input.rightward) - Number(input.leftward);
   const direction = flatForward

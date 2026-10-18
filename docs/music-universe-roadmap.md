@@ -1,7 +1,7 @@
 # Music Universe Product Roadmap
 
 > Status: active product direction
-> Last updated: 2026-07-26
+> Last updated: 2026-10-18
 
 ## Vision
 
@@ -65,9 +65,21 @@ The repository already has:
 - licensed asset manifest, optimization pipeline, LOD utilities, and budgets;
 - unit tests for timeline, store, movement, asset resolution, LOD, and scenery layout.
 
-The current experience still uses one default normalized timeline for every
-track. It does not yet provide music analysis, project persistence, a creator
-editor, a public share page, or a complete mobile input path.
+The current working-state baseline documented in `NOW.md` also includes
+`MusicWorldProject` v2 with validated v1 migration, a named local project library, autosave/recovery,
+JSON import/export, and bounded Archive-position and cue-position editing.
+Phase 0/1 were accepted on 2026-08-19. The current Phase 2 Memory Journey
+creator slice was accepted and closed on 2026-10-05; broader authoring remains
+future scope. Phase 3 begins with local waveform/RMS analysis and editable sections.
+The 2026-10-18 version integration consolidates the published runtime, creator,
+planet, feedback and analysis branches plus remaining local tools and research.
+See `docs/validation/version-integration-2026-10-18.md` for reconciliation and
+fresh engineering checks. Owner acceptance of the local analysis slice remains pending.
+
+The experience still uses one default normalized timeline for every track.
+Tempo/semantic analysis, general scene/action editing, a public share page, and a
+complete mobile input path remain future capabilities. `NOW.md` owns current
+sequencing and links the reusable 3D tools adoption plan.
 
 ## Phase 0 — Baseline and reliability
 
@@ -218,7 +230,7 @@ Only after controlled publishing is stable:
 ## Explicitly deferred
 
 - multiplayer;
-- real spherical gravity;
+- additional planetary physics beyond the owner-authorized 2026-10-04 spherical-ground repair;
 - OS/file-system replacement features;
 - procedural cities and complex quest systems;
 - WebGPU requirement;

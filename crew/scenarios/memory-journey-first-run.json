@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "memory-journey-first-run",
+  "persona": "First-time desktop listener with no source or journey knowledge",
+  "productPromise": "Choose music, enter a world, and work out what the experience asks you to do.",
+  "viewport": { "width": 1280, "height": 720 },
+  "limits": {
+    "wallClockMinutes": 8,
+    "inputActions": 40,
+    "sameBlockerRetries": 3,
+    "frictionSeconds": 30
+  },
+  "tasks": [
+    "Enter the experience without external coaching",
+    "Identify movement and interaction controls",
+    "Find and act on the first objective",
+    "Continue until the journey visibly ends",
+    "Find and use replay"
+  ],
+  "acceptance": {
+    "firstObjectiveSecondsMaximum": 45,
+    "completesWithoutExternalHint": true,
+    "unknownBlockerSecondsMaximum": 30,
+    "replayDiscovered": true,
+    "blockerSeverityAllowed": false
+  }
+}

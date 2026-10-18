@@ -14,8 +14,13 @@ export interface WebGL2ProbeCanvas {
 
 export type CanvasFactory = () => WebGL2ProbeCanvas;
 
+export interface WorldStartupProbeOptions {
+  allowSoftwareRenderer?: boolean;
+}
+
 export function detectWorldStartupSupport(
   createCanvas?: CanvasFactory,
+  options: WorldStartupProbeOptions = {},
 ): WorldStartupSupport {
   const factory =
     createCanvas ??
@@ -29,7 +34,7 @@ export function detectWorldStartupSupport(
   try {
     const canvas = factory();
     const context = canvas.getContext('webgl2', {
-      failIfMajorPerformanceCaveat: true,
+      failIfMajorPerformanceCaveat: !options.allowSoftwareRenderer,
       powerPreference: 'high-performance',
     });
 
