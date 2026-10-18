@@ -370,7 +370,7 @@ try {
     recoveryUrl.searchParams.set('e2eFault', 'webgl2-unavailable');
     await client.send('Page.navigate', { url: recoveryUrl.toString() });
     await waitFor(
-      () => evaluate(`document.body.innerText.includes('This world needs WebGL 2')`),
+      () => evaluate(`Boolean(document.body?.innerText.includes('This world needs WebGL 2'))`),
       'WebGL unavailable recovery page',
     );
     check(
@@ -387,7 +387,7 @@ try {
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       await client.send('Page.reload');
       const stable = await waitFor(
-        () => evaluate(`document.body.innerText.includes('This world needs WebGL 2')`),
+        () => evaluate(`Boolean(document.body?.innerText.includes('This world needs WebGL 2'))`),
         `WebGL unavailable reload ${attempt}`,
       );
       check(`WebGL unavailable remains stable after reload ${attempt}`, stable === true);
@@ -396,7 +396,7 @@ try {
     recoveryUrl.searchParams.set('e2eFault', 'runtime-error');
     await client.send('Page.navigate', { url: recoveryUrl.toString() });
     await waitFor(
-      () => evaluate(`document.body.innerText.includes('The world could not finish loading')`),
+      () => evaluate(`Boolean(document.body?.innerText.includes('The world could not finish loading'))`),
       'runtime error recovery page',
     );
     check(
