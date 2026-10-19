@@ -1,6 +1,9 @@
 import { validateSpatialScene } from '../schema';
 import { environmentPayloadIssues } from './environmentEditing';
 import { analysisIssues } from '../music/analysis/musicAnalysis';
+import { tempoIssues } from '../music/analysis/musicTempo';
+import { worldAssetCatalog } from '../assets/worldAssetCatalog';
+import { getWorldLook, isWorldLookId } from '../world/worldLooks';
 import {
   MUSIC_WORLD_PROJECT_SCHEMA_VERSION,
   type MusicWorldProject,
@@ -92,7 +95,8 @@ export function validateMusicWorldProject(input: unknown, schemaVersion: 1 | 2 =
   if (!isRecord(input.track)) {
     issues.push({ path: '$.track', message: 'must be an object' });
   } else {
-    rejectUnknownKeys(input.track, ['source', 'assetId', 'title', 'artist', 'expectedDurationSeconds', 'file', 'rights', ...(schemaVersion === 2 ? ['analysis'] : [])], '$.track', issues);
+    rejectUnknownKeys(input.track, ['source', 'assetId', 'title', 'artist', 'expectedDurationSeconds', 'file', 'rights', ...(schemaVersion === 2 ? ['analysis', 'tempo'] : [])], '$.track', issues);
+    if (input.track.tempo !== undefined) tempoIssues(input.track.tempo, typeof input.track.expectedDurationSeconds === 'number' ? input.track.expectedDurationSeconds : undefined).forEach(message => issues.push({ path: '$.track.tempo', message }));
     if (input.track.analysis !== undefined) analysisIssues(input.track.analysis, typeof input.track.expectedDurationSeconds === 'number' ? input.track.expectedDurationSeconds : undefined).forEach(message => issues.push({ path: '$.track.analysis', message }));
     if (input.track.source !== 'asset' && input.track.source !== 'local-file') {
       issues.push({ path: '$.track.source', message: 'must be asset or local-file' });
@@ -203,6 +207,22 @@ export function validateMusicWorldProject(input: unknown, schemaVersion: 1 | 2 =
         assetIds.add(asset.id);
       }
     });
+  }
+
+  if (isRecord(input.scene) && Array.isArray(input.scene.objects) && Array.isArray(input.assets)) {
+    for (const [index, object] of input.scene.objects.entries()) {
+      if (!isRecord(object) || !isRecord(object.appearance) || typeof object.appearance.assetId !== 'string') continue;
+      const id = object.appearance.assetId;
+      const approved = worldAssetCatalog.find(asset => asset.id === id);
+      if (!approved || !input.assets.some(ref => isRecord(ref) && ref.id === id && ref.type === 'model' && ref.licenseRef === approved.licenseRef)) {
+        issues.push({ path: `$.scene.objects[${index}].appearance.assetId`, message: 'requires a matching licensed model in project.assets' });
+      }
+    }
+  }
+
+  if (isRecord(input.scene) && isRecord(input.scene.environment) && isWorldLookId(input.scene.environment.look)) {
+    const look = getWorldLook(input.scene.environment.look);
+    if (!Array.isArray(input.assets) || !input.assets.some(ref => isRecord(ref) && ref.id === look?.sceneryAssetId && ref.type === 'model' && ref.licenseRef === 'MIT')) issues.push({ path: '$.assets', message: 'world look requires its licensed scenery model' });
   }
 
   if (!isRecord(input.presentation)) {

@@ -14,13 +14,33 @@ produce separate incompatible formats.
 
 ## Current capability
 
+The Project Editor now starts with **搭建一个音乐世界**. Choose the Memory
+Journey template, name the world and choose an approved gate. Guide, terminal
+and Archive currently retain their one available reviewed model. Inspect the
+gate in the optional 3D preview, then create. A cancelable preflight checks the
+template's license references and the four selected main model files before
+creating a separate local draft and closing the editor for preview. Old drafts
+remain available. The default complete journey and demo-song option require no
+music-analysis or BPM setup. Model choices survive autosave and JSON round-trip.
+See [world assembly scope](world-assembly-workflow.zh-CN.md).
+
 The first Phase 3 local analysis slice adds waveform peaks, relative RMS level,
 and editable candidate sections in the Project Editor. Load a song, choose
 Analyze, rename/adjust/split/merge sections, then explicitly place an existing
 selected cue at a section start. Saved summaries/sections survive refresh and
 JSON export; reattach the original song to audition. See
-[local analysis scope](local-music-analysis.md). BPM and external metadata are
+[local analysis scope](local-music-analysis.md). Automatic BPM detection and external metadata are
 researched follow-ups in [tool selection](research/music-analysis-tools-2026-10-05.md).
+
+The music analysis panel also includes **节奏与拍点**. Enter 30–300 BPM or tap
+along at least four times, correct the suggestion with half/double or numeric
+input, set the first-beat time, and save. Select an existing timeline cue above,
+then explicitly align it to its nearest saved beat. Undo, autosave and JSON
+round-trip use the existing project workflow. Clearing tempo keeps authored cue
+positions. Saved tempo can be edited without reattaching audio; using the
+playhead requires the loaded song. No waveform analysis is required. This is a
+creator-confirmed constant tempo; variable-tempo songs can use section/manual
+cue editing. See [tempo contract](editable-music-tempo.md).
 
 The owner accepted and closed the current Memory Journey creator workflow on
 2026-10-05. Scope, latest validation, release and deferred limits are recorded in

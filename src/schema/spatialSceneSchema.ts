@@ -1,4 +1,5 @@
 export const SPATIAL_SCENE_SCHEMA_VERSION = '0.1' as const;
+import type { WorldLookId } from '../world/worldLooks';
 
 export type SpatialSceneSchemaVersion = typeof SPATIAL_SCENE_SCHEMA_VERSION;
 
@@ -96,6 +97,7 @@ export interface SpatialTerrainDefinition {
 }
 
 export interface SpatialSceneEnvironment {
+  look?: WorldLookId;
   theme: SpatialSceneTheme;
   terrain: SpatialTerrainDefinition;
   effects?: SpatialSceneEffects;
@@ -109,6 +111,7 @@ export interface SpatialTransformDefinition {
 }
 
 export interface SpatialAppearanceDefinition {
+  assetId?: string;
   modelUrl?: string;
   icon?: string;
   colorToken?: string;
@@ -185,6 +188,15 @@ export interface SpatialSceneProvenance {
 }
 
 export interface SpatialSceneDefinition {
+  windGarden?: {
+    version: 1;
+    pickupId: string;
+    wheelId: string;
+    checkpointId: string;
+    destinationId: string;
+    path: Vector3Tuple[];
+    responseMarkersSeconds: number[];
+  };
   version: SpatialSceneSchemaVersion;
   id: string;
   name: string;

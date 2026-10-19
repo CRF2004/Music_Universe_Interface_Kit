@@ -5,6 +5,7 @@ import { useWorldStore } from './state/useWorldStore';
 import { useExperienceSettingsStore } from './state/useExperienceSettingsStore';
 import OverlayRoot from './ui/OverlayRoot';
 import WorldCanvas from './world/WorldCanvas';
+import { useProjectStore } from './state/useProjectStore';
 
 const movementKeys = [
   ['ArrowUp', 'ArrowUp'],
@@ -41,6 +42,7 @@ function KeyboardFocusGuard() {
 }
 
 export default function ExperienceRoot() {
+  const look = useProjectStore(state => state.project.scene.environment.look);
   const setReducedEffects = useWorldStore((state) => state.setReducedEffects);
   const setHelpOpen = useWorldStore((state) => state.setHelpOpen);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
@@ -74,7 +76,7 @@ export default function ExperienceRoot() {
     <MotionConfig reducedMotion={reducedEffects ? 'always' : 'never'}>
       <KeyboardControls map={map}>
         <KeyboardFocusGuard />
-        <div className="relative h-screen w-full overflow-hidden">
+        <div className={`relative h-screen w-full overflow-hidden ${look === 'coastal-garden-v1' ? 'coastal-look' : ''}`}>
           <WorldCanvas />
           <OverlayRoot />
         </div>

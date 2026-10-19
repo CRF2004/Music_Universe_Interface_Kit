@@ -1,7 +1,8 @@
 import React from 'react';
 import { InteractionPointDefinition } from './interactionTypes';
 import RuntimeInteractionVisual from './RuntimeInteractionVisual';
-import { interactionVisualProfiles } from './visualProfiles';
+import { PickupWheel, FlowerbedWheel } from '../world/WindGardenVisuals';
+import { getInteractionVisualProfile, interactionVisualProfiles } from './visualProfiles';
 
 export type VisualComponent = React.FC<{ 
   definition: InteractionPointDefinition, 
@@ -56,7 +57,7 @@ const PortalFallback = ({ definition, onClick }: Parameters<VisualComponent>[0])
 
 const NPCVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
-    assetId="guide-astronaut"
+    assetId={getInteractionVisualProfile('npc', definition.visual.assetId).assetId ?? 'guide-astronaut'}
     targetHeight={interactionVisualProfiles.npc.targetHeight}
     colorToken={definition.visual.colorToken || '#42a5ff'}
     outline={definition.visual.outline ?? false}
@@ -67,7 +68,7 @@ const NPCVisual: VisualComponent = ({ definition, onClick }) => (
 
 const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
-    assetId="support-terminal"
+    assetId={getInteractionVisualProfile('phone-booth', definition.visual.assetId).assetId ?? 'support-terminal'}
     targetHeight={interactionVisualProfiles['phone-booth'].targetHeight}
     colorToken={definition.visual.colorToken || '#ff3b2f'}
     outline={definition.visual.outline ?? false}
@@ -78,7 +79,7 @@ const PhoneBoothVisual: VisualComponent = ({ definition, onClick }) => (
 
 const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
-    assetId="product-tower-hangar"
+    assetId={getInteractionVisualProfile('building', definition.visual.assetId).assetId ?? 'product-tower-hangar'}
     targetHeight={interactionVisualProfiles.building.targetHeight}
     colorToken={definition.visual.colorToken || '#9f63ff'}
     outline={definition.visual.outline ?? false}
@@ -89,11 +90,11 @@ const BuildingVisual: VisualComponent = ({ definition, onClick }) => (
 
 const PortalVisual: VisualComponent = ({ definition, onClick }) => (
   <RuntimeInteractionVisual
-    assetId="docs-portal-gate"
+    assetId={getInteractionVisualProfile('portal', definition.visual.assetId).assetId ?? 'docs-portal-gate'}
     targetHeight={interactionVisualProfiles.portal.targetHeight}
     colorToken={definition.visual.colorToken || '#4adb7d'}
     outline={definition.visual.outline ?? false}
-    emissive
+    emissive={getInteractionVisualProfile('portal', definition.visual.assetId).materialStyle !== 'natural'}
     onClick={onClick}
     fallback={<PortalFallback definition={definition} onClick={onClick} />}
   />
@@ -107,6 +108,9 @@ const CrateVisual: VisualComponent = ({ definition, onClick }) => (
 );
 
 export const visualRegistry: Record<string, VisualComponent> = {
+  'paper-pinwheel': PickupWheel,
+  'wind-flowerbed': FlowerbedWheel,
+  'wind-marker': () => null,
   npc: NPCVisual,
   'phone-booth': PhoneBoothVisual,
   building: BuildingVisual,

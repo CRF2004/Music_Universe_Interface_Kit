@@ -12,6 +12,7 @@ export default function MusicNarrationHUD() {
     <AnimatePresence mode="wait">
       {narration && subtitlesEnabled && !activePanelId && (
         <motion.div
+          data-music-narration
           key={narration}
           className="pointer-events-none fixed bottom-36 left-1/2 z-40 max-w-xl -translate-x-1/2 rounded-xl bg-black/70 px-6 py-3 text-center text-lg text-white backdrop-blur"
           initial={{ opacity: 0, y: 8 }}

@@ -167,7 +167,9 @@ function ArchiveBuildingResponse({
 }) {
   const root = useRef<Group>(null);
   const progress = useRef(awakened ? 1 : 0);
+  const coastal = useProjectStore(state => state.project.scene.environment.look === 'coastal-garden-v1');
   const accent = useRef(new Color('#9d78ff'));
+  accent.current.set(coastal ? '#e2c58b' : '#9d78ff');
   const transitionStart = useRef(performance.now());
   const transitionStartProgress = useRef(progress.current);
 
@@ -197,9 +199,9 @@ function ArchiveBuildingResponse({
           material.userData.archiveBaseIntensity = material.emissiveIntensity;
         }
         const baseEmissive = new Color(Number(material.userData.archiveBaseEmissive));
-        material.emissive.copy(baseEmissive).lerp(accent.current, progress.current * 0.78);
+        material.emissive.copy(baseEmissive).lerp(accent.current, progress.current * (coastal ? 0.12 : 0.78));
         material.emissiveIntensity =
-          Number(material.userData.archiveBaseIntensity) + progress.current * pulse;
+          Number(material.userData.archiveBaseIntensity) + progress.current * pulse * (coastal ? 0.15 : 1);
       });
     });
   });
@@ -304,29 +306,32 @@ function GuideCharacterResponse({
   active: boolean;
   children: React.ReactNode;
 }) {
+  const authoredLook = useProjectStore(state => state.project.scene.environment.look);
+  const talking = useInteractionStore(state => state.activePanelId === 'guide-dialog');
   const root = useRef<Group>(null);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
 
   useFrame(({ clock }, delta) => {
     if (!root.current) return;
-    const targetTilt = active ? -0.055 : 0;
+    if (authoredLook && reducedEffects) { root.current.rotation.x = 0; root.current.position.y = 0; return; }
+    const targetTilt = authoredLook && talking ? -.025 + Math.sin(clock.elapsedTime * 1.8) * .018 : active ? -0.055 : 0;
     root.current.rotation.x +=
       (targetTilt - root.current.rotation.x) * (1 - Math.exp(-5 * delta));
     root.current.position.y = reducedEffects
       ? 0
-      : Math.sin(clock.elapsedTime * 1.35) * (active ? 0.025 : 0.014);
+      : Math.sin(clock.elapsedTime * 1.35) * (authoredLook ? .006 : active ? 0.025 : 0.014);
   });
 
   return (
     <group ref={root} name="listener-guide-character" rotation={[0, Math.PI, 0]}>
       {children}
-      <GuideIdentity active={active} />
+      {!authoredLook && <GuideIdentity active={active} />}
     </group>
   );
 }
 
 function InteractionCollider({ definition }: Props) {
-  const profile = getInteractionVisualProfile(definition.visual.type).collider;
+  const profile = getInteractionVisualProfile(definition.visual.type, definition.visual.assetId).collider;
 
   if (profile.type === 'cuboid') {
     return <CuboidCollider args={profile.halfExtents} position={profile.position} />;
@@ -353,6 +358,7 @@ export default function InteractionPoint({ definition }: Props) {
   const isNearest = nearestId === definition.id;
   const bloom = useMusicRuntimeStore((state) => state.environment.bloomIntensity ?? 0.25);
   const isArchive = definition.id === 'memory-archive';
+  const authoredLook = useProjectStore(state => state.project.scene.environment.look);
   const isGuide = definition.id === 'npc-guide';
   const archiveAwakened = useInteractionStore(
     (state) => state.interactionFlags['memory.received'] === true,
@@ -361,6 +367,7 @@ export default function InteractionPoint({ definition }: Props) {
   const handlePointerClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     if (useProjectStore.getState().editorMode !== null) return;
+    if (useProjectStore.getState().project.scene.windGarden && nearestId !== definition.id) return;
     if (consumePointerLockAcquisitionClick()) return;
     InteractionDispatcher.executeInteraction(definition.id, 'click');
   };
@@ -376,7 +383,7 @@ export default function InteractionPoint({ definition }: Props) {
       </RigidBody>
       </group>
       <group name={`${definition.id}-visual`} position={previewPosition ?? definition.position} rotation={previewRotation} scale={definition.scale}>
-      {isArchive && radius !== null && <mesh position={[0, -0.7, 0]} receiveShadow><boxGeometry args={[10.6, 1.4, 14.4]} /><meshStandardMaterial color="#51465f" roughness={0.95} /></mesh>}
+      {isArchive && radius !== null && <mesh position={[0, -0.7, 0]} receiveShadow><boxGeometry args={[10.6, 1.4, 14.4]} /><meshStandardMaterial color={authoredLook ? "#969477" : "#51465f"} roughness={0.95} /></mesh>}
       {isArchive ? (
         <ArchiveBuildingResponse awakened={archiveAwakened}>
           <Visual definition={definition} onClick={handlePointerClick} />
@@ -388,12 +395,12 @@ export default function InteractionPoint({ definition }: Props) {
       ) : (
         <Visual definition={definition} onClick={handlePointerClick} />
       )}
-      {isArchive && <ArchiveFacadeDetail awakened={archiveAwakened} />}
-      {isArchive && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
+      {isArchive && !authoredLook && <ArchiveFacadeDetail awakened={archiveAwakened} />}
+      {isArchive && !authoredLook && <ArchiveAwakening awakened={archiveAwakened} bloom={bloom} />}
       {isArchive && <MemoryRecoveryFeedback />}
 
       {/* Label */}
-      <Html
+      {!authoredLook && <Html
         position={[0, definition.visual.type === 'building' ? 6 : 2.5, 0]}
         center
         distanceFactor={10}
@@ -405,7 +412,7 @@ export default function InteractionPoint({ definition }: Props) {
             {definition.label}
           </div>
         </div>
-      </Html>
+      </Html>}
       </group>
     </>
   );

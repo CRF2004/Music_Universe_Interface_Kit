@@ -1,0 +1,30 @@
+async (page) => {
+  const button=name=>page.getByRole('button',{name,exact:true});
+  if(await button('Close project editor').isVisible())await button('Close project editor').click();
+  await page.reload();
+  await page.waitForFunction(()=>window.__MUSIC_UNIVERSE_E2E__ && window.__MUSIC_UNIVERSE_WORLD_E2E__);
+  await button('Enter Echo Garden').click();await button('Study music play pause').waitFor();await button('Study music play pause').click();
+  const place=async(x,z)=>{await page.evaluate(([x,z])=>{const r=60,h=.65,d=Math.hypot(x,z),s=d?Math.sin(d/r)*(r+h)/d:1;window.__MUSIC_UNIVERSE_E2E__.setPlayerTransform([x*s,Math.cos(d/r)*(r+h)-r,z*s],Math.PI);},[x,z]);await page.waitForTimeout(500);};
+  const trigger=id=>page.evaluate(id=>window.__MUSIC_UNIVERSE_WORLD_E2E__.triggerInteraction(id),id);
+  await place(0,-3);if(!await trigger('npc-guide'))throw new Error('Guide unreachable');await button('我去看看').click();
+  await place(-2,-11);if(!await trigger('memory-archive'))throw new Error('Archive unreachable');await button('带走这段记忆').click();
+  const duration=Number(await page.getByLabel('Study music progress',{exact:true}).getAttribute('max'));
+  await page.getByLabel('Study music progress',{exact:true}).evaluate((el,t)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el,String(t));el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},duration-.4);
+  await button('Study music play pause').click();await page.waitForTimeout(1800);
+  await place(0,-13);if(!await trigger('departure-gate'))throw new Error('Gate unavailable after natural ending');
+  await page.setViewportSize({width:800,height:600});
+  await page.waitForTimeout(1700);
+  if(!await page.getByRole('dialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&el.scrollWidth<=el.clientWidth;}))throw new Error('Ending overflows compact viewport');
+  await page.screenshot({path:'output/playwright/coastal-ending-edge/compact-ending.png'});
+  await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'hidden'});
+  if(await button('Study reduced effects').getAttribute('aria-pressed')!=='true')await button('Study reduced effects').click();
+  if(!await trigger('departure-gate'))throw new Error('Ending cannot reopen');
+  await page.waitForTimeout(600);await page.screenshot({path:'output/playwright/coastal-ending-edge/reduced-ending.png'});
+  await button('Restart garden journey').click();await page.getByRole('dialog').waitFor({state:'hidden'});await page.waitForTimeout(800);
+  const snapshot=await page.evaluate(()=>window.__MUSIC_UNIVERSE_WORLD_E2E__.getSnapshot());
+  if(snapshot.flags['journey.completed']===true || snapshot.flags['world.departureGateOpen']===true || Math.hypot(snapshot.playerPosition[0],snapshot.playerPosition[2])>1)throw new Error('Natural-ending restart failed to reset journey');
+  if(Number(await page.getByLabel('Study music progress',{exact:true}).inputValue())>3 || !(await button('Study music play pause').textContent()).includes('Ⅱ'))throw new Error('Natural-ending restart failed to play');
+  await button('Study music play pause').click();
+  await place(0,-3);await page.keyboard.press('e');await button('我去看看').waitFor();
+  return {status:'passed',checks:['compact ending fits','Escape stays in completed world','reduced-effects ending inspected','restart after natural ending resets music, flags and position','keeper can be contacted again with E']};
+}

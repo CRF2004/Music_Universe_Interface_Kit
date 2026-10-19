@@ -1,6 +1,6 @@
 # NOW — Music Universe project schema and creator workflow
 
-> Last updated: 2026-10-18
+> Last updated: 2026-10-19
 > Phase 0/1 acceptance baseline: `b7f08b6 feat: refine player proportions and gait`
 
 ## Current phase
@@ -8,6 +8,40 @@
 Roadmap Phase 2: the current Memory Journey project/schema and creator workflow
 slice is accepted and closed by the owner on 2026-10-05. Phase 3 starts with
 the owner-authorized local waveform/RMS analysis and editable section slice.
+On 2026-10-18 the owner authorized continuing with editable tempo suggestions
+and manual fallback. A bounded BPM-input/tap-tempo and explicit cue-alignment
+slice is implemented; product acceptance of the analysis/tempo workflow remains
+pending. See [tempo scope](docs/editable-music-tempo.md).
+The owner redirected current work on 2026-10-18 to **choose a template and
+assets, then assemble a complete world**. Pause further music-editor expansion.
+The next outcome is the bounded world-assembly workflow below; existing
+analysis/tempo work remains available without requiring further music editing
+to start world building.
+The owner then requested an authored demo against the Messenger reference before
+accepting the assembly workflow. Current priority is the Echo Garden visual study
+and an evidence-based workflow assessment; broader builder controls remain paused.
+See [study scope and assessment](docs/echo-garden-study.md). Visual acceptance is
+still pending; passing engineering checks does not close that quality gate.
+The owner authorized Childhood integration as a full-length 2:17 short audition.
+The new study and explicit `score=childhood-v1` draft use this track with authored
+64 s memory / 96 s gate / 124.5 s afterglow cues. Existing drafts remain available.
+See [audition evidence](docs/validation/echo-garden-childhood-2026-10-18.md);
+The owner accepted the current audition on 2026-10-19. Ending/restart engineering
+checks also pass; see [ending evidence](docs/validation/echo-garden-ending-2026-10-19.md).
+Visual acceptance and the product's 3–5 minute target remain open.
+On 2026-10-19 the owner explicitly deferred editability as the next priority and
+requested deeper planet-production research plus music-specific playable design.
+The active sequence is a bounded music/gameplay prototype, then a complete
+authored experience, then reusable creation controls. Research and executable
+M0–M4 task cards: [planet and music experience plan](docs/research/planet-music-experience-2026-10-19.zh-CN.md).
+The first wind/petal-path slice is implemented in an independent project at
+`?study=coastal&play=wind-v1`: find/carry, plant/turn, reveal path, walk through
+the midpoint into the pavilion, then restart. 129 tests, lint/build and 18 checks
+per Chrome/Edge pass; the original garden's 35 Chrome checks also pass.
+See [M1 evidence and limits](docs/validation/childhood-wind-m1-2026-10-19.md).
+Player enjoyment, fine phrase annotation and final art acceptance remain open;
+waterwheel/full-song mechanics are still design hypotheses. Next: M1 owner
+playtest before M2 expansion; creator editing controls remain deferred.
 See [the closeout decision](docs/validation/creator-workflow-closeout-2026-10-05.md).
 
 The project owner accepted the Phase 0 reliability baseline and Phase 1 Memory
@@ -117,7 +151,60 @@ completed experience preflight or target-device result.
 
 ## Current priorities
 
-### P0 — Versioned project boundary
+### P0 — Music-specific playability and planet-production workflow
+
+Owner direction on 2026-10-19: prioritize deeper planet-production research and
+a playable experience tailored to the chosen music. Editing controls are deferred.
+Current outcome: prove one 30–45 second find/operate/world-response slice before
+expanding the world. Keep the existing audition as a separate draft; retain the
+60 m sphere for the first prototype. See the research plan above for evidence,
+music-state semantics, production steps and the M0–M4 acceptance gates.
+M1 implementation is ready for owner playtest. Fine M0 phrase annotation remains
+open; broaden the route/second interaction only after the playtest. Broader
+editor/generation work remains paused.
+
+### Context — Authored demo and prior assembly slice
+
+First evaluate the playable Echo Garden study (`?study=coastal`) against the
+owner's Messenger reference. The study adds original scenery/atelier assets,
+a validated versioned visual kit, authored coastal colors/camera and a quiet HUD.
+Its purpose is to expose the manual art work the present builder cannot perform.
+Keep this quality review ahead of additional music/editor/generation controls.
+The complete scene dressing is currently one baked GLB; individual trees/houses,
+lighting and camera direction are not freely authored through the builder UI.
+
+Owner-selected outcome: choose a template and approved assets, create a complete
+playable world, preview it, save/export it and reopen the same result.
+Scope and the audit are in
+[world assembly workflow](docs/world-assembly-workflow.zh-CN.md).
+
+Current engineering asset optimization/build and site deployment exist.
+The first creator-facing assembly slice is implemented: Memory Journey template,
+named world creation, approved role catalog, reviewed gate choices with model preview,
+cancelable asset/rights preflight and separate saved drafts. Explicit validated
+asset IDs now drive the main interaction models and their reviewed collision
+profiles. Additional musical landmarks still use component-owned placements.
+See [validation](docs/validation/world-assembly-2026-10-18.md).
+
+Implemented first slice (product acceptance pending):
+
+1. Uses the existing accepted Memory Journey as the first template, retaining its
+   beginning, interactions and ending. Keep music editing optional.
+2. Defines a small approved asset catalog with explicit compatible roles,
+   dimensions/collision profiles and provenance. Use existing accepted assets
+   first; generation candidates retain their review boundary.
+3. Template/asset choices produce one validated MusicWorldProject that
+   drives rendering and collision; preview, autosave and JSON round-trip must
+   preserve those choices. Unsupported or unavailable assets need actionable
+   errors or a documented compatible fallback. Selection is bounded to the
+   approved catalog; general asset import and arbitrary scene assembly remain
+   outside this first slice.
+
+Do not expand BPM research, music-editing controls, multiple narrative templates,
+arbitrary model uploads, paid generation, cloud building or publishing in this
+slice. No new generation spend is authorized by this priority change.
+
+### Accepted baseline — Versioned project boundary
 
 Completed:
 
@@ -148,7 +235,7 @@ Completed:
     switching cancels pending audio and clears playback; failed replacements
     preserve the previous song. Audio bytes stay on the user's computer.
 
-Next:
+Acceptance context and music follow-up (after the world-assembly priority):
 
 Owner-authorized acceptance repairs are implemented: a 60m-radius spherical planet,
 radial gravity, tangent movement, local camera orientation, surface Archive dragging,
@@ -161,7 +248,8 @@ immersive HUD and final 68-degree camera on 2026-10-05. Evidence: [repair accept
    through optional validated `track.analysis`: rename, boundary adjustment,
    split/merge, undo/redo, autosave/export/reopen and explicit existing-cue
    placement. See [scope and contract](docs/local-music-analysis.md). Owner visual
-   acceptance is next. The owner-authorized BPM detector evaluation is complete:
+   acceptance remains pending and is no longer the next development blocker.
+   The owner-authorized BPM detector evaluation is complete:
    web-audio-beat-detector 8.2.39 fails the exact-tempo accuracy gate (frequent
    half/double choices); keep it isolated. The fixed 100-loop expert-labelled
    FSLD comparison also fails: 31% exact default / 17% wide at 12 kHz, identical
@@ -172,7 +260,11 @@ immersive HUD and final 68-degree camera on 2026-10-05. Evidence: [repair accept
    53/100 FSLD loops, 21/22 ARTBeaT reference windows. The short-loop accuracy
    and ≤2-second CPU gates fail; model ~81 MB and native dependencies ~1.36 GB.
    Retain it for beat/tempo-map investigation after execution/rights review.
-   Editable tempo suggestions with manual fallback remain a separate slice. Evidence:
+   Editable tempo is now a separate implemented slice: manual BPM, local tap
+   suggestions, first-beat offset, half/double controls, explicit nearest-beat cue
+   alignment, undo/redo and project persistence. No evaluated automatic detector
+   is adopted. See [scope](docs/editable-music-tempo.md) and
+   [validation](docs/validation/editable-music-tempo-2026-10-18.md). Evidence:
    [BPM evaluation](docs/validation/bpm-tool-accuracy-2026-10-05.md) and
    [expert-labelled comparison](docs/validation/annotated-bpm-accuracy-2026-10-05.md) and
    [Percival comparison](docs/validation/percival-bpm-accuracy-2026-10-05.md) and

@@ -3,6 +3,7 @@ import { interactionEventBus } from '../interaction/interactionRuntime';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { useWorldStore } from '../state/useWorldStore';
 import { useExplorationMode } from './useExplorationMode';
+import { useProjectStore } from '../state/useProjectStore';
 
 function blockedMessage(interactionId: string, flags: Readonly<Record<string, unknown>>) {
   if (interactionId === 'memory-archive' && flags['journey.started'] !== true) {
@@ -18,6 +19,8 @@ function blockedMessage(interactionId: string, flags: Readonly<Record<string, un
 }
 
 export default function JourneyRuntimeHUD() {
+  const coastal = useProjectStore(state => state.project.scene.environment.look === 'coastal-garden-v1');
+  const wind = useProjectStore(state => state.project.scene.windGarden);
   const exploring = useExplorationMode();
   const [feedback, setFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const flags = useInteractionStore((state) => state.interactionFlags);
@@ -30,8 +33,12 @@ export default function JourneyRuntimeHUD() {
     () =>
       interactionEventBus.subscribe((event) => {
         if (event.type === 'interaction.blocked') {
+          if (wind) return; // The persistent wind objective explains the required next action.
           setFeedback({
-            message: blockedMessage(event.interactionId, useInteractionStore.getState().interactionFlags),
+            message: coastal
+              ? event.interactionId === 'memory-archive' ? '先与守园人交谈，再去工坊取回记忆。'
+                : useInteractionStore.getState().interactionFlags['memory.received'] !== true ? '请先去记忆工坊，带上那段回声。' : '门还在听。等音乐走到归途，它就会打开。'
+              : blockedMessage(event.interactionId, useInteractionStore.getState().interactionFlags),
             success: false,
           });
           return;
@@ -41,6 +48,7 @@ export default function JourneyRuntimeHUD() {
           return;
         }
         if (event.type !== 'interaction.flag-changed' || event.value !== true) return;
+        if (coastal) return; // The study's persistent objective already reflects these flags.
         const messages: Record<string, string> = {
           'journey.started': 'Journey accepted — follow the violet trail to the Memory Archive.',
           'memory.received': 'Memory recovered — the green signal marks the Departure Gate.',
@@ -49,7 +57,7 @@ export default function JourneyRuntimeHUD() {
         const message = messages[event.key];
         if (message) setFeedback({ message, success: true });
       }),
-    [],
+    [coastal, wind],
   );
 
   useEffect(() => {
@@ -125,6 +133,7 @@ export default function JourneyRuntimeHUD() {
       {exploring && <p className="pointer-events-none fixed bottom-4 right-5 text-xs text-white/70">Esc · controls</p>}
 
       <div
+        data-journey-feedback
         aria-atomic="true"
         aria-live="polite"
         className="pointer-events-none fixed left-1/2 top-24 z-[80] w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2"
@@ -154,10 +163,10 @@ export default function JourneyRuntimeHUD() {
           >
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-comic-blue">Memory Journey</p>
             <h1 id="journey-welcome-title" className="mt-2 font-display text-4xl font-black">
-              Carry one memory home.
+              {wind ? '把风带回来。' : coastal ? '带一段回声回家。' : 'Carry one memory home.'}
             </h1>
             <p className="mt-4 text-lg leading-relaxed">
-              Meet the Guide, recover the Archive’s memory, and follow the music to the Departure Gate.
+              {wind ? '找到长椅旁的纸风车，带到圆形花圃。按 E 插上、转动底座，等花瓣显出小路，再走进花亭。音乐结束后仍可继续。' : coastal ? '先与守园人交谈，再去左侧的记忆工坊。带上记忆，等音乐为归途开门。' : 'Meet the Guide, recover the Archive’s memory, and follow the music to the Departure Gate.'}
             </p>
             <ul className="mt-5 grid gap-2 sm:grid-cols-2">
               <li><strong>Move:</strong> WASD / arrows</li>
@@ -175,7 +184,7 @@ export default function JourneyRuntimeHUD() {
                 setHelpOpen(false);
               }}
             >
-              Enter the world
+              {coastal ? '回到花园' : 'Enter the world'}
             </button>
           </section>
         </div>

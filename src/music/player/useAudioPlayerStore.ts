@@ -5,6 +5,9 @@ import type { AudioLoadStatus, LocalAudioTrack } from './audioUploadTypes';
 import { projectTrackKey, useProjectStore } from '../../state/useProjectStore';
 import type { MusicWorldProjectTrack } from '../../project/musicWorldProject';
 import { assertMatchingAudio, identifyAudioFile, localTrackRecord } from './projectAudioIdentity';
+import { useMusicRuntimeStore } from '../runtime/useMusicRuntimeStore';
+import { compileNormalizedMusicTimeline } from '../musicTimeline';
+import { replayMusicTimeline } from '../runtime/musicExperienceRuntime';
 
 let player = new LocalAudioPlayer();
 let requestVersion = 0;
@@ -30,6 +33,7 @@ interface AudioStore {
   cancelAnalysis: () => void;
   load: (file: File, options?: { assetTrack?: MusicWorldProjectTrack; reattach?: boolean }) => Promise<void>;
   play: () => Promise<void>;
+  restartJourney: () => Promise<void>;
   pause: () => void;
   seek: (seconds: number) => void;
   clear: () => void;
@@ -156,6 +160,19 @@ export const useAudioPlayerStore = create<AudioStore>((set, get) => ({
         error: error instanceof Error ? error.message : 'Playback could not start.',
       });
     }
+  },
+
+  async restartJourney() {
+    if (!get().track || get().status !== 'ready') {
+      set({ error: '请先在音乐设置中载入歌曲，再重新开始。' });
+      return;
+    }
+    get().pause();
+    get().seek(0);
+    const cues = compileNormalizedMusicTimeline(useProjectStore.getState().project.timeline.cues, get().duration);
+    useMusicRuntimeStore.getState().setRuntime(replayMusicTimeline(cues, 0));
+    useInteractionStore.getState().resetInteractionRuntime('restart');
+    await get().play();
   },
 
   async analyze() {

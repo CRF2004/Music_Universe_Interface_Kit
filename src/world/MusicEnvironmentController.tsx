@@ -4,22 +4,26 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useWorldStore } from '../state/useWorldStore';
+import { useProjectStore } from '../state/useProjectStore';
+import { getWorldLook } from './worldLooks';
 
 export default function MusicEnvironmentController() {
   const environment = useMusicRuntimeStore((state) => state.environment);
   const scene = useThree((state) => state.scene);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
+  const lookId = useProjectStore(state => state.project.scene.environment.look);
+  const look = getWorldLook(lookId);
   const targetSky = useRef(new THREE.Color('#26375d'));
   const targetFog = useRef(new THREE.Color('#26375d'));
   const currentBloom = useRef(0);
   const currentRain = useRef(0);
 
   useEffect(() => {
-    targetSky.current.set(environment.skyColor ?? '#26375d');
-    targetFog.current.set(environment.fogColor ?? environment.skyColor ?? '#26375d');
+    targetSky.current.set(environment.skyColor ?? (look ? '#a3ceca' : '#26375d'));
+    targetFog.current.set(environment.fogColor ?? environment.skyColor ?? (look ? '#c4d6c3' : '#26375d'));
     if (!(scene.background instanceof THREE.Color)) scene.background = targetSky.current.clone();
     if (!(scene.fog instanceof THREE.FogExp2)) scene.fog = new THREE.FogExp2(targetFog.current, 0);
-  }, [environment.fogColor, environment.skyColor, scene]);
+  }, [environment.fogColor, environment.skyColor, scene, look]);
 
   useEffect(
     () => () => {
@@ -54,9 +58,9 @@ export default function MusicEnvironmentController() {
       rainIntensity: rain,
     };
     scene.traverse((object) => {
-      if (object instanceof THREE.AmbientLight) object.intensity = 0.55 + bloom * 0.25;
+      if (object instanceof THREE.AmbientLight) object.intensity = (look?.ambient ?? .55) + bloom * 0.25;
       if (object instanceof THREE.DirectionalLight) {
-        object.intensity = 0.8 + bloom * 0.3 - rain * 0.15;
+        object.intensity = (look?.key ?? .8) + bloom * 0.3 - rain * 0.15;
       }
     });
   });

@@ -9,6 +9,10 @@ import { useProjectStore } from '../state/useProjectStore';
 import { planetRadius, surfaceUp, surfacePosition } from '../world/planetSurface';
 import { useWorldStore } from '../state/useWorldStore';
 import { useInteractionStore } from '../state/useInteractionStore';
+import { getWorldLook } from '../world/worldLooks';
+import { interactionEventBus } from '../interaction/interactionRuntime';
+import { PaperWheel } from '../world/WindGardenVisuals';
+import { WIND } from '../interaction/windGardenRuntime';
 
 interface MovementControls {
   forward: boolean;
@@ -40,10 +44,13 @@ type E2EWindow = Window & {
 };
 
 export default function PlayerController() {
+  const carryingWind = useInteractionStore(state => state.interactionFlags[WIND.carried] === true && state.interactionFlags[WIND.planted] !== true);
   const bodyRef = useRef<RapierRigidBody>(null);
   const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
   const spawn = useProjectStore((state) => state.project.scene.spawn ?? [0, 0, 0]);
   const radius = planetRadius(terrain);
+  const lookId = useProjectStore(state => state.project.scene.environment.look);
+  const coastal = Boolean(getWorldLook(lookId));
   const { world, rapier } = useRapier();
   const groundUp = useRef(new THREE.Vector3(0, 1, 0));
   const tangentVelocity = useRef(new THREE.Vector3());
@@ -81,6 +88,22 @@ export default function PlayerController() {
     typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('e2e'),
   );
   const e2eOwner = useRef(Symbol('player-e2e-owner'));
+
+  useEffect(() => interactionEventBus.subscribe(event => {
+    if (event.type !== 'interaction.runtime-reset' || event.reason !== 'restart') return;
+    const body = bodyRef.current;
+    if (!body) return;
+    const position = surfacePosition([spawn[0],spawn[1] + .7,spawn[2]],radius);
+    body.setTranslation({x:position[0],y:position[1],z:position[2]},true);
+    body.setLinvel({x:0,y:0,z:0},true);
+    body.setAngvel({x:0,y:0,z:0},true);
+    const up = surfaceUp(position,radius);
+    previousGroundUp.current.copy(up);
+    bodySurfaceFrame.current.setFromUnitVectors(new THREE.Vector3(0,1,0),up);
+    modelRef.current?.quaternion.copy(bodySurfaceFrame.current);
+    groundedFrames.current = 0;
+    e2eDrive.current = null;
+  }),[spawn,radius]);
 
   useEffect(() => {
     if (!e2eEnabled.current) return undefined;
@@ -257,11 +280,13 @@ export default function PlayerController() {
         userData={{ cameraOccluder: false }}
       >
         <group ref={bodyVisualRef}>
+        {carryingWind && <group name="carried-paper-wheel" position={[.35, .55, .25]} scale={.6}><PaperWheel /></group>}
         <mesh castShadow position={[0, 0.68, 0]}>
           <capsuleGeometry args={[0.24, 0.52, 8, 16]} />
-          <meshStandardMaterial color="#d83c50" roughness={0.48} metalness={0.08} />
+          <meshStandardMaterial color={coastal ? '#c9826c' : '#d83c50'} roughness={coastal ? .9 : .48} metalness={coastal ? 0 : .08} />
         </mesh>
         <group ref={headRef} position={[0, 1.2, 0]}>
+          {coastal && <group position={[0,.12,0]}><mesh castShadow><cylinderGeometry args={[.32,.33,.045,16]} /><meshStandardMaterial color="#d9c99d" roughness={1} /></mesh><mesh castShadow position={[0,.08,0]}><cylinderGeometry args={[.19,.26,.18,12]} /><meshStandardMaterial color="#e6d7b5" roughness={1} /></mesh><mesh position={[0,.025,0]}><cylinderGeometry args={[.26,.26,.035,12]} /><meshStandardMaterial color="#697859" roughness={1} /></mesh></group>}
           <mesh castShadow>
             <sphereGeometry args={[0.235, 18, 14]} />
             <meshStandardMaterial color="#f0d2bd" roughness={0.72} />
@@ -274,14 +299,14 @@ export default function PlayerController() {
             {[-0.085, 0.085].map((x) => (
               <mesh key={x} position={[x, 0, 0]}>
                 <sphereGeometry args={[0.032, 10, 8]} />
-                <meshStandardMaterial color="#b7e8ff" emissive="#4aaeff" emissiveIntensity={0.7} roughness={0.25} />
+                <meshStandardMaterial color={coastal ? '#304a42' : '#b7e8ff'} emissive="#4aaeff" emissiveIntensity={coastal ? 0 : .7} roughness={coastal ? .9 : .25} />
               </mesh>
             ))}
           </group>
         </group>
         <mesh castShadow position={[0, 0.69, -0.245]}>
           <boxGeometry args={[0.4, 0.5, 0.15]} />
-          <meshStandardMaterial color="#37466f" roughness={0.58} metalness={0.18} />
+          <meshStandardMaterial color={coastal ? '#9e835c' : '#37466f'} roughness={coastal ? .9 : .58} metalness={coastal ? 0 : .18} />
         </mesh>
         {[-1, 1].map((side) => (
           <group
@@ -291,7 +316,7 @@ export default function PlayerController() {
           >
             <mesh castShadow position={[0, -0.23, 0]}>
               <capsuleGeometry args={[0.07, 0.34, 6, 10]} />
-              <meshStandardMaterial color="#d83c50" roughness={0.5} />
+              <meshStandardMaterial color={coastal ? '#c9826c' : '#d83c50'} roughness={coastal ? .9 : .5} />
             </mesh>
           </group>
         ))}

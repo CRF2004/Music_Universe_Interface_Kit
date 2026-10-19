@@ -14,6 +14,7 @@ import {
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useWorldStore } from '../state/useWorldStore';
 import DepartureGateSequence from './DepartureGateSequence';
+import GardenGateLight from './GardenGateLight';
 import EnvironmentScenery from './EnvironmentScenery';
 import LightPath from './LightPath';
 import MemoryTree from './MemoryTree';
@@ -26,6 +27,8 @@ import RevealTransition from './RevealTransition';
 import SurfaceGroup from './SurfaceGroup';
 import { useProjectStore } from '../state/useProjectStore';
 import { planetRadius, surfacePosition, surfaceQuaternion } from './planetSurface';
+import { getWorldLook } from './worldLooks';
+import CoastalScenery from './CoastalScenery';
 
 const MAX_STAR_COUNT = 520;
 
@@ -138,6 +141,9 @@ function RainParticles({ intensity }: { intensity: number }) {
 }
 
 export default function MusicReactiveWorld() {
+  const lookId = useProjectStore(state => state.project.scene.environment.look);
+  const look = getWorldLook(lookId);
+  const gate = useProjectStore(state => state.project.scene.objects.find(object => object.id === 'departure-gate'));
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const runtimeStars = useMusicRuntimeStore((state) => state.environment.stars ?? 0);
   const runtimeRainIntensity = useMusicRuntimeStore((state) => state.environment.rainIntensity ?? 0);
@@ -152,36 +158,36 @@ export default function MusicReactiveWorld() {
 
   return (
     <group>
-      <EnvironmentScenery />
+      {look ? <CoastalScenery assetId={look.sceneryAssetId} /> : <EnvironmentScenery />}
       <StarField count={stars} />
       {!reducedEffects && <RainParticles intensity={rainIntensity} />}
       <SurfaceGroup name="memory-tree-landmark" position={MEMORY_TREE_POSITION}>
         <RevealTransition visible={memoryTreeVisible} duration={1.6} name="memory-tree-reveal">
           <MemoryTree />
-          <Html position={[0, 4.7, 0]} center>
+          {!look && <Html position={[0, 4.7, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Memory Tree
             </div>
-          </Html>
+          </Html>}
         </RevealTransition>
       </SurfaceGroup>
-      {lightPathVisible && (
+      {lightPathVisible && !look && (
         <group>
           <LightPath />
-          <Html position={[0, 0.8, -7]} center>
+          {!look && <Html position={[0, 0.8, -7]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Light Path
             </div>
-          </Html>
+          </Html>}
         </group>
       )}
-      <SurfaceGroup name="departure-gate-landmark" position={DEPARTURE_GATE_POSITION}>
-        <DepartureGateSequence
+      <SurfaceGroup name="departure-gate-landmark" position={look ? gate?.transform.position ?? DEPARTURE_GATE_POSITION : DEPARTURE_GATE_POSITION}>
+        {look?.gateStyle === 'arbor' ? <group rotation={gate?.transform.rotation} scale={gate?.transform.scale}><GardenGateLight charging={lightPathVisible} open={portalOpen} afterglow={gateAfterglow} /></group> : <DepartureGateSequence
           charging={lightPathVisible}
           open={portalOpen}
           afterglow={gateAfterglow}
-        />
-        {(lightPathVisible || portalOpen) && (
+        />}
+        {!look && (lightPathVisible || portalOpen) && (
           <Html position={[0, 4.75, 0]} center>
             <div className="whitespace-nowrap rounded-full bg-black/75 px-3 py-1 font-display text-sm font-bold text-white">
               Departure Gate

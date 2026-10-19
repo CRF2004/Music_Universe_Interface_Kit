@@ -58,6 +58,9 @@ export interface InteractionTriggerDefinition {
 }
 
 export type BuiltInVisualType =
+  | 'paper-pinwheel'
+  | 'wind-flowerbed'
+  | 'wind-marker'
   | 'npc'
   | 'phone-booth'
   | 'vehicle'
@@ -66,6 +69,7 @@ export type BuiltInVisualType =
   | 'crate'
 
 export interface InteractionVisualDefinition {
+  assetId?: string;
   type: BuiltInVisualType | (string & {})
   modelUrl?: string
   icon?: string

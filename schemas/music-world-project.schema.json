@@ -35,6 +35,7 @@
         "artist": { "type": "string" },
         "expectedDurationSeconds": { "type": "number", "exclusiveMinimum": 0 },
         "analysis": { "$ref": "#/$defs/musicAnalysis" },
+        "tempo": { "$ref": "#/$defs/musicTempo" },
         "file": {
           "type": "object", "additionalProperties": false,
           "required": ["name", "sizeBytes", "sha256"],
@@ -110,7 +111,40 @@
     "scene": {
       "type": "object",
       "required": ["version", "id", "name", "environment", "objects"],
-      "description": "Validated by the embedded SpatialScene 0.1 validator."
+      "description": "Validated by the embedded SpatialScene 0.1 validator. Optional object appearance.assetId selects an approved model compatible with object.type and requires a matching licensed model reference in project.assets.",
+      "properties": {
+        "windGarden": {
+          "type": "object", "additionalProperties": false,
+          "required": ["version", "pickupId", "wheelId", "checkpointId", "destinationId", "path", "responseMarkersSeconds"],
+          "properties": {
+            "version": { "const": 1 },
+            "pickupId": { "$ref": "#/$defs/nonEmptyString" },
+            "wheelId": { "$ref": "#/$defs/nonEmptyString" },
+            "checkpointId": { "$ref": "#/$defs/nonEmptyString" },
+            "destinationId": { "$ref": "#/$defs/nonEmptyString" },
+            "path": { "type": "array", "minItems": 3, "maxItems": 32, "items": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } } },
+            "responseMarkersSeconds": { "type": "array", "maxItems": 128, "items": { "type": "number", "minimum": 0 } }
+          },
+          "description": "Optional versioned Childhood wind-play slice. Object roles, sphere locality and marker ordering are additionally validated at runtime."
+        },
+        "environment": {
+          "type": "object",
+          "properties": { "look": { "enum": ["coastal-garden-v1"] } },
+          "description": "Optional versioned art kit. Coastal garden requires a 120 m-diameter sphere and its licensed model reference; enforced by runtime validation."
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "appearance": {
+                "type": "object",
+                "properties": { "assetId": { "type": "string", "minLength": 1 } }
+              }
+            }
+          }
+        }
+      }
     },
     "assets": {
       "type": "array",
@@ -138,6 +172,16 @@
     "extensions": { "type": "object" }
   },
   "$defs": {
+    "musicTempo": {
+      "type": "object", "additionalProperties": false,
+      "required": ["bpm", "offsetSeconds", "source"],
+      "description": "Creator-confirmed constant tempo. Runtime validation requires known song duration and offsetSeconds before song end.",
+      "properties": {
+        "bpm": { "type": "number", "minimum": 30, "maximum": 300 },
+        "offsetSeconds": { "type": "number", "minimum": 0 },
+        "source": { "enum": ["manual", "tap"] }
+      }
+    },
     "musicAnalysis": {
       "type": "object", "additionalProperties": false,
       "required": ["version", "method", "durationSeconds", "peaks", "rmsDb", "sections"],

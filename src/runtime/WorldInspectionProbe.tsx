@@ -59,6 +59,8 @@ interface WorldInspectionSnapshot {
     label: string;
     position: [number, number, number];
     radius: number;
+    assetId: string | null;
+    loadedAssetUrl: string | null;
     collider: ReturnType<typeof getInteractionVisualProfile>['collider'];
   }>;
 }
@@ -67,6 +69,11 @@ interface RevealVisualSnapshot {
   mounted: boolean;
   scale: number;
   position: [number, number, number];
+}
+
+function loadedAssetUrl(scene: THREE.Scene, id: string): string | null {
+  const url: unknown = scene.getObjectByName(`${id}-visual`)?.getObjectByName('loaded-interaction-model')?.userData.assetUrl;
+  return typeof url === 'string' ? url : null;
 }
 
 function revealSnapshot(
@@ -214,7 +221,9 @@ export default function WorldInspectionProbe() {
           label: interaction.label,
           position: interaction.position,
           radius: interaction.radius ?? 3,
-          collider: getInteractionVisualProfile(interaction.visual.type).collider,
+          assetId: getInteractionVisualProfile(interaction.visual.type, interaction.visual.assetId).assetId ?? null,
+          loadedAssetUrl: loadedAssetUrl(scene, interaction.id),
+          collider: getInteractionVisualProfile(interaction.visual.type, interaction.visual.assetId).collider,
         })) ?? [],
     };
   };
