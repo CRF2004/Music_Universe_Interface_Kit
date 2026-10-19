@@ -311,6 +311,83 @@
       }
     },
     {
+      "id": "memory-atelier",
+      "type": "model",
+      "source": "models/memory-atelier.glb",
+      "license": {
+        "spdx": "MIT",
+        "author": "Music Universe",
+        "provenance": "Original procedural archive architecture authored in scripts/generate-echo-garden.mjs; no reference-site geometry or textures used.",
+        "sourceUrl": "repo:scripts/generate-echo-garden.mjs",
+        "accessedAt": "2026-10-18",
+        "licenseVersion": "MIT",
+        "licenseFile": "assets/licenses/MIT.snapshot.md"
+      },
+      "build": { "compress": "meshopt", "textureFormat": "webp", "textureSize": 1024, "simplify": false }
+    },
+    {
+      "id": "coastal-garden",
+      "type": "model",
+      "source": "models/coastal-garden.glb",
+      "license": {
+        "spdx": "MIT",
+        "author": "Music Universe",
+        "provenance": "Original deterministic garden, houses, observatory, vegetation and path geometry authored in scripts/generate-echo-garden.mjs. Surface baked for the accepted 60 m planet.",
+        "sourceUrl": "repo:scripts/generate-echo-garden.mjs",
+        "accessedAt": "2026-10-18",
+        "licenseVersion": "MIT",
+        "licenseFile": "assets/licenses/MIT.snapshot.md"
+      },
+      "build": { "compress": "meshopt", "textureFormat": "webp", "textureSize": 1024, "simplify": false }
+    },
+    {
+      "id": "garden-keeper",
+      "type": "model",
+      "source": "models/garden-keeper.glb",
+      "license": {
+        "spdx": "MIT", "author": "Music Universe",
+        "provenance": "Original garden keeper character authored in scripts/generate-echo-garden.mjs; no external character geometry used.",
+        "sourceUrl": "repo:scripts/generate-echo-garden.mjs", "accessedAt": "2026-10-18",
+        "licenseVersion": "MIT", "licenseFile": "assets/licenses/MIT.snapshot.md"
+      },
+      "build": { "compress": "meshopt", "textureFormat": "webp", "textureSize": 1024, "simplify": false }
+    },
+    {
+      "id": "garden-listening-cabinet",
+      "type": "model",
+      "source": "models/garden-listening-cabinet.glb",
+      "license": {
+        "spdx": "MIT", "author": "Music Universe",
+        "provenance": "Original timber and ceramic listening cabinet authored in scripts/generate-echo-garden.mjs.",
+        "sourceUrl": "repo:scripts/generate-echo-garden.mjs", "accessedAt": "2026-10-18",
+        "licenseVersion": "MIT", "licenseFile": "assets/licenses/MIT.snapshot.md"
+      },
+      "build": { "compress": "meshopt", "textureFormat": "webp", "textureSize": 1024, "simplify": false }
+    },
+    {
+      "id": "garden-arbor",
+      "type": "model", "source": "models/garden-arbor.glb",
+      "license": {
+        "spdx": "MIT", "author": "Music Universe",
+        "provenance": "Original timber, foliage and flower arbor authored in scripts/generate-echo-garden.mjs.",
+        "sourceUrl": "repo:scripts/generate-echo-garden.mjs", "accessedAt": "2026-10-18",
+        "licenseVersion": "MIT", "licenseFile": "assets/licenses/MIT.snapshot.md"
+      },
+      "build": { "compress": "meshopt", "textureFormat": "webp", "textureSize": 1024, "simplify": false }
+    },
+    {
+      "id": "scott-buckley-childhood",
+      "type": "audio", "source": "audio/scott-buckley-childhood.mp3",
+      "license": {
+        "spdx": "LicenseRef-Scott-Buckley-Library", "author": "Scott Buckley",
+        "provenance": "Childhood full MP3 downloaded from the original artist page on 2026-10-18, verified SHA-256 and decoded in full; CC BY 4.0 declaration and accompanying site instructions reviewed for synchronized in-app use.",
+        "sourceUrl": "https://www.scottbuckley.com.au/library/childhood/", "accessedAt": "2026-10-18",
+        "licenseVersion": "Author-declared CC BY 4.0 and library usage instructions reviewed 2026-10-18",
+        "licenseFile": "assets/licenses/scott-buckley-childhood.snapshot.md"
+      },
+      "build": { "loudnessLufs": -16, "format": "ogg", "quality": 5 }
+    },
+    {
       "id": "pipeline-example-grid",
       "type": "texture",
       "source": "textures/pipeline-example-grid.svg",

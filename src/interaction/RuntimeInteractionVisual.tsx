@@ -30,7 +30,7 @@ export interface RuntimeInteractionVisualProps {
   fallback: ReactNode;
 }
 
-class InteractionAssetBoundary extends Component<
+export class InteractionAssetBoundary extends Component<
   { children: ReactNode; fallback: ReactNode; assetId: string },
   { failed: boolean }
 > {
@@ -141,7 +141,7 @@ function RuntimeInteractionModel({
   );
 
   return (
-    <group scale={scale}>
+    <group name="loaded-interaction-model" userData={{ assetUrl: url }} scale={scale}>
       <primitive object={instance} />
     </group>
   );
@@ -160,7 +160,7 @@ export default function RuntimeInteractionVisual({
   if (asset.status !== 'ready') return <>{fallback}</>;
 
   return (
-    <InteractionAssetBoundary assetId={assetId} fallback={fallback}>
+    <InteractionAssetBoundary key={assetId} assetId={assetId} fallback={fallback}>
       <group onClick={onClick}>
         <Suspense fallback={fallback}>
           <RuntimeInteractionModel

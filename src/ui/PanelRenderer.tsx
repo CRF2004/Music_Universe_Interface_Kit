@@ -1,6 +1,8 @@
 import React from 'react';
 import { useInteractionStore } from '../state/useInteractionStore';
 import { panelRegistry } from './panelRegistry';
+import { useProjectStore } from '../state/useProjectStore';
+import CoastalPanel, { coastalPanelCopy } from './CoastalPanel';
 
 interface Props {
   panelId: string;
@@ -10,6 +12,9 @@ interface Props {
 export default function PanelRenderer({ panelId, onClose }: Props) {
   const payload = useInteractionStore((state) => state.activePanelPayload);
   const activeAdapter = useInteractionStore((state) => state.activeAdapter);
+  const coastal = useProjectStore(state => state.project.scene.environment.look === 'coastal-garden-v1');
+  const authoredCopy = coastal ? coastalPanelCopy(panelId) : undefined;
+  if (authoredCopy) return <CoastalPanel content={authoredCopy} onClose={onClose} />;
   
   // 1. Try to get component from adapter
   let Panel = activeAdapter?.panels[panelId]?.component;

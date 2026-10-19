@@ -5,6 +5,7 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useMusicRuntimeStore } from '../music/runtime/useMusicRuntimeStore';
 import { useProjectStore } from '../state/useProjectStore';
 import { planetRadius } from './planetSurface';
+import { createCoastalGroundMaterial } from './coastalGroundMaterial';
 
 export default function CurvedWorld() {
   const activeWorld = useWorldStore((state) => state.activeWorld);
@@ -12,9 +13,11 @@ export default function CurvedWorld() {
   const groundColor = useMusicRuntimeStore((state) => state.environment.groundColor);
   const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
   const radius = planetRadius(terrain);
+  const look = useProjectStore(state => state.project.scene.environment.look);
 
   // Custom shader to bend the world
   const material = useMemo(() => {
+    if (look === 'coastal-garden-v1') return createCoastalGroundMaterial();
     return new THREE.ShaderMaterial({
       uniforms: {
         uColor: { value: new THREE.Color('#f7ead7') }, // paper color
@@ -77,15 +80,16 @@ export default function CurvedWorld() {
         }
       `,
     });
-  }, [curvature, radius]);
+  }, [curvature, radius, look]);
 
   useEffect(() => () => material.dispose(), [material]);
 
   useEffect(() => {
-    material.uniforms.uCurvature.value = curvature;
+    if (material instanceof THREE.ShaderMaterial) material.uniforms.uCurvature.value = curvature;
   }, [curvature, material]);
 
   useEffect(() => {
+    if (material instanceof THREE.MeshStandardMaterial) { material.color.set(groundColor ?? '#b8bf8b'); return; }
     material.uniforms.uColor.value.set(groundColor ?? '#f7ead7');
     material.uniforms.uAccent.value
       .set(groundColor ?? '#f7ead7')

@@ -8,6 +8,16 @@ import { validateMusicWorldProject } from './validateMusicWorldProject';
 import type { MusicWorldProject } from './musicWorldProject';
 
 describe('MusicWorldProject v2', () => {
+  it('round-trips optional tempo and rejects invalid tempo or missing song duration', () => {
+    const project: MusicWorldProject = structuredClone(defaultMusicWorldProject);
+    project.track.tempo = { bpm: 123.45, offsetSeconds: 1.2, source: 'tap' };
+    assert.deepEqual(importMusicWorldProject(exportMusicWorldProject(project)).track.tempo, project.track.tempo);
+    const invalid = { ...project, track: { ...project.track, tempo: { bpm: 0, offsetSeconds: 1.2, source: 'tap' } } };
+    assert.equal(validateMusicWorldProject(invalid).valid, false);
+    invalid.track.tempo.bpm = 120;
+    delete invalid.track.expectedDurationSeconds;
+    assert.equal(validateMusicWorldProject(invalid).valid, false);
+  });
   it('accepts and round-trips the default Memory Journey project', () => {
     const validation = validateMusicWorldProject(defaultMusicWorldProject);
     assert.deepEqual(validation, { valid: true, issues: [] });

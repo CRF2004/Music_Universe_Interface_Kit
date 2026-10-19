@@ -10,8 +10,12 @@ import MusicRuntimeController from '../music/runtime/MusicRuntimeController';
 import JourneyRuntimeHUD from './JourneyRuntimeHUD';
 import { useEffect, useRef } from 'react';
 import ProjectDraftController from '../project/ProjectDraftController';
+import CoastalStudyController from '../project/CoastalStudyController';
+import CoastalStudyHUD from './CoastalStudyHUD';
+import { useProjectStore } from '../state/useProjectStore';
 
 export default function OverlayRoot() {
+  const coastal = useProjectStore(state => state.project.scene.environment.look === 'coastal-garden-v1');
   const activePanelId = useInteractionStore((state) => state.activePanelId);
   const closePanel = useInteractionStore((state) => state.closePanel);
   const setCameraMode = useWorldStore((state) => state.setCameraMode);
@@ -32,7 +36,7 @@ export default function OverlayRoot() {
       if (event.key !== 'Tab' || !dialogRef.current) return;
       const focusable = Array.from(
         dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
       );
       if (focusable.length === 0) return;
@@ -60,21 +64,24 @@ export default function OverlayRoot() {
     <div className="fixed inset-0 pointer-events-none z-50">
       <Prompt />
       <ProjectDraftController />
-      <ActionDock />
+      <CoastalStudyController />
+      {coastal ? <CoastalStudyHUD /> : <ActionDock />}
       <MusicRuntimeController />
-      <MusicPlayerHUD />
+      {coastal ? <details className="coastal-audio"><summary>音乐设置</summary><MusicPlayerHUD /></details> : <MusicPlayerHUD />}
       <MusicNarrationHUD />
       <JourneyRuntimeHUD />
       <AnimatePresence>
         {activePanelId && (
           <motion.div
-            className="absolute inset-0 bg-ink/40 backdrop-blur-sm pointer-events-auto flex items-center justify-center p-4"
+            data-coastal-conversation={coastal && activePanelId === 'guide-dialog' ? true : undefined}
+            data-coastal-ending={coastal && activePanelId === 'journey-ending' ? true : undefined}
+            className="absolute inset-0 z-[95] bg-ink/40 backdrop-blur-sm pointer-events-auto flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <div ref={dialogRef} aria-modal="true" role="dialog" className="comic-panel max-h-[90vh] max-w-2xl w-full overflow-y-auto">
-              <button aria-label="Close dialog" className="comic-button mb-4 bg-white" onClick={handleClose}>Close</button>
+              <button aria-label="Close dialog" className="comic-button mb-4 bg-white" onClick={handleClose}>{coastal ? '关闭' : 'Close'}</button>
               <PanelRenderer panelId={activePanelId} onClose={handleClose} />
             </div>
           </motion.div>

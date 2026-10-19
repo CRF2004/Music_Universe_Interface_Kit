@@ -6,6 +6,17 @@ runtime manifest with content hashes.
 
 ## Quick start
 
+### Echo Garden authored study
+
+`node scripts/generate-echo-garden.mjs` deterministically regenerates the original
+`memory-atelier`, `coastal-garden`, `garden-keeper` and
+`garden-listening-cabinet` and `garden-arbor` source models. Run the ordinary asset build
+after regeneration. Their provenance, MIT snapshot and optimization settings are
+in the asset manifest. The atelier shares the reviewed building envelope; the
+garden is authored for a 60 m sphere and currently bakes decorative placements
+into one model. The versioned visual kit is required to reproduce its lighting,
+ground and camera. See [the practical assessment](echo-garden-study.md).
+
 ```bash
 npm run assets:validate
 npm run assets:build
@@ -35,6 +46,16 @@ tutorial URLs, commands, reference-image preparation, rights review, and staged
 product plan.
 
 ## Adding an asset
+
+Creator-facing selection uses the bounded catalog in
+`src/assets/worldAssetCatalog.ts`; it currently reuses accepted models only.
+Optional scene `appearance.assetId` must name a compatible catalog entry and a
+matching licensed project model reference. Render normalization and collision
+use `getInteractionVisualProfile(type, assetId)`. This does not authorize
+arbitrary uploaded models or move generation candidates into the runtime.
+The world-builder preflight resolves template licenses and verifies the four
+selected main model binaries against generated-manifest sizes and SHA-256.
+Audio and additional musical landmarks retain their existing loading paths.
 
 1. Put the source in `assets/source/models`, `textures`, or `audio`.
 2. Add an entry to `assets/asset-manifest.json`.

@@ -7,6 +7,9 @@ import { cameraPresets } from './cameraPresets';
 import { applyOrbitMouseDelta } from './thirdPersonCameraInput';
 import { useProjectStore } from '../state/useProjectStore';
 import { planetRadius, surfaceUp } from '../world/planetSurface';
+import { getWorldLook } from '../world/worldLooks';
+import { useInteractionStore } from '../state/useInteractionStore';
+import { interactionEventBus } from '../interaction/interactionRuntime';
 
 interface MaterialSnapshot {
   transparent: boolean;
@@ -31,7 +34,12 @@ export default function CameraRig() {
   const { camera, scene } = useThree();
   const currentMode = useWorldStore((state) => state.currentCameraMode);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
-  const preset = cameraPresets[currentMode] || cameraPresets.explore;
+  const lookId = useProjectStore(state => state.project.scene.environment.look);
+  const look = getWorldLook(lookId);
+  const panel = useInteractionStore(state => state.activePanelId);
+  const dialogue = look ? Object.entries(look.dialogue).find(([id]) => id === panel)?.[1] : undefined;
+  const basePreset = cameraPresets[currentMode] || cameraPresets.explore;
+  const preset = look && currentMode === 'explore' ? { ...basePreset, ...look.camera } : basePreset;
 
   const playerRef = useRef<THREE.Object3D | null>(null);
   const playerModelRef = useRef<THREE.Object3D | null>(null);
@@ -45,6 +53,13 @@ export default function CameraRig() {
   const orbitAngles = useRef({ yaw: Math.PI, pitch: 0.18 });
   const previousUp = useRef(new THREE.Vector3(0, 1, 0));
   const surfaceFrame = useRef(new THREE.Quaternion());
+
+  useEffect(() => interactionEventBus.subscribe(event => {
+    if (event.type !== 'interaction.runtime-reset' || event.reason !== 'restart') return;
+    orbitAngles.current = { yaw:Math.PI,pitch:.18 };
+    previousUp.current.set(0,1,0);
+    surfaceFrame.current.identity();
+  }),[]);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -105,6 +120,24 @@ export default function CameraRig() {
     const playerPos = playerRef.current.getWorldPosition(playerWorldPosition.current);
     const playerQuat = playerModelRef.current.getWorldQuaternion(playerWorldQuaternion.current);
     const radius = planetRadius(useProjectStore.getState().project.scene.environment.terrain);
+    const subject = dialogue ? scene.getObjectByName(`${dialogue.objectId}-visual`) : undefined;
+    if (dialogue && subject) {
+      restoreOccludedMaterials();
+      const origin = subject.getWorldPosition(new THREE.Vector3());
+      const orientation = subject.getWorldQuaternion(new THREE.Quaternion());
+      const position = new THREE.Vector3(...dialogue.position).applyQuaternion(orientation).add(origin);
+      const target = new THREE.Vector3(...dialogue.target).applyQuaternion(orientation).add(origin);
+      camera.up.copy(surfaceUp(origin.toArray(), radius));
+      if (reducedEffects) { camera.position.copy(position); lookAtTarget.current.copy(target); }
+      else { easing.damp3(camera.position, position, .32, dt); easing.damp3(lookAtTarget.current, target, .32, dt); }
+      camera.lookAt(lookAtTarget.current);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        if (reducedEffects) camera.fov = dialogue.fov;
+        else easing.damp(camera, 'fov', dialogue.fov, .32, dt);
+        camera.updateProjectionMatrix();
+      }
+      return;
+    }
     const up = surfaceUp([playerPos.x, playerPos.y, playerPos.z], radius);
     surfaceFrame.current.premultiply(new THREE.Quaternion().setFromUnitVectors(previousUp.current, up));
     previousUp.current.copy(up);

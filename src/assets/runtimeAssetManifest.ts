@@ -61,6 +61,9 @@ export function loadRuntimeAssetManifest() {
       throw new Error(`Asset manifest request failed with ${response.status}.`);
     }
     return (await response.json()) as RuntimeAssetManifest;
+  }).catch((error: unknown) => {
+    manifestPromise = undefined;
+    throw error;
   });
   return manifestPromise;
 }

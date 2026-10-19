@@ -19,6 +19,7 @@ export default function InteractionSystem() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat && useProjectStore.getState().project.scene.windGarden) return;
       if (useProjectStore.getState().editorMode !== null) return;
       const target = e.target;
       const editing =
@@ -61,6 +62,7 @@ export default function InteractionSystem() {
 
     interactions.forEach((item) => {
       if (!item.enabled) return;
+      if (!item.triggers.some(trigger => trigger.type === 'proximity' && trigger.enabled !== false)) return;
       
       const dist = surfaceDistance(
         [playerPosition.x, playerPosition.y, playerPosition.z],

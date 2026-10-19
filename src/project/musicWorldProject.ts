@@ -1,6 +1,7 @@
 import type { NormalizedMusicTimelineCue } from '../music';
 import type { JsonObject, SpatialSceneDefinition } from '../schema';
 import type { MusicAnalysis } from '../music/analysis/musicAnalysis';
+import type { MusicTempo } from '../music/analysis/musicTempo';
 
 export const MUSIC_WORLD_PROJECT_SCHEMA_VERSION = 2 as const;
 
@@ -14,6 +15,7 @@ export interface MusicWorldProjectMetadata {
 
 export interface MusicWorldProjectTrack {
   analysis?: MusicAnalysis;
+  tempo?: MusicTempo;
   source: 'asset' | 'local-file';
   assetId?: string;
   title: string;

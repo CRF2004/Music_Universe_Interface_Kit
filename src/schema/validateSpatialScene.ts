@@ -4,6 +4,8 @@ import {
   Vector2Tuple,
   Vector3Tuple,
 } from './spatialSceneSchema';
+import { findWorldAsset } from '../assets/worldAssetCatalog';
+import { isWorldLookId } from '../world/worldLooks';
 
 export interface SpatialSceneValidationIssue {
   path: string;
@@ -142,6 +144,27 @@ export function validateSpatialScene(input: unknown): SpatialSceneValidationResu
   requireNonEmptyString(input.id, '$.id', issues);
   requireNonEmptyString(input.name, '$.name', issues);
 
+  if (input.windGarden !== undefined) {
+    const config = input.windGarden;
+    const path = '$.windGarden';
+    if (!isRecord(config)) issues.push({ path, message: 'must be an object' });
+    else {
+      const keys = ['version', 'pickupId', 'wheelId', 'checkpointId', 'destinationId', 'path', 'responseMarkersSeconds'];
+      if (Object.keys(config).some(key => !keys.includes(key))) issues.push({ path, message: 'contains unsupported fields' });
+      if (config.version !== 1) issues.push({ path, message: 'requires version 1' });
+      if (!isRecord(input.environment) || input.environment.look !== 'coastal-garden-v1') issues.push({ path, message: 'requires the coastal garden look' });
+      const ids = ['pickupId', 'wheelId', 'checkpointId', 'destinationId'];
+      const types = ['paper-pinwheel', 'wind-flowerbed', 'wind-marker', 'wind-marker'];
+      ids.forEach((key, index) => {
+        const id = config[key];
+        if (typeof id !== 'string' || !Array.isArray(input.objects) || !input.objects.some(object => isRecord(object) && object.id === id && object.type === types[index])) issues.push({ path: `${path}.${key}`, message: `must reference a ${types[index]} scene object` });
+      });
+      if (new Set(ids.map(key => config[key])).size !== 4) issues.push({ path, message: 'interaction IDs must be distinct' });
+      if (!Array.isArray(config.path) || config.path.length < 3 || config.path.length > 32 || config.path.some(point => !isVector3(point) || Math.hypot(point[0], point[2]) > 80 || Math.abs(point[1]) > 2)) issues.push({ path: `${path}.path`, message: 'requires 3–32 local sphere points within 80 m and 2 m height' });
+      if (!Array.isArray(config.responseMarkersSeconds) || config.responseMarkersSeconds.length > 128 || config.responseMarkersSeconds.some((time, index, times) => !isFiniteNumber(time) || time < 0 || (index > 0 && time <= times[index - 1]))) issues.push({ path: `${path}.responseMarkersSeconds`, message: 'must be strictly increasing nonnegative seconds' });
+    }
+  }
+
   if (input.spawn !== undefined && !isVector3(input.spawn)) {
     issues.push({ path: '$.spawn', message: 'must be a finite [x, y, z] tuple' });
   }
@@ -149,6 +172,8 @@ export function validateSpatialScene(input: unknown): SpatialSceneValidationResu
   if (!isRecord(input.environment)) {
     issues.push({ path: '$.environment', message: 'must be an object' });
   } else {
+    if (input.environment.look !== undefined && !isWorldLookId(input.environment.look)) issues.push({ path: '$.environment.look', message: 'must name a supported versioned world look' });
+    if (input.environment.look === 'coastal-garden-v1' && (!isRecord(input.environment.terrain) || input.environment.terrain.type !== 'sphere' || !isVector2(input.environment.terrain.size) || input.environment.terrain.size[0] !== 120)) issues.push({ path: '$.environment.terrain', message: 'coastal-garden-v1 requires the 60 m sphere used by its authored scenery' });
     if (!THEMES.has(String(input.environment.theme))) {
       issues.push({ path: '$.environment.theme', message: 'is not a supported theme' });
     }
@@ -187,6 +212,10 @@ export function validateSpatialScene(input: unknown): SpatialSceneValidationResu
       requireNonEmptyString(object.id, `${objectPath}.id`, issues);
       requireNonEmptyString(object.type, `${objectPath}.type`, issues);
       requireNonEmptyString(object.label, `${objectPath}.label`, issues);
+      if (isRecord(object.appearance) && object.appearance.assetId !== undefined &&
+          (typeof object.appearance.assetId !== 'string' || !findWorldAsset(object.appearance.assetId, String(object.type)))) {
+        issues.push({ path: `${objectPath}.appearance.assetId`, message: 'must reference an approved asset compatible with this object type' });
+      }
 
       if (typeof object.id === 'string') {
         if (objectIds.has(object.id)) {

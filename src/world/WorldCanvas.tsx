@@ -5,6 +5,7 @@ import { useWorldStore } from '../state/useWorldStore';
 import { useInteractionStore } from '../state/useInteractionStore';
 import WorldStartupFallback from '../ui/WorldStartupFallback';
 import { useProjectStore } from '../state/useProjectStore';
+import { getWorldLook } from './worldLooks';
 
 const PhysicsWorld = lazy(() => import('./PhysicsWorld'));
 
@@ -40,6 +41,8 @@ export default function WorldCanvas() {
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const activePanelId = useInteractionStore((state) => state.activePanelId);
   const spherical = useProjectStore((state) => state.project.scene.environment.terrain.type === 'sphere');
+  const lookId = useProjectStore(state => state.project.scene.environment.look);
+  const look = getWorldLook(lookId);
   const rememberCanvas = useCallback(
     ({ gl }: { gl: { domElement: HTMLCanvasElement } }) => setCanvasElement(gl.domElement),
     [],
@@ -104,8 +107,8 @@ export default function WorldCanvas() {
           <PhysicsWorld paused={isPaused || editorMode === 'drag'} />
         </Suspense>
         <ambientLight intensity={0.85} />
-        {spherical && <hemisphereLight args={['#dce5ff', '#a998c3', 0.7]} />}
-        <directionalLight position={[10, 10, 5]} intensity={1.15} castShadow />
+        {spherical && <hemisphereLight args={[look?.skyLight ?? '#dce5ff', look?.bounceLight ?? '#a998c3', look ? 1.4 : .7]} />}
+        <directionalLight position={look ? [-12, 20, 10] : [10,10,5]} color={look?.keyColor ?? '#ffffff'} intensity={look?.key ?? 1.15} castShadow shadow-mapSize={look ? [2048,2048] : [512,512]} shadow-camera-left={look ? -35 : -5} shadow-camera-right={look ? 35 : 5} shadow-camera-top={look ? 30 : 5} shadow-camera-bottom={look ? -35 : -5} shadow-normalBias={look ? .05 : 0} shadow-bias={look ? -.0001 : 0} />
         <CameraRig />
       </Canvas>
     </div>

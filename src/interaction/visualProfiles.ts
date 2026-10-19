@@ -1,4 +1,5 @@
 import type { BuiltInVisualType } from './interactionTypes';
+import { findWorldAsset } from '../assets/worldAssetCatalog';
 
 export type InteractionColliderProfile =
   | {
@@ -15,6 +16,7 @@ export type InteractionColliderProfile =
   | { type: 'none' };
 
 export interface InteractionVisualProfile {
+  materialStyle?: 'natural';
   assetId?: string;
   targetHeight: number;
   collider: InteractionColliderProfile;
@@ -29,6 +31,9 @@ export const interactionVisualProfiles: Record<
   BuiltInVisualType,
   InteractionVisualProfile
 > = {
+  'paper-pinwheel': { targetHeight: 2, collider: { type: 'none' } },
+  'wind-flowerbed': { targetHeight: 2, collider: { type: 'cuboid', halfExtents: [.35, .2, .35], position: [0, .2, 0] } },
+  'wind-marker': { targetHeight: 0, collider: { type: 'none' } },
   npc: {
     assetId: 'guide-astronaut',
     targetHeight: 1.7,
@@ -81,7 +86,10 @@ export const interactionVisualProfiles: Record<
   },
 };
 
-export function getInteractionVisualProfile(type: string) {
-  return interactionVisualProfiles[type as BuiltInVisualType] ??
-    interactionVisualProfiles.crate;
+export function getInteractionVisualProfile(type: string, assetId?: string): InteractionVisualProfile {
+  const profile = Object.entries(interactionVisualProfiles).find(([key]) => key === type)?.[1] ?? interactionVisualProfiles.crate;
+  if (assetId === undefined) return profile;
+  const asset = findWorldAsset(assetId, type);
+  if (!asset) throw new Error(`Incompatible world asset: ${assetId} (${type})`);
+  return { ...profile, assetId, ...('materialStyle' in asset ? { materialStyle: asset.materialStyle } : {}) };
 }

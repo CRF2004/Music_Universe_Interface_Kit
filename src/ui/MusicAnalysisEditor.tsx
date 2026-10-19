@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { MusicAnalysis, MusicSection } from '../music/analysis/musicAnalysis';
 import { useAudioPlayerStore } from '../music/player/useAudioPlayerStore';
 import { projectTrackKey, useProjectStore } from '../state/useProjectStore';
+import MusicTempoEditor from './MusicTempoEditor';
 
 const timeLabel = (seconds: number) => `${Math.floor(seconds / 60)}:${(seconds % 60).toFixed(1).padStart(4, '0')}`;
 
@@ -86,5 +87,6 @@ export default function MusicAnalysisEditor({ cueId }: { cueId: string }) {
       </ol>
     </>}
     <p role={error ? 'alert' : 'status'} className={`mt-2 text-sm ${error ? 'text-red-700' : ''}`}>{error ?? message}</p>
+    <MusicTempoEditor key={`${project.id}:${projectTrackKey(project.track)}`} cueId={cueId} />
   </section>;
 }

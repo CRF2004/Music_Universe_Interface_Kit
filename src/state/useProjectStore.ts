@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { MusicAnalysis } from '../music/analysis/musicAnalysis';
+import type { MusicTempo } from '../music/analysis/musicTempo';
+import { buildWorldProject, type WorldBuildOptions } from '../project/worldBuilder';
 import { defaultMusicWorldProject } from '../content/defaultMusicWorldProject';
 import { editableEnvironmentKeys, environmentPayloadIssues, type EditableEnvironment } from '../project/environmentEditing';
 import {
@@ -17,6 +19,7 @@ export type ProjectDraftStatus = 'loading' | 'ready' | 'saving' | 'error';
 export type ProjectDraftEntry = StoredProjectDraft;
 
 type ProjectEdit =
+  | { kind: 'tempo'; trackKey: string; before: MusicTempo | undefined; after: MusicTempo | undefined }
   | { kind: 'analysis'; trackKey: string; before: MusicAnalysis | undefined; after: MusicAnalysis }
   | { kind: 'archive'; before: [number, number]; after: [number, number] }
   | { kind: 'environment'; cueId: string; actionIndex: number; before: EditableEnvironment; after: EditableEnvironment }
@@ -52,6 +55,7 @@ interface ProjectState {
   redo: () => void;
   hydrate: () => Promise<void>;
   createProject: () => void;
+  createWorld: (options: WorldBuildOptions) => boolean;
   duplicateProject: (projectId?: string) => void;
   renameProject: (projectId: string, title: string) => void;
   openProject: (projectId: string) => void;
@@ -62,6 +66,7 @@ interface ProjectState {
   updateCueEnvironment: (cueId: string, actionIndex: number, values: EditableEnvironment) => void;
   bindTrack: (projectId: string, track: MusicWorldProject['track']) => boolean;
   updateMusicAnalysis: (projectId: string, trackKey: string, analysis: MusicAnalysis) => boolean;
+  updateMusicTempo: (projectId: string, trackKey: string, tempo: MusicTempo | undefined) => boolean;
   importJson: (json: string) => { ok: true } | { ok: false; error: string };
   exportJson: () => string;
   resetToDefault: () => void;
@@ -76,7 +81,7 @@ function cloneProject(project: MusicWorldProject): MusicWorldProject {
 }
 
 export function projectTrackKey(track: MusicWorldProject['track']): string {
-  const { analysis: _analysis, ...identity } = track;
+  const { analysis: _analysis, tempo: _tempo, ...identity } = track;
   return JSON.stringify(identity);
 }
 
@@ -122,7 +127,12 @@ export const useProjectStore = create<ProjectState>((set, get) => {
   const applyEdit = (edit: ProjectEdit, direction: 'before' | 'after', history: boolean) => {
     const state = get();
     const project = cloneProject(state.project);
-    if (edit.kind === 'analysis') {
+    if (edit.kind === 'tempo') {
+      if (projectTrackKey(project.track) !== edit.trackKey) return;
+      const tempo = edit[direction];
+      if (tempo) project.track.tempo = structuredClone(tempo);
+      else delete project.track.tempo;
+    } else if (edit.kind === 'analysis') {
       if (projectTrackKey(project.track) !== edit.trackKey) return;
       if (edit[direction]) project.track.analysis = structuredClone(edit[direction]);
       else delete project.track.analysis;
@@ -206,6 +216,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       set({ status: 'loading', error: null });
       try {
         const restored = await loadProjectLibrary();
+        if (get().hydrated) return;
         let drafts: ProjectDraftEntry[];
         let activeProjectId: string;
         let createdAt: string | null = null;
@@ -221,14 +232,30 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         }
         const project = drafts.find((draft) => draft.project.id === activeProjectId)?.project;
         if (!project) throw new Error('The saved project library has no active project.');
+        if (get().hydrated) return;
         set({ project, drafts, activeProjectId, status: 'ready', hydrated: true, revision: 0, lastSavedAt: createdAt, error: null, ...emptyEditingState() });
       } catch (error) {
+        if (get().hydrated) return;
         set({
           status: 'error',
           hydrated: true,
           revision: 0,
           error: `Saved drafts could not be restored. The default project is still available. ${errorMessage(error)}`,
         });
+      }
+    },
+
+    createWorld: (options) => {
+      try {
+        const state = get();
+        const project = buildWorldProject(options);
+        project.id = uniqueProjectId('memory-world', state.drafts);
+        project.metadata.createdAt = project.metadata.updatedAt = new Date().toISOString();
+        set({ project, activeProjectId: project.id, ...emptyEditingState(), drafts: [...state.drafts, { project, deletedAt: null }], revision: state.revision + 1, status: 'ready', error: null });
+        return true;
+      } catch (error) {
+        set({ error: errorMessage(error), status: 'error' });
+        return false;
       }
     },
 
@@ -400,13 +427,21 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const project = changedProject(state.project);
         project.track = structuredClone(track);
         const validated = cloneProject(project);
-        const keepHistory = (edit: ProjectEdit) => edit.kind !== 'analysis';
+        const keepHistory = (edit: ProjectEdit) => edit.kind !== 'analysis' && edit.kind !== 'tempo';
         set({ project: validated, drafts: replaceDraftProject(state.drafts, validated), revision: state.revision + 1, status: 'ready', error: null, undoStack: state.undoStack.filter(keepHistory), redoStack: state.redoStack.filter(keepHistory) });
         return true;
       } catch (error) {
         set({ status: 'error', error: errorMessage(error) });
         return false;
       }
+    },
+
+    updateMusicTempo: (projectId, trackKey, tempo) => {
+      const state = get();
+      if (state.activeProjectId !== projectId || projectTrackKey(state.project.track) !== trackKey) return false;
+      if (JSON.stringify(state.project.track.tempo) === JSON.stringify(tempo)) return true;
+      applyEdit({ kind: 'tempo', trackKey, before: state.project.track.tempo, after: tempo ? structuredClone(tempo) : undefined }, 'after', true);
+      return get().project !== state.project;
     },
 
     updateMusicAnalysis: (projectId, trackKey, analysis) => {

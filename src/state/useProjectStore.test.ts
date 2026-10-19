@@ -7,6 +7,7 @@ import { compileNormalizedMusicTimeline } from '../music/musicTimeline';
 import { replayMusicTimeline } from '../music/runtime/musicExperienceRuntime';
 import type { SpatialNarrativeAction } from '../music/narrative/narrativeTypes';
 import { localTrackRecord } from '../music/player/projectAudioIdentity';
+import { projectTrackKey } from './useProjectStore';
 
 function environmentPayload(action: SpatialNarrativeAction) {
   if (action.type !== 'set-environment') throw new Error('Expected an environment action');
@@ -18,6 +19,45 @@ function freshDefault() {
 }
 
 describe('project draft state', () => {
+  it('creates a separate template world and preserves existing drafts on invalid input', () => {
+    const store = useProjectStore.getState();
+    const previous = store.project;
+    const count = store.drafts.length;
+    assert.equal(store.createWorld({ templateId: 'memory-journey', title: 'Planet', gateAssetId: 'bad' }), false);
+    assert.equal(useProjectStore.getState().project, previous);
+    assert.equal(useProjectStore.getState().drafts.length, count);
+    assert.equal(store.createWorld({ templateId: 'memory-journey', title: 'Planet', gateAssetId: 'departure-portal' }), true);
+    const next = useProjectStore.getState();
+    assert.equal(next.drafts.length, count + 1);
+    assert.equal(next.project.metadata.title, 'Planet');
+    assert.deepEqual(next.drafts.find(draft => draft.project.id === previous.id)?.project, previous);
+    assert.equal(importMusicWorldProject(next.exportJson()).scene.objects.find(object => object.id === 'departure-gate')?.appearance?.assetId, 'departure-portal');
+    store.createWorld({ templateId: 'memory-journey', title: 'Planet', gateAssetId: 'docs-portal-gate' });
+    assert.notEqual(useProjectStore.getState().activeProjectId, next.activeProjectId);
+  });
+  it('keeps tempo edits undoable, rejects stale/invalid edits and removes history on replacement', () => {
+    const store = useProjectStore.getState();
+    const key = projectTrackKey(store.project.track);
+    const tempo = { bpm: 120, offsetSeconds: .2, source: 'manual' as const };
+    assert.equal(store.updateMusicTempo(store.activeProjectId, key, tempo), true);
+    assert.equal(projectTrackKey(useProjectStore.getState().project.track), key);
+    assert.deepEqual(importMusicWorldProject(store.exportJson()).track.tempo, tempo);
+    store.undo(); assert.equal(useProjectStore.getState().project.track.tempo, undefined);
+    store.redo(); assert.deepEqual(useProjectStore.getState().project.track.tempo, tempo);
+    const before = useProjectStore.getState().project;
+    assert.equal(store.updateMusicTempo(store.activeProjectId, key, { ...tempo, bpm: 0 }), false);
+    assert.equal(useProjectStore.getState().project, before);
+    assert.equal(store.updateMusicTempo('stale', key, tempo), false);
+    assert.equal(store.updateMusicTempo(store.activeProjectId, 'stale-track', tempo), false);
+    assert.equal(store.updateMusicTempo(store.activeProjectId, key, undefined), true);
+    store.undo(); assert.deepEqual(useProjectStore.getState().project.track.tempo, tempo);
+    store.updateArchivePosition(-12, -15);
+    const replacement = localTrackRecord({ name: 'new.wav', sizeBytes: 44, sha256: 'b'.repeat(64) }, 60);
+    assert.equal(store.bindTrack(store.activeProjectId, replacement), true);
+    assert.equal(useProjectStore.getState().project.track.tempo, undefined);
+    store.undo(); assert.equal(useProjectStore.getState().project.track.tempo, undefined);
+    store.redo(); assert.equal(useProjectStore.getState().project.track.tempo, undefined);
+  });
   it('binds a validated song to one draft while preserving edits and rejecting stale or invalid updates', () => {
     const store = useProjectStore.getState();
     store.updateArchivePosition(-12, -15);

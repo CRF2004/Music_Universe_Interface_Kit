@@ -15,6 +15,7 @@ import JourneyWorldGuide from './JourneyWorldGuide';
 import WorldInspectionProbe from '../runtime/WorldInspectionProbe';
 import { useProjectStore } from '../state/useProjectStore';
 import ArchiveDragControls from './ArchiveDragControls';
+import WindGardenWorld from './WindGardenWorld';
 
 export default function WorldScene() {
   const replaceInteractions = useInteractionStore((state) => state.replaceInteractions);
@@ -38,17 +39,17 @@ export default function WorldScene() {
     <>
       <CurvedWorld />
       <MusicEnvironmentController />
-      <MusicReactiveWorld />
+      {project.scene.windGarden ? <WindGardenWorld /> : <MusicReactiveWorld />}
       <AudioWorld />
       <WorldPerformanceProbe />
       <WorldInspectionProbe />
       <PlayerController />
       <InteractionSystem />
-      <JourneyWorldGuide />
+      {!project.scene.windGarden && <JourneyWorldGuide />}
       {editorMode === 'drag' && <ArchiveDragControls />}
       {interactions.map((interaction) => (
         <InteractionPoint
-          key={`${interaction.id}:${interaction.position.join(',')}:${interaction.rotation?.join(',') ?? ''}:${interaction.scale?.join(',') ?? ''}`}
+          key={`${project.id}:${interaction.id}:${interaction.visual.assetId ?? ''}:${interaction.position.join(',')}:${interaction.rotation?.join(',') ?? ''}:${interaction.scale?.join(',') ?? ''}`}
           definition={interaction}
         />
       ))}

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useProjectStore } from '../state/useProjectStore';
 import CueEnvironmentEditor from './CueEnvironmentEditor';
 import MusicAnalysisEditor from './MusicAnalysisEditor';
+import WorldBuilder from './WorldBuilder';
 
 function downloadProject(json: string, projectId: string) {
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
@@ -190,14 +191,16 @@ export default function ProjectEditorPanel() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-comic-purple">Phase 2 draft</p>
-                <h2 id="project-editor-title" className="mt-1 font-display text-2xl font-black">Edit Memory Journey</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-comic-purple">Music Universe</p>
+                <h2 id="project-editor-title" className="mt-1 font-display text-2xl font-black">搭建与编辑世界</h2>
                 <p className="mt-1 text-sm text-ink/65">{project.metadata.title} · schema v{project.schemaVersion}</p>
               </div>
               <button aria-label="Close project editor" className="comic-button bg-white p-2" onClick={() => setOpen(false)}>
                 <X size={18} />
               </button>
             </div>
+
+            <WorldBuilder key={`builder:${activeProjectId}`} onPreview={() => setOpen(false)} />
 
             <div className="mt-4 flex gap-3">
               <button aria-label="Undo project edit" disabled={!undoCount} className="comic-button flex items-center gap-2 disabled:opacity-40" onClick={undo}><Undo2 size={17} /> Undo</button>

@@ -41,6 +41,7 @@ const JOURNEY_TARGETS = {
 } as const;
 
 export default function JourneyWorldGuide() {
+  const activePanel = useInteractionStore(state => state.activePanelId);
   const flags = useInteractionStore((state) => state.interactionFlags);
   const reducedEffects = useWorldStore((state) => state.reducedEffects);
   const scene = useThree((state) => state.scene);
@@ -52,6 +53,7 @@ export default function JourneyWorldGuide() {
   const terrain = useProjectStore((state) => state.project.scene.environment.terrain);
   const radius = planetRadius(terrain);
   const authoredObjects = useProjectStore((state) => state.project.scene.objects);
+  const authoredLook = useProjectStore(state => state.project.scene.environment.look);
 
   const target =
     flags['journey.started'] !== true
@@ -119,7 +121,7 @@ export default function JourneyWorldGuide() {
     }
   });
 
-  if (completed) return null;
+  if (completed || (authoredLook && activePanel)) return null;
 
   return (
     <group>
@@ -160,7 +162,7 @@ export default function JourneyWorldGuide() {
             />
           </mesh>
         </group>
-        <Html position={[0, 3.8, 0]} center distanceFactor={11} occlude>
+        {!authoredLook && <Html position={[0, 3.8, 0]} center distanceFactor={11} occlude>
           <div className="pointer-events-none min-w-max rounded-xl border-2 border-white/80 bg-ink/90 px-3 py-2 text-center text-white shadow-lg">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/60">
               Current destination
@@ -168,7 +170,7 @@ export default function JourneyWorldGuide() {
             <p className="font-display font-bold">{target.label}</p>
             <p className="text-xs text-white/80">{target.instruction}</p>
           </div>
-        </Html>
+        </Html>}
       </SurfaceGroup>
     </group>
   );
