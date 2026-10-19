@@ -42,6 +42,10 @@ See [M1 evidence and limits](docs/validation/childhood-wind-m1-2026-10-19.md).
 Player enjoyment, fine phrase annotation and final art acceptance remain open;
 waterwheel/full-song mechanics are still design hypotheses. Next: M1 owner
 playtest before M2 expansion; creator editing controls remain deferred.
+The owner authorized friend playtesting on GitHub Pages. PR #17 is merged and
+Pages run `39216400962` deployed commit `062f1860578f8e4d4593d4a1058e2cd8290e3fed`.
+Share the [wind playtest](https://crf2004.github.io/Music_Universe_Interface_Kit/?study=coastal&play=wind-v1&release=wind-m1-20261019)
+with desktop Chrome/Edge users. See [release evidence](docs/validation/childhood-wind-playtest-release-2026-10-19.md).
 See [the closeout decision](docs/validation/creator-workflow-closeout-2026-10-05.md).
 
 The project owner accepted the Phase 0 reliability baseline and Phase 1 Memory
