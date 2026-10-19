@@ -1,7 +1,7 @@
 # Music Universe Product Roadmap
 
 > Status: active product direction
-> Last updated: 2026-10-18
+> Last updated: 2026-10-19
 
 ## Vision
 
@@ -176,6 +176,13 @@ Recommended order:
 4. let the creator accept, edit, or replace every recommendation;
 5. compile into the same `MusicWorldProject` used by manual editing;
 6. generate only distinctive hero assets where reuse is insufficient.
+
+Research note (2026-10-19): an agentic Blender pipeline for the world skeleton
+(schema -> bpy -> headless render -> render-and-verify loop) is under evaluation
+as a generation backend for this phase, complementary to Tripo organic fill. See
+`docs/blender-agent-integration-design.zh-CN.md` for the MCP action inventory,
+verification-loop design, Blender/Tripo division of labor, and route options.
+Not sequenced work; no implementation until a Phase 3 exit gate requires it.
 
 Exit gate:
 
